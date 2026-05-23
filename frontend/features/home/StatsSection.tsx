@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 const STATS = [
   { value: 500,  suffix: '+',  label: 'Chemical Products',   desc: 'Across all major categories' },
   { value: 200,  suffix: '+',  label: 'Happy Clients',       desc: 'Across East Africa' },
-  { value: 15,   suffix: '+',  label: 'Years Experience',    desc: 'In industrial supply' },
+
   { value: 99,   suffix: '%',  label: 'On-time Delivery',    desc: 'Customer satisfaction rate' },
 ]
 
@@ -34,9 +34,9 @@ function AnimatedCount({ target, suffix }: { target: number; suffix: string }) {
 
 export default function StatsSection() {
   return (
-    <section className="section-pad-sm border-b border-surface-border" aria-label="Company statistics">
+    <section className="py-12 md:py-16 border-b border-surface-border" aria-label="Company statistics">
       <div className="container-wide">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {STATS.map((stat, i) => (
             <motion.div
               key={stat.label}

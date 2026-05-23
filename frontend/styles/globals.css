@@ -45,6 +45,37 @@
 }
 
 /* ============================================================
+   MOBILE / TABLET ADJUSTMENTS
+   Keep desktop styles unchanged; only tweak small-screen spacing
+   ============================================================ */
+@media (max-width: 1024px) {
+  .container-wide { padding-left: 1rem; padding-right: 1rem; }
+  .section-pad { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+}
+
+@media (max-width: 640px) {
+  .container-wide { padding-left: 0.75rem; padding-right: 0.75rem; }
+  .section-pad { padding-top: 2rem; padding-bottom: 2rem; }
+
+  .btn-primary, .btn-outline, .btn-ghost {
+    padding-left: 1rem; padding-right: 1rem; padding-top: 0.55rem; padding-bottom: 0.55rem;
+    font-size: 0.95rem;
+  }
+
+  .glass-card, .glass-card-light, .card { border-radius: 0.75rem; }
+
+  /* Ensure hero content stacks and doesn't overflow */
+  .page-header { padding-top: 72px; }
+
+  /* Carousel specific tweaks */
+  .hero-carousel { width: 100%; overflow: hidden; }
+  .hero-carousel img, .hero-carousel video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+
+  /* Prevent horizontal scroll due to shadows or transforms */
+  html, body { overflow-x: hidden; }
+}
+
+/* ============================================================
    BASE STYLES
    ============================================================ */
 @layer base {

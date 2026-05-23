@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { ArrowRight, ChevronDown, Shield, Zap, Globe } from 'lucide-react'
+import HeroCarousel from './HeroCarousel'
 
 const HERO_BADGES = [
   { icon: Shield, label: 'ISO 9001:2015' },
@@ -13,7 +14,7 @@ const HERO_BADGES = [
 export default function HeroSection() {
   return (
     <section
-      className="relative min-h-[90vh] flex items-center overflow-hidden bg-mesh noise-overlay"
+      className="relative min-h-[60vh] sm:min-h-[75vh] lg:min-h-[90vh] flex items-center overflow-hidden bg-mesh noise-overlay pt-[72px]"
       aria-label="Hero section"
     >
       {/* Background gradient layers */}
@@ -35,8 +36,10 @@ export default function HeroSection() {
       <div className="absolute bottom-1/4 left-1/4 w-64 h-64 rounded-full bg-amber-500/15 blur-[100px] animate-float" />
 
       {/* Content */}
-      <div className="relative container-wide py-24">
-        <div className="max-w-4xl">
+      <div className="relative container-wide py-12 sm:py-16 md:py-20 lg:py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center lg:items-stretch">
+          {/* Left column */}
+          <div className="max-w-2xl flex flex-col justify-center">
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -76,13 +79,13 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-wrap gap-4 mb-12"
+            className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mb-8 md:mb-12"
           >
-            <Link href="/quote" className="btn-primary px-8 py-4 text-base">
+            <Link href="/quote" className="btn-primary px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base">
               Request a Quote
               <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link href="/products" className="btn-outline px-8 py-4 text-base">
+            <Link href="/products" className="btn-outline px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base">
               Browse Products
             </Link>
           </motion.div>
@@ -104,6 +107,25 @@ export default function HeroSection() {
               </div>
             ))}
           </motion.div>
+          </div>
+          {/* Right column - Carousel */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="lg:hidden flex items-stretch justify-center h-full w-full mt-6 sm:mt-8"
+          >
+            <HeroCarousel />
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="hidden lg:flex items-stretch justify-center h-full"
+          >
+            <HeroCarousel />
+          </motion.div>
         </div>
       </div>
 
@@ -112,7 +134,7 @@ export default function HeroSection() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1"
+        className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1"
         aria-hidden="true"
       >
         <span className="text-[10px] uppercase tracking-widest text-text-muted">Scroll</span>

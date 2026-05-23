@@ -218,14 +218,14 @@ export default function ContactPage() {
                 </li>
 
                 <li className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
+                  <a href={COMPANY_INFO.addressLink} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0 mt-0.5 hover:bg-amber-500/20 hover:border-amber-500/40 transition-colors">
                     <MapPin className="w-5 h-5" />
-                  </div>
+                  </a>
                   <div>
                     <span className="block text-[10px] uppercase tracking-wider text-text-muted mb-0.5">Headquarters Warehouse</span>
-                    <span className="text-xs text-text-secondary leading-relaxed">
+                    <a href={COMPANY_INFO.addressLink} target="_blank" rel="noopener noreferrer" className="text-xs text-text-secondary hover:text-amber-400 leading-relaxed transition-colors underline-offset-2 hover:underline">
                       {COMPANY_INFO.address}
-                    </span>
+                    </a>
                   </div>
                 </li>
               </ul>
