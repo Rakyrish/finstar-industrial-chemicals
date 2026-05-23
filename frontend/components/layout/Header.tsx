@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, Search, ChevronDown, FlaskConical, Phone } from 'lucide-react'
@@ -59,8 +60,8 @@ export default function Header() {
               className="flex items-center gap-2.5 shrink-0 group"
               aria-label="Finstar Industrial Chemicals — Home"
             >
-              <div className="w-9 h-9 rounded-xl bg-amber-gradient flex items-center justify-center shadow-glow-amber group-hover:scale-105 transition-transform duration-200">
-                <FlaskConical className="w-5 h-5 text-white" strokeWidth={2.5} />
+              <div className="w-9 h-9 rounded-xl shadow-glow-amber group-hover:scale-105 transition-transform duration-200 overflow-hidden flex-shrink-0">
+                <Image src="/finlogo.jpeg" alt="Finstar Logo" width={36} height={36} className="w-9 h-9 object-cover" />
               </div>
               <div className="hidden sm:block">
                 <span className="font-display font-bold text-base text-text-primary leading-none">

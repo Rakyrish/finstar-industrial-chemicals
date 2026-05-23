@@ -44,6 +44,9 @@ ENV/
 env/
 .venv
 .env.example
+.env.local
+.env.*.local
+.env
 
 # Django
 *.log

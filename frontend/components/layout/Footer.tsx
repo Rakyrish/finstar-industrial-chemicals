@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { FlaskConical, Mail, Phone, MapPin, ExternalLink } from 'lucide-react'
 import { FOOTER_COLUMNS, SOCIAL_LINKS, COMPANY_INFO } from '@/lib/constants'
 
@@ -29,8 +30,8 @@ export default function Footer() {
           {/* Brand column */}
           <div className="lg:col-span-2">
             <Link href="/" className="inline-flex items-center gap-2.5 mb-5 group">
-              <div className="w-10 h-10 rounded-xl bg-amber-gradient flex items-center justify-center shadow-glow-amber group-hover:scale-105 transition-transform duration-200">
-                <FlaskConical className="w-5 h-5 text-white" strokeWidth={2.5} />
+              <div className="w-10 h-10 rounded-xl shadow-glow-amber group-hover:scale-105 transition-transform duration-200 overflow-hidden flex-shrink-0">
+                <Image src="/finlogo.jpeg" alt="Finstar Logo" width={40} height={40} className="w-10 h-10 object-cover" />
               </div>
               <div>
                 <span className="font-display font-bold text-lg text-text-primary leading-none block">
@@ -60,9 +61,11 @@ export default function Footer() {
                   {COMPANY_INFO.phone}
                 </a>
               </li>
-              <li className="flex items-start gap-2.5 text-sm text-text-secondary">
-                <MapPin className="w-4 h-4 text-amber-500/70 shrink-0 mt-0.5" />
-                {COMPANY_INFO.address}
+              <li>
+                <a href={COMPANY_INFO.addressLink} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2.5 text-sm text-text-secondary hover:text-amber-400 transition-colors group">
+                  <MapPin className="w-4 h-4 text-amber-500/70 shrink-0 mt-0.5" />
+                  <span className="group-hover:underline">{COMPANY_INFO.address}</span>
+                </a>
               </li>
             </ul>
 
