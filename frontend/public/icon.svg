@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">FINSTAR icon</title>
+  <desc id="desc">A compact industrial chemical brand mark with a dark blue background and gold accent.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#062154" />
+      <stop offset="100%" stop-color="#0c3b8f" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f7c948" />
+      <stop offset="100%" stop-color="#f08c00" />
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="url(#bg)" />
+  <circle cx="128" cy="128" r="72" fill="none" stroke="url(#accent)" stroke-width="18" opacity="0.95" />
+  <path d="M86 164V92h90v18h-66v16h58v18h-58v20z" fill="#ffffff" />
+  <circle cx="184" cy="76" r="16" fill="url(#accent)" />
+</svg>

@@ -1,0 +1,235 @@
+import type { BlogStatus } from './blog'
+import type { ProductStatus } from './product'
+
+export type AdminRole = 'staff' | 'superuser'
+export type AdminTheme = 'dark' | 'light'
+
+export interface AdminPermission {
+  codename: string
+  name: string
+}
+
+export interface AdminUserGroup {
+  id?: number
+  name: string
+}
+
+export interface AdminProfile {
+  id: number
+  username: string
+  email: string
+  firstName: string
+  lastName: string
+  displayName: string
+  isStaff: boolean
+  isSuperuser: boolean
+  groups: AdminUserGroup[]
+  permissions: AdminPermission[]
+  accessLevel: AdminRole
+}
+
+export interface AdminUser {
+  id: number
+  username: string
+  displayName: string
+  email: string
+  role: AdminRole
+  avatar?: string
+  status: 'active' | 'invited' | 'suspended'
+  lastLoginAt: string
+}
+
+export interface AdminSession extends AdminProfile {
+  avatar?: string
+  exp?: number
+  accessToken?: string
+  refreshToken?: string
+}
+
+export interface AdminMetric {
+  label: string
+  value: string
+  change: string
+  trend: 'up' | 'down' | 'flat'
+  helperText?: string
+}
+
+export interface AdminChartPoint {
+  label: string
+  value: number
+}
+
+export interface AdminActivity {
+  id: number
+  title: string
+  description: string
+  timestamp: string
+  severity: 'info' | 'success' | 'warning' | 'danger'
+}
+
+export interface AdminConversation {
+  id: number
+  customerName: string
+  channel: 'web' | 'whatsapp' | 'email'
+  question: string
+  status: 'open' | 'resolved' | 'escalated'
+  createdAt: string
+  messageCount: number
+}
+
+export interface AdminInventoryAlert {
+  id: number
+  productName: string
+  sku: string
+  stock: number
+  threshold: number
+  supplier: string
+  severity: 'warning' | 'critical'
+}
+
+export interface AdminProductRow {
+  id: number
+  name: string
+  slug: string
+  category: string
+  status: ProductStatus
+  featured: boolean
+  inventory: number
+  packaging: string
+  updatedAt: string
+}
+
+export interface AdminBlogRow {
+  id: number
+  title: string
+  slug: string
+  author: string
+  status: BlogStatus
+  tags: string[]
+  publishedAt?: string
+  updatedAt: string
+}
+
+export interface AdminInquiryRow {
+  id: number
+  name: string
+  email: string
+  company?: string
+  subject: string
+  status: 'pending' | 'resolved' | 'escalated'
+  createdAt: string
+}
+
+export interface AdminQuoteRow {
+  id: number
+  name: string
+  company: string
+  product: string
+  quantity: string
+  status: 'pending' | 'reviewed' | 'approved' | 'rejected'
+  createdAt: string
+}
+
+export interface AdminSeoRow {
+  id: number
+  page: string
+  metaTitle: string
+  metaDescription: string
+  keywords: string[]
+  updatedAt: string
+}
+
+export interface AdminAnalyticsSummary {
+  visitors: AdminChartPoint[]
+  conversions: AdminChartPoint[]
+  searchTerms: AdminChartPoint[]
+  deviceMix: AdminChartPoint[]
+}
+
+export interface AdminOverview {
+  metrics: AdminMetric[]
+  activity: AdminActivity[]
+  conversations: AdminConversation[]
+  inventoryAlerts: AdminInventoryAlert[]
+  recentProducts: AdminProductRow[]
+  recentBlogPosts: AdminBlogRow[]
+  analytics: AdminAnalyticsSummary
+}
+
+export interface AdminDashboardResponse extends AdminOverview {
+  quoteRequests: AdminQuoteRow[]
+  inquiries: AdminInquiryRow[]
+}
+
+export interface AdminListResponse<T> {
+  results: T[]
+  count: number
+}
+
+export interface AdminActionResult {
+  success: boolean
+  message: string
+}
+
+export interface AdminLoginPayload {
+  username: string
+  password: string
+}
+
+export interface AdminAuthResponse {
+  access: string
+  refresh: string
+  user: AdminProfile
+  token_type: 'Bearer'
+  access_expires_in: number
+  refresh_expires_in: number
+}
+
+export interface AdminLoginResponse {
+  accessToken: string
+  refreshToken: string
+  session: AdminSession
+}
+
+export interface AdminProductDraft {
+  name: string
+  slug: string
+  description: string
+  category: string
+  status: ProductStatus
+  featured: boolean
+  pricing: string
+  packaging: string
+  inventoryQuantity: number
+  seoTitle: string
+  seoDescription: string
+}
+
+export interface AdminBlogDraft {
+  title: string
+  slug: string
+  excerpt: string
+  content: string
+  author: string
+  featuredImage?: string
+  tags: string[]
+  status: BlogStatus
+  publishDate: string
+  seoTitle: string
+  seoDescription: string
+}
+
+export interface AdminReplyDraft {
+  message: string
+  status: 'pending' | 'resolved' | 'escalated'
+}
+
+export interface AdminSeoDraft {
+  page: string
+  metaTitle: string
+  metaDescription: string
+  keywords: string
+  ogTitle: string
+  ogDescription: string
+  structuredData: string
+}

@@ -44,6 +44,20 @@
   --shadow-glow-blue:  0 0 30px rgba(10,92,245,0.3);
 }
 
+[data-theme='light'] {
+  --color-surface:        #f6f8fc;
+  --color-surface-card:    #ffffff;
+  --color-surface-border:  #dbe4f3;
+  --color-surface-muted:   #eef3fb;
+
+  --color-text-primary:    #0f172a;
+  --color-text-secondary:  #475569;
+  --color-text-muted:      #64748b;
+
+  --shadow-card:           0 4px 18px rgba(15, 23, 42, 0.08);
+  --shadow-card-hover:     0 10px 30px rgba(15, 23, 42, 0.14);
+}
+
 /* ============================================================
    MOBILE / TABLET ADJUSTMENTS
    Keep desktop styles unchanged; only tweak small-screen spacing
