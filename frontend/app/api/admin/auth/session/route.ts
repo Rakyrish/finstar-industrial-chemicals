@@ -26,8 +26,9 @@ async function refreshAccessToken(refreshToken: string) {
 }
 
 export async function GET(request: Request) {
-  const accessToken = cookies().get(ADMIN_ACCESS_COOKIE)?.value ?? request.headers.get('cookie')?.match(/finstar_admin_access=([^;]+)/)?.[1]
-  const refreshToken = cookies().get(ADMIN_REFRESH_COOKIE)?.value ?? request.headers.get('cookie')?.match(/finstar_admin_refresh=([^;]+)/)?.[1]
+  const cookieStore = await cookies()
+  const accessToken = cookieStore.get(ADMIN_ACCESS_COOKIE)?.value ?? request.headers.get('cookie')?.match(/finstar_admin_access=([^;]+)/)?.[1]
+  const refreshToken = cookieStore.get(ADMIN_REFRESH_COOKIE)?.value ?? request.headers.get('cookie')?.match(/finstar_admin_refresh=([^;]+)/)?.[1]
 
   if (!accessToken) {
     return NextResponse.json({ authenticated: false, user: null }, { status: 401 })

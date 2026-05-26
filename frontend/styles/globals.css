@@ -47,12 +47,12 @@
 [data-theme='light'] {
   --color-surface:        #f6f8fc;
   --color-surface-card:    #ffffff;
-  --color-surface-border:  #dbe4f3;
-  --color-surface-muted:   #eef3fb;
+  --color-surface-border:  #cbd5e1;
+  --color-surface-muted:   #e8eef7;
 
   --color-text-primary:    #0f172a;
-  --color-text-secondary:  #475569;
-  --color-text-muted:      #64748b;
+  --color-text-secondary:  #334155;
+  --color-text-muted:      #475569;
 
   --shadow-card:           0 4px 18px rgba(15, 23, 42, 0.08);
   --shadow-card-hover:     0 10px 30px rgba(15, 23, 42, 0.14);
@@ -286,6 +286,16 @@
            border border-surface-border
            placeholder:text-text-muted
            focus:outline-none focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/15
+           transition-all duration-200;
+  }
+
+  .input {
+    @apply w-full px-4 py-3 rounded-xl text-sm
+           bg-surface-card text-text-primary
+           border border-surface-border
+           placeholder:text-text-muted
+           focus:outline-none focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/15
+           disabled:cursor-not-allowed disabled:opacity-60
            transition-all duration-200;
   }
 

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { ADMIN_ACCESS_COOKIE } from '@/lib/admin/auth'
+import { getBackendApiUrl } from '@/lib/config'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+const API_BASE = getBackendApiUrl()
 
 // POST /api/admin/upload — handles both file uploads and URL uploads
 export async function POST(request: NextRequest) {
@@ -10,7 +11,7 @@ export async function POST(request: NextRequest) {
   const token = cookieStore.get(ADMIN_ACCESS_COOKIE)?.value
   const contentType = request.headers.get('content-type') ?? ''
 
-  const authHeader = token ? { Authorization: `Bearer ${token}` } : {}
+  const authHeader: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
 
   if (contentType.includes('multipart/form-data')) {
     // File upload — forward FormData directly to Django

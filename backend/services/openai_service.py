@@ -12,6 +12,82 @@ class OpenAIService:
     def _is_mock(self):
         return not self.api_key or self.api_key == 'mock-key'
 
+    def _product_schema(self):
+        string_list = {"type": "array", "items": {"type": "string"}}
+        qa_list = {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {"q": {"type": "string"}, "a": {"type": "string"}},
+                "required": ["q", "a"],
+                "additionalProperties": False,
+            },
+        }
+        kv_list = {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {"key": {"type": "string"}, "value": {"type": "string"}},
+                "required": ["key", "value"],
+                "additionalProperties": False,
+            },
+        }
+        return {
+            "type": "object",
+            "properties": {
+                "product_name": {"type": "string"},
+                "seo_title": {"type": "string"},
+                "seo_meta_description": {"type": "string"},
+                "short_description": {"type": "string"},
+                "long_description": {"type": "string"},
+                "technical_specifications": kv_list,
+                "applications": string_list,
+                "benefits": string_list,
+                "features": string_list,
+                "industries_served": string_list,
+                "faqs": qa_list,
+                "seo_keywords": string_list,
+                "product_tags": string_list,
+                "seo_slug": {"type": "string"},
+                "og_description": {"type": "string"},
+                "twitter_description": {"type": "string"},
+                "image_alt": {"type": "string"},
+                "image_title": {"type": "string"},
+                "image_caption": {"type": "string"},
+                "whatsapp_template": {"type": "string"},
+                "quotation_template": {"type": "string"},
+                "cta_content": {"type": "string"},
+                "schema_markup": {
+                    "type": "object",
+                    "properties": {
+                        "@context": {"type": "string"},
+                        "@type": {"type": "string"},
+                        "name": {"type": "string"},
+                        "description": {"type": "string"},
+                    },
+                    "required": ["@context", "@type", "name", "description"],
+                    "additionalProperties": False,
+                },
+                "internal_linking": string_list,
+                "product_category_suggestions": string_list,
+                "structured_data_notes": {"type": "string"},
+                "safety_considerations": string_list,
+                "industrial_classification": {"type": "string"},
+                "chemical_classification": {"type": "string"},
+            },
+            "required": [
+                "product_name", "seo_title", "seo_meta_description", "short_description",
+                "long_description", "technical_specifications", "applications", "benefits",
+                "features", "industries_served", "faqs", "seo_keywords", "product_tags",
+                "seo_slug", "og_description", "twitter_description", "image_alt",
+                "image_title", "image_caption", "whatsapp_template", "quotation_template",
+                "cta_content", "schema_markup", "internal_linking",
+                "product_category_suggestions", "structured_data_notes",
+                "safety_considerations", "industrial_classification", "chemical_classification",
+            ],
+            "additionalProperties": False,
+        }
+
     # ──────────────────────────────────────────────────────────────────────────
     # Chatbot
     # ──────────────────────────────────────────────────────────────────────────
@@ -159,8 +235,29 @@ SEO REQUIREMENTS:
             messages.append({'role': 'user', 'content': prompt})
 
         try:
+            if hasattr(self.client, 'responses'):
+                response = self.client.responses.create(
+                    model=os.getenv('OPENAI_PRODUCT_MODEL', 'gpt-4o'),
+                    input=[{
+                        'role': 'user',
+                        'content': [
+                            {'type': 'input_text', 'text': prompt},
+                            *([{'type': 'input_image', 'image_url': image_url, 'detail': 'auto'}] if image_url else []),
+                        ],
+                    }],
+                    text={
+                        'format': {
+                            'type': 'json_schema',
+                            'name': 'finstar_product_profile',
+                            'schema': self._product_schema(),
+                            'strict': True,
+                        }
+                    },
+                )
+                return json.loads(response.output_text)
+
             response = self.client.chat.completions.create(
-                model='gpt-4o',
+                model=os.getenv('OPENAI_PRODUCT_MODEL', 'gpt-4o'),
                 messages=messages,
                 temperature=0.3,
                 max_tokens=2500,

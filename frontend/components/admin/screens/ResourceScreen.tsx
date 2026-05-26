@@ -12,7 +12,7 @@ import AdminEmptyState from '../AdminEmptyState'
 
 type FilterField = { key: string; label: string; options: string[] }
 
-export default function ResourceScreen<T extends Record<string, unknown>>({
+export default function ResourceScreen<T extends object>({
   resource,
   title,
   description,
@@ -46,10 +46,11 @@ export default function ResourceScreen<T extends Record<string, unknown>>({
     const normalizedSearch = search.toLowerCase()
 
     return source.filter((row) => {
-      const matchesSearch = !normalizedSearch || searchKeys.some((key) => String(row[key] ?? '').toLowerCase().includes(normalizedSearch))
+      const rowValues = row as Record<string, unknown>
+      const matchesSearch = !normalizedSearch || searchKeys.some((key) => String(rowValues[key] ?? '').toLowerCase().includes(normalizedSearch))
       const matchesFilters = Object.entries(selectedFilters).every(([filterKey, filterValue]) => {
         if (!filterValue) return true
-        const value = String(row[filterKey as keyof T] ?? '').toLowerCase()
+        const value = String(rowValues[filterKey] ?? '').toLowerCase()
         return value === filterValue.toLowerCase()
       })
 

@@ -2,17 +2,23 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.utils import timezone
+from django.db import IntegrityError
 from django.db.models import Count, Sum, Q, Avg
 from django.contrib.auth import get_user_model
+from django.utils.text import slugify
 from datetime import timedelta
+import json as _json
 
 # Models
-from products.models import Product, Category
+from products.models import Product, Category, Tag
 from inquiries.models import QuoteRequest, ContactMessage
 from chatbot.models import ChatSession, ChatMessage
 from blog.models import BlogPost
 from seo.models import SeoPage
 from analytics.models import PageView, SearchQuery, WhatsAppClick, PhoneClick
+
+# Serializers
+from products.serializers import ProductListSerializer, ProductDetailSerializer
 
 User = get_user_model()
 
@@ -339,12 +345,11 @@ class AdminGenerateProductContentView(APIView):
         product_name = request.data.get('productName')
         image_url = request.data.get('imageUrl')
 
-        if not product_name:
-            return Response({"detail": "Product name is required for generation."}, status=status.HTTP_400_BAD_REQUEST)
-
         from services.openai_service import openai_service
         try:
-            generated_data = openai_service.generate_product_content(product_name, image_url)
+            if not image_url and not product_name:
+                return Response({"detail": "Upload an image or provide an image URL before generation."}, status=status.HTTP_400_BAD_REQUEST)
+            generated_data = openai_service.generate_product_content(image_url=image_url, product_name=product_name)
             return Response(generated_data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -353,11 +358,6 @@ class AdminGenerateProductContentView(APIView):
 # ─────────────────────────────────────────────────────────────────────────────
 # Product CRUD
 # ─────────────────────────────────────────────────────────────────────────────
-import json as _json
-from products.models import Tag
-from products.serializers import ProductListSerializer, ProductDetailSerializer
-from django.utils.text import slugify
-
 
 def _parse_json_field(value):
     if not value:
@@ -365,6 +365,31 @@ def _parse_json_field(value):
     if isinstance(value, (list, dict)):
         return _json.dumps(value)
     return value
+
+
+def _unique_slug(model, value):
+    base = slugify(value) or 'item'
+    slug = base
+    index = 2
+    while model.objects.filter(slug=slug).exists():
+        slug = f'{base}-{index}'
+        index += 1
+    return slug
+
+
+def _get_or_create_category(name):
+    category_name = (name or '').strip()
+    if not category_name:
+        return None
+
+    existing = Category.objects.filter(name__iexact=category_name).first()
+    if existing:
+        return existing
+
+    return Category.objects.create(
+        name=category_name,
+        slug=_unique_slug(Category, category_name),
+    )
 
 
 class AdminProductListView(APIView):
@@ -384,58 +409,64 @@ class AdminProductListView(APIView):
         if not name:
             return Response({'detail': 'Product name is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        slug = d.get('slug') or slugify(name)
-
-        # Handle category
-        category_name = d.get('category', '')
-        category = None
-        if category_name:
-            category, _ = Category.objects.get_or_create(
-                name=category_name,
-                defaults={'slug': slugify(category_name)}
+        if Product.objects.filter(name__iexact=name).exists():
+            return Response(
+                {'detail': f'A product named "{name}" already exists. Edit the existing product or choose a different name.'},
+                status=status.HTTP_409_CONFLICT,
             )
 
-        product = Product.objects.create(
-            name=name, slug=slug, category=category,
-            short_description=d.get('short_description') or d.get('shortDescription'),
-            description=d.get('description'),
-            long_description=d.get('long_description') or d.get('longDescription'),
-            applications=_parse_json_field(d.get('applications')),
-            benefits=_parse_json_field(d.get('benefits')),
-            features=_parse_json_field(d.get('features')),
-            industries_served=_parse_json_field(d.get('industriesServed') or d.get('industries_served')),
-            faqs=_parse_json_field(d.get('faqs')),
-            specifications=_parse_json_field(d.get('specifications')),
-            cas_number=d.get('casNumber') or d.get('cas_number'),
-            chemical_formula=d.get('chemicalFormula') or d.get('chemical_formula'),
-            purity=d.get('purity'),
-            appearance=d.get('appearance'),
-            density=d.get('density'),
-            packaging_type=d.get('packagingType') or d.get('packaging_type'),
-            pricing=d.get('pricing'),
-            min_order_quantity=d.get('minOrderQuantity') or d.get('min_order_quantity') or 1,
-            unit_of_measure=d.get('unitOfMeasure') or d.get('unit_of_measure') or 'KG',
-            hazard_classification=d.get('hazardClassification') or d.get('hazard_classification'),
-            cloudinary_url=d.get('cloudinaryUrl') or d.get('cloudinary_url'),
-            cloudinary_public_id=d.get('cloudinaryPublicId') or d.get('cloudinary_public_id'),
-            image_alt=d.get('imageAlt') or d.get('image_alt'),
-            image_title=d.get('imageTitle') or d.get('image_title'),
-            image_caption=d.get('imageCaption') or d.get('image_caption'),
-            seo_title=d.get('seoTitle') or d.get('seo_title'),
-            seo_description=d.get('seoDescription') or d.get('seo_description'),
-            seo_keywords=d.get('seoKeywords') or d.get('seo_keywords'),
-            og_title=d.get('ogTitle') or d.get('og_title'),
-            og_description=d.get('ogDescription') or d.get('og_description'),
-            twitter_description=d.get('twitterDescription') or d.get('twitter_description'),
-            schema_markup=_parse_json_field(d.get('schemaMarkup') or d.get('schema_markup')),
-            whatsapp_template=d.get('whatsappTemplate') or d.get('whatsapp_template'),
-            quotation_template=d.get('quotationTemplate') or d.get('quotation_template'),
-            cta_content=d.get('ctaContent') or d.get('cta_content'),
-            status=d.get('status', 'draft'),
-            is_featured=d.get('isFeatured') or d.get('is_featured') or False,
-            is_new=d.get('isNew') or d.get('is_new') or True,
-            publish_at=d.get('publishAt') or d.get('publish_at'),
-        )
+        slug = _unique_slug(Product, d.get('slug') or name)
+
+        # Handle category
+        category = _get_or_create_category(d.get('category', ''))
+
+        try:
+            product = Product.objects.create(
+                name=name, slug=slug, category=category,
+                short_description=d.get('short_description') or d.get('shortDescription'),
+                description=d.get('description'),
+                long_description=d.get('long_description') or d.get('longDescription'),
+                applications=_parse_json_field(d.get('applications')),
+                benefits=_parse_json_field(d.get('benefits')),
+                features=_parse_json_field(d.get('features')),
+                industries_served=_parse_json_field(d.get('industriesServed') or d.get('industries_served')),
+                faqs=_parse_json_field(d.get('faqs')),
+                specifications=_parse_json_field(d.get('specifications')),
+                cas_number=d.get('casNumber') or d.get('cas_number'),
+                chemical_formula=d.get('chemicalFormula') or d.get('chemical_formula'),
+                purity=d.get('purity'),
+                appearance=d.get('appearance'),
+                density=d.get('density'),
+                packaging_type=d.get('packagingType') or d.get('packaging_type'),
+                pricing=d.get('pricing'),
+                min_order_quantity=d.get('minOrderQuantity') or d.get('min_order_quantity') or 1,
+                unit_of_measure=d.get('unitOfMeasure') or d.get('unit_of_measure') or 'KG',
+                hazard_classification=d.get('hazardClassification') or d.get('hazard_classification'),
+                cloudinary_url=d.get('cloudinaryUrl') or d.get('cloudinary_url'),
+                cloudinary_public_id=d.get('cloudinaryPublicId') or d.get('cloudinary_public_id'),
+                image_alt=d.get('imageAlt') or d.get('image_alt'),
+                image_title=d.get('imageTitle') or d.get('image_title'),
+                image_caption=d.get('imageCaption') or d.get('image_caption'),
+                seo_title=d.get('seoTitle') or d.get('seo_title'),
+                seo_description=d.get('seoDescription') or d.get('seo_description'),
+                seo_keywords=d.get('seoKeywords') or d.get('seo_keywords'),
+                og_title=d.get('ogTitle') or d.get('og_title'),
+                og_description=d.get('ogDescription') or d.get('og_description'),
+                twitter_description=d.get('twitterDescription') or d.get('twitter_description'),
+                schema_markup=_parse_json_field(d.get('schemaMarkup') or d.get('schema_markup')),
+                whatsapp_template=d.get('whatsappTemplate') or d.get('whatsapp_template'),
+                quotation_template=d.get('quotationTemplate') or d.get('quotation_template'),
+                cta_content=d.get('ctaContent') or d.get('cta_content'),
+                status=d.get('status', 'draft'),
+                is_featured=d.get('isFeatured') or d.get('is_featured') or False,
+                is_new=d.get('isNew') if 'isNew' in d else d.get('is_new', True),
+                publish_at=d.get('publishAt') or d.get('publish_at') or None,
+            )
+        except IntegrityError:
+            return Response(
+                {'detail': 'A product with this name or slug already exists.'},
+                status=status.HTTP_409_CONFLICT,
+            )
 
         # Attach tags
         tag_names = d.get('tags', [])
@@ -604,8 +635,40 @@ class AdminCategoryListView(APIView):
 
     def get(self, request):
         cats = Category.objects.all().order_by('name')
-        data = [{'id': c.id, 'name': c.name, 'slug': c.slug} for c in cats]
+        data = [{
+            'id': c.id,
+            'name': c.name,
+            'slug': c.slug,
+            'description': c.description or '',
+        } for c in cats]
         return Response({'count': len(data), 'results': data})
+
+    def post(self, request):
+        name = (request.data.get('name') or '').strip()
+        if not name:
+            return Response({'detail': 'Category name is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        existing = Category.objects.filter(name__iexact=name).first()
+        created = existing is None
+        category = existing or Category.objects.create(
+            name=name,
+            slug=_unique_slug(Category, request.data.get('slug') or name),
+            description=request.data.get('description', ''),
+        )
+        if not created:
+            category.name = name
+            category.description = request.data.get('description', category.description)
+            category.save(update_fields=['name', 'description'])
+
+        return Response(
+            {
+                'id': category.id,
+                'name': category.name,
+                'slug': category.slug,
+                'description': category.description or '',
+            },
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
 
 
 # ─────────────────────────────────────────────────────────────────────────────

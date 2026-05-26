@@ -1,7 +1,6 @@
 'use client'
 
 import { useAdminResource } from '@/lib/admin/client'
-import { Card } from '@/components/ui/card' // We might need to write standard HTML if Card isn't there, let's use standard HTML
 import { MessageSquare, Users, BarChart3, Search, Activity } from 'lucide-react'
 import type { AdminChatbotAnalytics } from '@/types/admin'
 

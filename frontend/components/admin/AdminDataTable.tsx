@@ -1,13 +1,13 @@
 import { cn } from '@/utils'
 
-export interface AdminTableColumn<T extends Record<string, unknown>> {
+export interface AdminTableColumn<T extends object> {
   key: keyof T | string
   label: string
   className?: string
   render?: (row: T) => React.ReactNode
 }
 
-export default function AdminDataTable<T extends Record<string, unknown>>({
+export default function AdminDataTable<T extends object>({
   columns,
   rows,
   emptyMessage = 'No records found',
@@ -34,7 +34,7 @@ export default function AdminDataTable<T extends Record<string, unknown>>({
               <tr key={rowIndex} className="transition hover:bg-surface/30">
                 {columns.map((column) => (
                   <td key={column.label} className={cn('px-5 py-4 align-top text-text-secondary', column.className)}>
-                    {column.render ? column.render(row) : String(row[column.key as keyof T] ?? '—')}
+                    {column.render ? column.render(row) : String((row as Record<string, unknown>)[String(column.key)] ?? '—')}
                   </td>
                 ))}
               </tr>

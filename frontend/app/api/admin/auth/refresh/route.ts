@@ -5,7 +5,7 @@ import { ADMIN_ACCESS_COOKIE, ADMIN_REFRESH_COOKIE } from '@/lib/admin/auth'
 const backendBaseUrl = process.env.ADMIN_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
 
 export async function POST() {
-  const refreshToken = cookies().get(ADMIN_REFRESH_COOKIE)?.value
+  const refreshToken = (await cookies()).get(ADMIN_REFRESH_COOKIE)?.value
 
   if (!refreshToken) {
     return NextResponse.json({ detail: 'Refresh token required.' }, { status: 401 })

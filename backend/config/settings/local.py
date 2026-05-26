@@ -13,11 +13,11 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': env.str('DB_ENGINE', default='django.db.backends.postgresql'),
-            'NAME': env.str('DB_NAME', default='finstar'),
-            'USER': env.str('DB_USER', default='finstar'),
-            'PASSWORD': env.str('DB_PASSWORD', default='g123'),
-            'HOST': env.str('DB_HOST', default='localhost'),
-            'PORT': env.str('DB_PORT', default='5433'),
+            'NAME': env.str('DB_NAME'),
+            'USER': env.str('DB_USER'),
+            'PASSWORD': env.str('DB_PASSWORD'),
+            'HOST': env.str('DB_HOST'),
+            'PORT': env.str('DB_PORT'),
         }
     }
 

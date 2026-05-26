@@ -20,6 +20,7 @@ export default function Header() {
   const [activeMenu,     setActiveMenu]     = useState<string | null>(null)
   const pathname = usePathname()
   const menuTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const phoneNumber = COMPANY_INFO.phone
 
   // Detect scroll
   useEffect(() => {
@@ -149,13 +150,15 @@ export default function Header() {
               </button>
 
               {/* Phone CTA */}
-              <a
-                href={`tel:${COMPANY_INFO.phone.replace(/\s/g, '')}`}
-                className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all duration-150"
-              >
-                <Phone className="w-3.5 h-3.5 text-amber-400" />
-                {COMPANY_INFO.phone}
-              </a>
+              {phoneNumber ? (
+                <a
+                  href={`tel:${phoneNumber.replace(/\s/g, '')}`}
+                  className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all duration-150"
+                >
+                  <Phone className="w-3.5 h-3.5 text-amber-400" />
+                  {phoneNumber}
+                </a>
+              ) : null}
 
               {/* Quote CTA */}
               <Link

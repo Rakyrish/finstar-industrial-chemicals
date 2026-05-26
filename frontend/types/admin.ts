@@ -52,6 +52,7 @@ export interface AdminMetric {
   change: string
   trend: 'up' | 'down' | 'flat'
   helperText?: string
+  icon?: string
 }
 
 export interface AdminChartPoint {
@@ -70,11 +71,22 @@ export interface AdminActivity {
 export interface AdminConversation {
   id: number
   customerName: string
+  customerEmail?: string
   channel: 'web' | 'whatsapp' | 'email'
   question: string
   status: 'open' | 'resolved' | 'escalated'
   createdAt: string
   messageCount: number
+  messages?: AdminChatMessage[]
+}
+
+export interface AdminChatMessage {
+  id: number
+  sender: 'customer' | 'bot' | 'agent'
+  senderName: string
+  content: string
+  timestamp: string
+  isRead: boolean
 }
 
 export interface AdminInventoryAlert {
@@ -85,6 +97,35 @@ export interface AdminInventoryAlert {
   threshold: number
   supplier: string
   severity: 'warning' | 'critical'
+  lastRestocked?: string
+  warehouseLocation?: string
+}
+
+export interface AdminInventoryLog {
+  id: number
+  productName: string
+  sku: string
+  action: 'restock' | 'sale' | 'damaged' | 'adjustment'
+  quantity: number
+  previousStock: number
+  newStock: number
+  performedBy: string
+  timestamp: string
+  notes?: string
+}
+
+export interface AdminSupplier {
+  id: number
+  name: string
+  contact: string
+  email: string
+  phone: string
+  country: string
+  city: string
+  products: string[]
+  status: 'active' | 'inactive'
+  lastOrderDate: string
+  leadTimeDays: number
 }
 
 export interface AdminProductRow {
@@ -118,6 +159,9 @@ export interface AdminInquiryRow {
   subject: string
   status: 'pending' | 'resolved' | 'escalated'
   createdAt: string
+  message?: string
+  phone?: string
+  adminReply?: string
 }
 
 export interface AdminQuoteRow {
@@ -128,14 +172,23 @@ export interface AdminQuoteRow {
   quantity: string
   status: 'pending' | 'reviewed' | 'approved' | 'rejected'
   createdAt: string
+  email?: string
+  phone?: string
+  notes?: string
+  quotedPrice?: string
+  adminNotes?: string
+  followUpDate?: string
 }
 
 export interface AdminSeoRow {
   id: number
   page: string
+  path?: string
   metaTitle: string
   metaDescription: string
   keywords: string[]
+  ogTitle?: string
+  ogDescription?: string
   updatedAt: string
 }
 

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { ADMIN_ACCESS_COOKIE } from '@/lib/admin/auth'
+import { getBackendApiUrl } from '@/lib/config'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+const API_BASE = getBackendApiUrl()
 
 async function forward(method: string, pk: string, body?: any) {
   const cookieStore = await cookies()
@@ -18,15 +19,39 @@ async function forward(method: string, pk: string, body?: any) {
   })
 }
 
+async function readBackendResponse(response: Response) {
+  const contentType = response.headers.get('content-type') ?? ''
+  const text = await response.text()
+
+  if (contentType.includes('application/json')) {
+    try {
+      return text ? JSON.parse(text) : {}
+    } catch {
+      return { detail: text || 'Backend returned invalid JSON.' }
+    }
+  }
+
+  return {
+    detail: text || `Backend request failed with ${response.status}`,
+  }
+}
+
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const res = await forward('GET', params.id)
-  return NextResponse.json(await res.json(), { status: res.status })
+  return NextResponse.json(await readBackendResponse(res), { status: res.status })
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   const body = await request.json()
-  const res = await forward('PATCH', params.id, body)
-  return NextResponse.json(await res.json(), { status: res.status })
+  try {
+    const res = await forward('PATCH', params.id, body)
+    return NextResponse.json(await readBackendResponse(res), { status: res.status })
+  } catch (error: any) {
+    return NextResponse.json(
+      { detail: error?.message ?? 'Unable to reach the backend product service.' },
+      { status: 503 }
+    )
+  }
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {

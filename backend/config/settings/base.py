@@ -8,12 +8,13 @@ env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+PROJECT_DIR = BASE_DIR.parent
 
 # Add 'apps' to python path to allow clean direct imports
 sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
 # Take environment variables from .env file if it exists
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+environ.Env.read_env(PROJECT_DIR / '.env')
 
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-finstar-chemical-precision-key-change-me')
 
@@ -95,24 +96,13 @@ elif env.str('DB_NAME', default=''):
         'default': {
             'ENGINE': env.str('DB_ENGINE', default='django.db.backends.postgresql'),
             'NAME': env.str('DB_NAME'),
-            'USER': env.str('DB_USER', default=''),
-            'PASSWORD': env.str('DB_PASSWORD', default=''),
-            'HOST': env.str('DB_HOST', default='localhost'),
-            'PORT': env.str('DB_PORT', default='5433'),
+            'USER': env.str('DB_USER'),
+            'PASSWORD': env.str('DB_PASSWORD'),
+            'HOST': env.str('DB_HOST'),
+            'PORT': env.str('DB_PORT'),
         }
     }
-    print(DATABASES)
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'finstar',
-            'USER': 'finstar',
-            'PASSWORD': 'g123',
-            'HOST': 'localhost',
-            'PORT': '5433',
-        }
-    }
+
 
 
 # Password validation
