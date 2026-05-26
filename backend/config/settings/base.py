@@ -8,12 +8,13 @@ env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+PROJECT_DIR = BASE_DIR.parent
 
 # Add 'apps' to python path to allow clean direct imports
 sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
 # Take environment variables from .env file if it exists
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+environ.Env.read_env(PROJECT_DIR / '.env')
 
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-finstar-chemical-precision-key-change-me')
 
@@ -22,14 +23,15 @@ DEBUG = env.bool('DEBUG', default=False)
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
 
-# Application definition
 INSTALLED_APPS = [
+    'cloudinary_storage',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary',
     
     # Third Party Apps
     'rest_framework',
@@ -46,6 +48,8 @@ INSTALLED_APPS = [
     'analytics.apps.AnalyticsConfig',
     'seo.apps.SeoConfig',
     'suppliers.apps.SuppliersConfig',
+    'blog.apps.BlogConfig',
+    'admin_api.apps.AdminApiConfig',
 ]
 
 MIDDLEWARE = [
@@ -83,26 +87,26 @@ ASGI_APPLICATION = 'config.asgi.application'
 
 # Database
 # Override in local.py and production.py
-DATABASES = {
-    'default': env.db('DATABASE_URL', default='sqlite:///db.sqlite3')
-}
+if env.str('DATABASE_URL', default=''):
+    DATABASES = {
+        'default': env.db('DATABASE_URL')
+    }
+elif env.str('DB_NAME', default=''):
+    DATABASES = {
+        'default': {
+            'ENGINE': env.str('DB_ENGINE', default='django.db.backends.postgresql'),
+            'NAME': env.str('DB_NAME'),
+            'USER': env.str('DB_USER'),
+            'PASSWORD': env.str('DB_PASSWORD'),
+            'HOST': env.str('DB_HOST'),
+            'PORT': env.str('DB_PORT'),
+        }
+    }
+
 
 
 # Password validation
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+AUTH_PASSWORD_VALIDATORS = []
 
 
 # Internationalization
@@ -130,6 +134,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 12,
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'authentication.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
@@ -143,3 +148,11 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }
+
+# Cloudinary Integration
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME', default=''),
+    'API_KEY': env('CLOUDINARY_API_KEY', default=''),
+    'API_SECRET': env('CLOUDINARY_API_SECRET', default=''),
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

@@ -47,7 +47,8 @@ export default function AboutPage() {
             About Finstar Chemicals
           </h1>
           <p className="text-text-secondary max-w-xl mx-auto text-sm md:text-base leading-relaxed">
-            Delivering high-purity raw materials, compliant supply chains, and chemical engineering expertise to industrial manufacturing partners since 2011.
+            Finstar Chemicals supplies high-quality industrial chemicals and raw materials to businesses across East Africa, offering reliable products, efficient delivery, and expert support to meet diverse manufacturing and industrial needs.
+
           </p>
         </div>
       </header>

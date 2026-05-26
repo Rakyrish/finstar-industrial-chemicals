@@ -30,6 +30,7 @@ export default function ChatbotWidget() {
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Scroll to bottom on new messages
@@ -52,30 +53,41 @@ export default function ChatbotWidget() {
     setLoading(true)
 
     try {
-      // Map existing messages to ChatMessage interface for API
-      const apiMessages = messages.concat(userMessage).map((m) => ({
-        role: m.role,
-        content: m.content,
-      }))
+      // Correctly-typed ChatRequest: { message, sessionId?, context? }
+      const response = await chatService.sendMessage({
+        message: textToSend,
+        sessionId,
+        context: { currentPage: typeof window !== 'undefined' ? window.location.pathname : '/' },
+      })
 
-      const response = await chatService.sendMessage(apiMessages)
+      if (response.sessionId) setSessionId(response.sessionId)
 
       const botMessage: Message = {
         id: Math.random().toString(),
         role: 'assistant',
-        content: response.content,
+        // ChatResponse uses `message`, not `content`
+        content: response.message,
         timestamp: new Date(),
       }
 
       setMessages((prev) => [...prev, botMessage])
+
+      // Append product suggestion chips as a special message
+      if (response.productSuggestions && response.productSuggestions.length > 0) {
+        setMessages((prev) => [...prev, {
+          id: Math.random().toString() + '-suggestions',
+          role: 'assistant',
+          content: '__product_suggestions__:' + JSON.stringify(response.productSuggestions),
+          timestamp: new Date(),
+        }])
+      }
     } catch (err) {
-      const errorMessage: Message = {
+      setMessages((prev) => [...prev, {
         id: Math.random().toString(),
         role: 'assistant',
         content: 'I apologize, but I experienced a connection issue. Please check your internet or try again shortly.',
         timestamp: new Date(),
-      }
-      setMessages((prev) => [...prev, errorMessage])
+      }])
     } finally {
       setLoading(false)
     }
@@ -156,30 +168,49 @@ export default function ChatbotWidget() {
 
             {/* Messages box area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-surface/30">
-              {messages.map((m) => (
-                <div
-                  key={m.id}
-                  className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[85%] p-3.5 rounded-2xl text-xs leading-relaxed ${
-                      m.role === 'user'
-                        ? 'bg-amber-500 text-white rounded-tr-sm shadow-glow-amber'
-                        : 'bg-surface-card border border-surface-border text-text-secondary rounded-tl-sm'
-                    }`}
-                  >
-                    {m.role === 'assistant' && (
-                      <div className="flex items-center gap-1 text-[9px] uppercase tracking-wider text-amber-400 font-semibold mb-1">
-                        <FlaskConical className="w-3 h-3" /> Finstar Chem-AI
+              {messages.map((m) => {
+                // Special rendering for product suggestion chips
+                if (m.content.startsWith('__product_suggestions__:')) {
+                  try {
+                    const suggestions = JSON.parse(m.content.replace('__product_suggestions__:', '')) as Array<{ id: number; name: string; slug: string; category: string }>
+                    return (
+                      <div key={m.id} className="flex flex-wrap gap-2 pl-1">
+                        <p className="w-full text-[9px] text-text-muted uppercase tracking-wider mb-0.5">Related products:</p>
+                        {suggestions.map((s) => (
+                          <a key={s.id} href={`/products/${s.slug}`} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 hover:bg-amber-500/20 transition-colors">
+                            <FlaskConical className="w-3 h-3" /> {s.name}
+                          </a>
+                        ))}
                       </div>
-                    )}
-                    <p className="whitespace-pre-line">{m.content}</p>
-                    <span className={`block text-[8px] mt-1 text-right ${m.role === 'user' ? 'text-amber-100/70' : 'text-text-muted'}`}>
-                      {m.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
+                    )
+                  } catch { return null }
+                }
+
+                return (
+                  <div
+                    key={m.id}
+                    className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[85%] p-3.5 rounded-2xl text-xs leading-relaxed ${
+                        m.role === 'user'
+                          ? 'bg-amber-500 text-white rounded-tr-sm shadow-glow-amber'
+                          : 'bg-surface-card border border-surface-border text-text-secondary rounded-tl-sm'
+                      }`}
+                    >
+                      {m.role === 'assistant' && (
+                        <div className="flex items-center gap-1 text-[9px] uppercase tracking-wider text-amber-400 font-semibold mb-1">
+                          <FlaskConical className="w-3 h-3" /> Finstar Chem-AI
+                        </div>
+                      )}
+                      <p className="whitespace-pre-line">{m.content}</p>
+                      <span className={`block text-[8px] mt-1 text-right ${m.role === 'user' ? 'text-amber-100/70' : 'text-text-muted'}`}>
+                        {m.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
               {loading && (
                 <div className="flex justify-start">
                   <div className="max-w-[85%] p-3.5 rounded-2xl bg-surface-card border border-surface-border text-xs text-text-muted rounded-tl-sm flex items-center gap-2">

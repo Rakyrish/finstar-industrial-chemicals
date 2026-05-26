@@ -4,7 +4,7 @@ import type { QuoteRequest, QuoteResponse, ContactFormData } from '@/types'
 export const quoteService = {
   /** Submit a quotation request */
   async submitQuote(data: QuoteRequest): Promise<QuoteResponse> {
-    return post<QuoteResponse>('/inquiries/quote/', data)
+    return post<QuoteResponse>('/inquiries/quotes/', data)
   },
 
   /** Submit a contact form message */

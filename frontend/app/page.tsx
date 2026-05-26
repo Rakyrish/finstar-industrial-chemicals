@@ -5,7 +5,6 @@ import HeroSection from '@/features/home/HeroSection'
 import StatsSection from '@/features/home/StatsSection'
 import FeaturedProducts from '@/features/home/FeaturedProducts'
 import CategoriesSection from '@/features/home/CategoriesSection'
-import ServicesOverview from '@/features/home/ServicesOverview'
 import WhyChooseUs from '@/features/home/WhyChooseUs'
 import CTABanner from '@/features/home/CTABanner'
 import RecentBlog from '@/features/home/RecentBlog'
@@ -15,7 +14,6 @@ export const metadata: Metadata = generatePageMetadata({
   title: 'Industrial Chemical Solutions — East Africa',
   description:
     'Finstar Industrial Chemicals: trusted supplier of solvents, acids, reagents, and specialty chemicals. Fast delivery across East Africa. Request a quote today.',
-  canonical: '/',
   keywords: [
     'industrial chemicals Kenya', 'chemical supplier Nairobi',
     'industrial solvents East Africa', 'bulk chemicals', 'reagents supplier',
@@ -37,7 +35,6 @@ export default function HomePage() {
         <FeaturedProducts />
       </Suspense>
       <CategoriesSection />
-      <ServicesOverview />
       <WhyChooseUs />
       <Suspense fallback={null}>
         <RecentBlog />

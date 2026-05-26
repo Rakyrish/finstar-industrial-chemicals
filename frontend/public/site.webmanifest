@@ -1,0 +1,22 @@
+{
+  "name": "FINSTAR",
+  "short_name": "FINSTAR",
+  "description": "Industrial chemical solutions for East Africa",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f9fc",
+  "theme_color": "#052974",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/finlogo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

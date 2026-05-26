@@ -4,14 +4,14 @@ import { blogService } from '@/services/blogService'
 import { formatDate } from '@/utils'
 
 export default async function RecentBlog() {
-  let posts = []
+  let posts: any[] = []
   try {
     posts = await blogService.recent(3)
   } catch {
     return null
   }
 
-  if (posts.length === 0) return null
+  if (!posts || posts.length === 0) return null
 
   return (
     <section className="section-pad border-t border-surface-border" aria-label="Latest articles">

@@ -109,17 +109,6 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Certifications strip */}
-      <div className="border-t border-surface-border">
-        <div className="container-wide py-4">
-          <div className="flex flex-wrap items-center gap-4 text-xs text-text-muted">
-            <span className="badge-muted">ISO 9001:2015 Certified</span>
-            <span className="badge-muted">KEBS Approved Supplier</span>
-            <span className="badge-muted">REACH Compliant</span>
-            <span className="badge-muted">GHS Labelled</span>
-          </div>
-        </div>
-      </div>
 
       {/* Bottom bar */}
       <div className="border-t border-surface-border">
@@ -130,13 +119,7 @@ export default function Footer() {
               <span className="ml-1 opacity-60">Reg: {COMPANY_INFO.registration}</span>
             )}
           </p>
-          <div className="flex items-center gap-4 text-xs text-text-muted">
-            <Link href="/privacy" className="hover:text-text-secondary transition-colors">Privacy</Link>
-            <Link href="/terms"   className="hover:text-text-secondary transition-colors">Terms</Link>
-            <Link href="/sitemap.xml" className="hover:text-text-secondary transition-colors flex items-center gap-1">
-              Sitemap <ExternalLink className="w-3 h-3" />
-            </Link>
-          </div>
+          
         </div>
       </div>
     </footer>

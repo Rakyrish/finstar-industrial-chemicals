@@ -4,7 +4,7 @@ import type {
   PaginatedProducts, Category, Tag,
 } from '@/types'
 
-const BASE = '/products'
+const BASE = '/products/chemicals'
 
 export const productService = {
   /** List products with filters */
@@ -43,17 +43,19 @@ export const productService = {
 
   /** List all categories */
   async categories(): Promise<Category[]> {
-    return get<Category[]>('/categories/')
+    const data = await get<any>('/products/categories/')
+    return Array.isArray(data) ? data : data.results || []
   },
 
   /** Get category by slug */
   async categoryBySlug(slug: string): Promise<Category> {
-    return get<Category>(`/categories/${slug}/`)
+    return get<Category>(`/products/categories/${slug}/`)
   },
 
   /** List all tags */
   async tags(): Promise<Tag[]> {
-    return get<Tag[]>('/tags/')
+    const data = await get<any>('/products/tags/')
+    return Array.isArray(data) ? data : data.results || []
   },
 
   /** Search products */

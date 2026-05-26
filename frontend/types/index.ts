@@ -5,6 +5,7 @@ export * from './quote'
 export * from './seo'
 export * from './nav'
 export * from './chat'
+export * from './admin'
 
 // Common utility types
 export interface ApiResponse<T> {
