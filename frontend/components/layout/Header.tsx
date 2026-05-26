@@ -11,6 +11,7 @@ import { cn } from '@/utils'
 import MegaMenu from './MegaMenu'
 import MobileSidebar from './MobileSidebar'
 import SearchBar from '../shared/SearchBar'
+import ThemeToggle from '../ThemeToggle'
 
 export default function Header() {
   const [scrolled,       setScrolled]       = useState(false)
@@ -136,6 +137,8 @@ export default function Header() {
 
             {/* Right Actions */}
             <div className="flex items-center gap-2">
+              <ThemeToggle className="hidden sm:flex" />
+
               {/* Search toggle */}
               <button
                 onClick={() => setSearchOpen(!searchOpen)}

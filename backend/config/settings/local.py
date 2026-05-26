@@ -4,13 +4,30 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
-# Dev Database override to keep SQLite simple, but fallback to postgres if configured
-DATABASES = {
-    'default': env.db('DATABASE_URL', default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3'))
-}
+# Dev Database configuration (uses PostgreSQL)
+if env.str('DATABASE_URL', default=''):
+    DATABASES = {
+        'default': env.db('DATABASE_URL')
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': env.str('DB_ENGINE', default='django.db.backends.postgresql'),
+            'NAME': env.str('DB_NAME', default='finstar'),
+            'USER': env.str('DB_USER', default='finstar'),
+            'PASSWORD': env.str('DB_PASSWORD', default='g123'),
+            'HOST': env.str('DB_HOST', default='localhost'),
+            'PORT': env.str('DB_PORT', default='5433'),
+        }
+    }
 
 # CORS configuration
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]
+CORS_ALLOW_CREDENTIALS = True
 
 # Email backend console for debugging
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

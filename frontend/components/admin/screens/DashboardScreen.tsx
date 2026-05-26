@@ -10,7 +10,7 @@ import AdminChartCard from '../AdminChartCard'
 import AdminTimeline from '../AdminTimeline'
 import AdminDataTable from '../AdminDataTable'
 import AdminPageHeader from '../AdminPageHeader'
-import type { AdminDashboardResponse } from '@/types/admin'
+import type { AdminDashboardResponse, AdminProductRow } from '@/types/admin'
 
 export default function DashboardScreen({ fallback }: { fallback: AdminDashboardResponse }) {
   const { data } = useAdminResource<AdminDashboardResponse>('overview', fallback ?? adminOverview)
@@ -118,10 +118,10 @@ export default function DashboardScreen({ fallback }: { fallback: AdminDashboard
             </div>
             <Link href="/admin/products" className="text-sm font-semibold text-amber-400">Manage</Link>
           </div>
-          <AdminDataTable
-            rows={overview.recentProducts}
+          <AdminDataTable<AdminProductRow>
+            rows={overview.recentProducts as AdminProductRow[]}
             columns={[
-              { key: 'name', label: 'Product', render: (row) => <div><p className="font-semibold text-text-primary">{row.name}</p><p className="text-xs text-text-muted">{row.slug}</p></div> },
+              { key: 'name', label: 'Product', render: (row) => <div><p className="font-semibold text-text-primary">{String(row.name ?? '')}</p><p className="text-xs text-text-muted">{String(row.slug ?? '')}</p></div> },
               { key: 'category', label: 'Category' },
               { key: 'inventory', label: 'Stock' },
               { key: 'updatedAt', label: 'Updated' },

@@ -194,15 +194,62 @@ export interface AdminLoginResponse {
 export interface AdminProductDraft {
   name: string
   slug: string
-  description: string
-  category: string
-  status: ProductStatus
-  featured: boolean
-  pricing: string
-  packaging: string
-  inventoryQuantity: number
-  seoTitle: string
-  seoDescription: string
+  shortDescription?: string
+  description?: string
+  longDescription?: string
+  category?: string
+  tags?: string[]
+  
+  // Structured content
+  applications?: string[]
+  benefits?: string[]
+  features?: string[]
+  industriesServed?: string[]
+  faqs?: Array<{ q: string; a: string }>
+  
+  // Technical specs
+  specifications?: Array<{ key: string; value: string }>
+  casNumber?: string
+  chemicalFormula?: string
+  purity?: string
+  appearance?: string
+  density?: string
+  
+  // Logistics
+  packagingType?: string
+  pricing?: string
+  minOrderQuantity?: number
+  unitOfMeasure?: string
+  
+  // Media
+  cloudinaryUrl?: string
+  cloudinaryPublicId?: string
+  imageAlt?: string
+  imageTitle?: string
+  imageCaption?: string
+  
+  // SEO
+  seoTitle?: string
+  seoDescription?: string
+  seoKeywords?: string
+  ogTitle?: string
+  ogDescription?: string
+  twitterDescription?: string
+  schemaMarkup?: Record<string, unknown>
+  
+  // Engagement
+  whatsappTemplate?: string
+  quotationTemplate?: string
+  ctaContent?: string
+  
+  // Flags
+  status?: ProductStatus
+  isFeatured?: boolean
+  isNew?: boolean
+  publishAt?: string
+  
+  // Compliance
+  hazardClassification?: string
 }
 
 export interface AdminBlogDraft {
@@ -232,4 +279,45 @@ export interface AdminSeoDraft {
   ogTitle: string
   ogDescription: string
   structuredData: string
+}
+
+// Chatbot Analytics
+export interface AdminChatbotDailyTrend {
+  label: string
+  value: number
+}
+
+export interface AdminTopQuestion {
+  question: string
+  count: number
+}
+
+export interface AdminMentionedProduct {
+  name: string
+  slug: string
+  count: number
+  image?: string
+}
+
+export interface AdminChatbotConversation {
+  id: number
+  sessionId: string
+  customerName: string
+  channel: string
+  question: string
+  messageCount: number
+  status: 'open' | 'resolved'
+  createdAt: string
+}
+
+export interface AdminChatbotAnalytics {
+  totalSessions: number
+  totalMessages: number
+  avgMessagesPerSession: number
+  dailyTrend: AdminChatbotDailyTrend[]
+  topQuestions: AdminTopQuestion[]
+  mentionedProducts: AdminMentionedProduct[]
+  conversations: AdminChatbotConversation[]
+  count: number
+  results: AdminChatbotConversation[]
 }

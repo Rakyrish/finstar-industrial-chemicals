@@ -1,21 +1,37 @@
+'use client'
+
 import AdminPageHeader from '@/components/admin/AdminPageHeader'
 import AdminChartCard from '@/components/admin/AdminChartCard'
 import AdminDataTable from '@/components/admin/AdminDataTable'
-import { adminAnalytics, adminProducts, adminBlogPosts, adminQuotes } from '@/lib/admin/mock-data'
+import { adminProducts, adminBlogPosts, adminQuotes, adminAnalytics as fallbackAnalytics } from '@/lib/admin/mock-data'
+import { useAdminResource } from '@/lib/admin/client'
 
 export default function AnalyticsPage() {
+  const { data: analytics, loading } = useAdminResource('analytics', fallbackAnalytics)
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <AdminPageHeader title="Analytics" description="Loading analytics data..." />
+        <div className="flex items-center justify-center py-20">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <AdminPageHeader title="Analytics" description="Traffic, conversion, product, blog, and search reports for decision-making." />
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <AdminChartCard title="Visitor traffic" subtitle="Weekly visitor trend" points={adminAnalytics.visitors} variant="line" />
-        <AdminChartCard title="Device mix" subtitle="Desktop vs mobile audience split" points={adminAnalytics.deviceMix} variant="donut" />
+        <AdminChartCard title="Visitor traffic" subtitle="Weekly visitor trend" points={analytics?.visitors || []} variant="line" />
+        <AdminChartCard title="Device mix" subtitle="Desktop vs mobile audience split" points={analytics?.deviceMix || []} variant="donut" />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <AdminChartCard title="Search analytics" subtitle="Most searched terms" points={adminAnalytics.searchTerms} variant="bar" />
-        <AdminChartCard title="Quote conversion" subtitle="Pipeline actions by conversion stage" points={adminAnalytics.conversions} variant="donut" />
+        <AdminChartCard title="Search analytics" subtitle="Most searched terms" points={analytics?.searchTerms || []} variant="bar" />
+        <AdminChartCard title="Quote conversion" subtitle="Pipeline actions by conversion stage" points={analytics?.conversions || []} variant="donut" />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">

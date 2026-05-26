@@ -19,6 +19,11 @@ urlpatterns = [
     path('api/v1/inquiries/', include('inquiries.urls')),
     path('api/v1/chatbot/', include('chatbot.urls')),
     path('api/v1/suppliers/', include('suppliers.urls')),
+    path('api/v1/blog/', include('blog.urls')),
+    path('api/v1/seo/', include('seo.urls')),
+    path('api/v1/crm/', include('crm.urls')),
+    path('api/v1/analytics/', include('analytics.urls')),
+    path('api/v1/admin/', include('admin_api.urls')),
 ]
 
 # Serve static/media assets in debug dev environment

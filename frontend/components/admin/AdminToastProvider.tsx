@@ -10,11 +10,13 @@ interface ToastItem {
   title: string
   description?: string
   variant?: ToastVariant
-  open: boolean
+  open?: boolean
 }
 
+type ToastInput = Omit<ToastItem, 'id' | 'open'>
+
 interface ToastContextValue {
-  toast: (toast: Omit<ToastItem, 'id'>) => void
+  toast: (toast: ToastInput) => void
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null)
@@ -28,7 +30,7 @@ export function useAdminToast() {
 export default function AdminToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([])
 
-  const toast = useCallback((item: Omit<ToastItem, 'id'>) => {
+  const toast = useCallback((item: ToastInput) => {
     const id = crypto.randomUUID()
     setToasts((current) => [...current, { id, open: true, ...item }])
     window.setTimeout(() => {

@@ -32,7 +32,7 @@ export interface ProductSpec {
   unit?: string
 }
 
-export type ProductStatus = 'active' | 'inactive' | 'out_of_stock' | 'discontinued'
+export type ProductStatus = 'active' | 'inactive' | 'out_of_stock' | 'discontinued' | 'draft' | 'scheduled'
 export type UnitOfMeasure = 'kg' | 'litre' | 'tonne' | 'drum' | 'bag' | 'unit' | 'pallet'
 
 export interface Product {

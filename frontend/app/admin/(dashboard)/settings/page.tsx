@@ -9,7 +9,7 @@ export default function SettingsPage() {
           <h3 className="text-lg font-bold text-text-primary">Company profile</h3>
           <div className="grid gap-4 sm:grid-cols-2">
             <input className="input-base" placeholder="Company name" defaultValue="FINSTAR" />
-            <input className="input-base" placeholder="Support email" defaultValue="info@finstarindustrialchemicals.co.ke" />
+            <input className="input-base" placeholder="Support email" defaultValue="finstarindustrialsystems@gmail.com" />
             <input className="input-base sm:col-span-2" placeholder="Address" defaultValue="KCB Building, Enterprise Road, Industrial Area, Nairobi" />
           </div>
         </div>

@@ -6,6 +6,7 @@ import { generatePageMetadata } from '@/lib/metadata'
 import { productService } from '@/services/productService'
 import { productSchema, toJsonLd } from '@/lib/schema'
 import ProductCard from '@/components/shared/ProductCard'
+import WhatsAppButton from '@/components/shared/WhatsAppButton'
 import { ShieldCheck, FileText, Download, Award, AlertCircle, ArrowLeft, Send } from 'lucide-react'
 
 interface PageProps {
@@ -258,6 +259,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
             </div>
           </section>
         )}
+
+        <WhatsAppButton message={`Hello, I would like to inquire about ${product.name} (CAS: ${product.casNumber || 'N/A'}).`} />
       </div>
     </div>
   )

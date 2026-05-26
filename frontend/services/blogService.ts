@@ -25,7 +25,7 @@ export const blogService = {
     const data = await get<PaginatedBlogPosts>(
       `${BASE}/?ordering=-published_at&page_size=${limit}`
     )
-    return data.results
+    return data?.results ?? []
   },
 
   /** List blog categories */

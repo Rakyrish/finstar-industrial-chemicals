@@ -1,22 +1,14 @@
 "use client"
 
-import { useState } from 'react'
-import { Bell, Menu, Moon, RefreshCcw, Search, SunMedium, LogOut } from 'lucide-react'
+import { Bell, Menu, RefreshCcw, Search, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useAdminAuth } from './AdminAuthProvider'
 import { cn } from '@/utils'
+import ThemeToggle from '../ThemeToggle'
 
 export default function AdminTopbar({ onMenuClick }: { onMenuClick: () => void }) {
   const router = useRouter()
   const { session, logout, refreshSession } = useAdminAuth()
-  const [theme, setTheme] = useState<'dark' | 'light'>((typeof document !== 'undefined' && (document.documentElement.dataset.theme as 'dark' | 'light')) || 'dark')
-
-  const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark'
-    document.documentElement.dataset.theme = nextTheme
-    setTheme(nextTheme)
-    document.cookie = `finstar_admin_theme=${nextTheme}; path=/; max-age=${60 * 60 * 24 * 365}`
-  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-surface-border bg-surface/90 backdrop-blur-xl">
@@ -39,9 +31,7 @@ export default function AdminTopbar({ onMenuClick }: { onMenuClick: () => void }
           <button type="button" onClick={() => refreshSession().then(() => router.refresh())} className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-surface-border bg-surface-card text-text-secondary transition hover:text-text-primary">
             <RefreshCcw className="h-4 w-4" />
           </button>
-          <button type="button" onClick={toggleTheme} className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-surface-border bg-surface-card text-text-secondary transition hover:text-text-primary">
-            {theme === 'dark' ? <SunMedium className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </button>
+          <ThemeToggle className="h-11 w-11 rounded-2xl" />
           <button type="button" className="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-surface-border bg-surface-card text-text-secondary transition hover:text-text-primary">
             <Bell className="h-4 w-4" />
             <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-amber-400" />

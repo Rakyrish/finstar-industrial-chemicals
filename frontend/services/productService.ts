@@ -43,7 +43,8 @@ export const productService = {
 
   /** List all categories */
   async categories(): Promise<Category[]> {
-    return get<Category[]>('/products/categories/')
+    const data = await get<any>('/products/categories/')
+    return Array.isArray(data) ? data : data.results || []
   },
 
   /** Get category by slug */
@@ -53,7 +54,8 @@ export const productService = {
 
   /** List all tags */
   async tags(): Promise<Tag[]> {
-    return get<Tag[]>('/products/tags/')
+    const data = await get<any>('/products/tags/')
+    return Array.isArray(data) ? data : data.results || []
   },
 
   /** Search products */

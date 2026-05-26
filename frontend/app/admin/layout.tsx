@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 
 export default async function AdminRootLayout({ children }: { children: React.ReactNode }) {
   const initialSession = await getCurrentAdminSession()
-  const theme = cookies().get(ADMIN_THEME_COOKIE)?.value === 'light' ? 'light' : 'dark'
+  const cookieStore = await cookies()
+  const theme = cookieStore.get(ADMIN_THEME_COOKIE)?.value === 'light' ? 'light' : 'dark'
 
   return (
     <AdminProviders initialSession={initialSession}>
