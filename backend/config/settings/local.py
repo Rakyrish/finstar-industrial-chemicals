@@ -1,8 +1,8 @@
 from .base import *
 
-DEBUG = True
+DEBUG = env.bool('DEBUG', default=True)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
 # Dev Database configuration (uses PostgreSQL)
 if env.str('DATABASE_URL', default=''):
@@ -23,10 +23,7 @@ else:
 
 # CORS configuration
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-]
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
 CORS_ALLOW_CREDENTIALS = True
 
 # Email backend console for debugging

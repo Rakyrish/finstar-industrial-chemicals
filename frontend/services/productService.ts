@@ -25,6 +25,10 @@ export const productService = {
     return get<Product>(`${BASE}/${slug}/`)
   },
 
+  async detail(slug: string): Promise<Product> {
+    return this.bySlug(slug)
+  },
+
   /** Get featured products */
   async featured(limit = 6): Promise<ProductListItem[]> {
     const data = await get<PaginatedProducts>(
@@ -64,5 +68,12 @@ export const productService = {
       `${BASE}/?search=${encodeURIComponent(query)}&page_size=${limit}`
     )
     return data.results
+  },
+
+  async related(slug: string, limit = 4): Promise<ProductListItem[]> {
+    const current = await this.bySlug(slug)
+    const categorySlug = typeof current.category === 'object' ? current.category?.slug : undefined
+    const data = await this.list({ category: categorySlug, pageSize: limit + 1 })
+    return data.results.filter((product) => product.slug !== slug).slice(0, limit)
   },
 }

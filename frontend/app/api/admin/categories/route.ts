@@ -5,6 +5,11 @@ import { fetchAdminResource } from '@/lib/admin/server'
 import { getBackendApiUrl } from '@/lib/config'
 
 async function forward(method: string, body?: unknown) {
+  const apiUrl = getBackendApiUrl()
+  if (!apiUrl) {
+    throw new Error('Backend API URL is not configured.')
+  }
+
   const token = (await cookies()).get(ADMIN_ACCESS_COOKIE)?.value
   const headers: Record<string, string> = {
     Accept: 'application/json',
@@ -12,7 +17,7 @@ async function forward(method: string, body?: unknown) {
   }
   if (token) headers.Authorization = `Bearer ${token}`
 
-  return fetch(`${getBackendApiUrl()}/admin/categories/`, {
+  return fetch(`${apiUrl}/admin/categories/`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
@@ -36,15 +41,10 @@ export async function POST(request: NextRequest) {
     const response = await forward('POST', body)
     const payload = await response.json().catch(() => ({ detail: 'Category save failed.' }))
     return NextResponse.json(payload, { status: response.status })
-  } catch {
-    return NextResponse.json({
-      id: Date.now(),
-      name: body.name,
-      slug: body.slug || String(body.name ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-      description: body.description ?? '',
-      seoTitle: body.seoTitle ?? '',
-      seoDescription: body.seoDescription ?? '',
-      seoKeywords: body.seoKeywords ?? '',
-    })
+  } catch (error: any) {
+    return NextResponse.json(
+      { detail: error?.message ?? 'Unable to reach the backend category service.' },
+      { status: 503 }
+    )
   }
 }

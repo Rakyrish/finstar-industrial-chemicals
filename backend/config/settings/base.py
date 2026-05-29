@@ -22,6 +22,25 @@ DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
+API_BASE_URL = env('API_BASE_URL', default='')
+OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
+RESEND_API_KEY = env('RESEND_API_KEY', default='')
+SITE_URL = env('SITE_URL', default='')
+COMPANY_EMAIL = env('COMPANY_EMAIL', default='')
+COMPANY_NAME = env('COMPANY_NAME', default='Finstar Industrial Chemicals')
+COMPANY_BRAND_NAME = env('COMPANY_BRAND_NAME', default='FINSTAR')
+COMPANY_TAGLINE = env('COMPANY_TAGLINE', default='Industrial chemical supply for East Africa')
+COMPANY_DESCRIPTION = env('COMPANY_DESCRIPTION', default='Supplier of industrial chemicals, solvents, acids, alkalis, and specialty raw materials.')
+COMPANY_PHONE = env('COMPANY_PHONE', default=env('NEXT_PUBLIC_PHONE_NUMBER', default=''))
+COMPANY_WHATSAPP_NUMBER = env('COMPANY_WHATSAPP_NUMBER', default=env('NEXT_PUBLIC_WHATSAPP_NUMBER', default=''))
+COMPANY_ADDRESS = env('COMPANY_ADDRESS', default='')
+COMPANY_ADDRESS_LINK = env('COMPANY_ADDRESS_LINK', default='')
+COMPANY_WEEKDAY_HOURS = env('COMPANY_WEEKDAY_HOURS', default='8:00 AM - 5:00 PM')
+COMPANY_SATURDAY_HOURS = env('COMPANY_SATURDAY_HOURS', default='8:30 AM - 1:00 PM')
+COMPANY_HOLIDAY_HOURS = env('COMPANY_HOLIDAY_HOURS', default='Closed / Scheduled dispatch only')
+COMPANY_FACEBOOK_URL = env('COMPANY_FACEBOOK_URL', default='')
+COMPANY_LINKEDIN_URL = env('COMPANY_LINKEDIN_URL', default='')
+
 
 INSTALLED_APPS = [
     'cloudinary_storage',

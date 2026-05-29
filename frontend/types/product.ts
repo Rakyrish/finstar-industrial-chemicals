@@ -33,7 +33,7 @@ export interface ProductSpec {
 }
 
 export type ProductStatus = 'active' | 'inactive' | 'out_of_stock' | 'discontinued' | 'draft' | 'scheduled'
-export type UnitOfMeasure = 'kg' | 'litre' | 'tonne' | 'drum' | 'bag' | 'unit' | 'pallet'
+export type UnitOfMeasure = 'kg' | 'litre' | 'tonne' | 'drum' | 'bag' | 'unit' | 'pallet' | 'KG' | 'L' | 'MT'
 
 export interface Product {
   id: number
@@ -48,6 +48,14 @@ export interface Product {
   primaryImage?: string
   specifications: ProductSpec[]
   casNumber?: string
+  chemicalFormula?: string
+  purity?: string
+  appearance?: string
+  density?: string
+  packagingType?: string
+  hazardClassification?: string
+  imageAlt?: string
+  whatsappTemplate?: string
   status: ProductStatus
   unitOfMeasure: UnitOfMeasure
   minOrderQuantity: number
@@ -76,6 +84,9 @@ export interface ProductListItem {
   primaryImage?: string
   status: ProductStatus
   unitOfMeasure: UnitOfMeasure
+  minOrderQuantity: number
+  casNumber?: string
+  updatedAt?: string
   isFeatured: boolean
   isNew: boolean
 }

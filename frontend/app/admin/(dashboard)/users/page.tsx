@@ -1,7 +1,8 @@
-import { adminUsers } from '@/lib/admin/mock-data'
+import { fetchAdminList } from '@/lib/admin/server'
+import type { AdminUser } from '@/types/admin'
 import { UsersResourceScreen } from './UsersScreen'
 
-export default function UsersPage() {
-  const fallback = { results: adminUsers, count: adminUsers.length }
+export default async function UsersPage() {
+  const fallback = await fetchAdminList<AdminUser>('users')
   return <UsersResourceScreen fallback={fallback} />
 }

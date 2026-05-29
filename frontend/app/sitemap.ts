@@ -2,9 +2,11 @@ import type { MetadataRoute } from 'next'
 import { productService } from '@/services/productService'
 import { blogService } from '@/services/blogService'
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://finstarindustrial.com'
+const BASE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  if (!BASE) return []
+
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${BASE}/`,        lastModified: new Date(), changeFrequency: 'weekly',  priority: 1 },
     { url: `${BASE}/products`, lastModified: new Date(), changeFrequency: 'daily',   priority: 0.9 },

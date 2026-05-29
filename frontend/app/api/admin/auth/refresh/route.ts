@@ -1,14 +1,19 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { ADMIN_ACCESS_COOKIE, ADMIN_REFRESH_COOKIE } from '@/lib/admin/auth'
+import { getBackendApiUrl } from '@/lib/config'
 
-const backendBaseUrl = process.env.ADMIN_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+const backendBaseUrl = getBackendApiUrl()
 
 export async function POST() {
   const refreshToken = (await cookies()).get(ADMIN_REFRESH_COOKIE)?.value
 
   if (!refreshToken) {
     return NextResponse.json({ detail: 'Refresh token required.' }, { status: 401 })
+  }
+
+  if (!backendBaseUrl) {
+    return NextResponse.json({ detail: 'Backend API URL is not configured.' }, { status: 503 })
   }
 
   const response = await fetch(`${backendBaseUrl}/auth/refresh/`, {

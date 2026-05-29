@@ -3,10 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.utils import timezone
 from django.db import IntegrityError
-from django.db.models import Count, Sum, Q, Avg
+from django.db.models import Count, Sum, Q, Avg, F
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
+from django.utils.dateparse import parse_datetime
 from datetime import timedelta
+from decimal import Decimal, InvalidOperation
 import json as _json
 
 # Models
@@ -16,11 +18,16 @@ from chatbot.models import ChatSession, ChatMessage
 from blog.models import BlogPost
 from seo.models import SeoPage
 from analytics.models import PageView, SearchQuery, WhatsAppClick, PhoneClick
+from inventory.models import StockItem
 
 # Serializers
 from products.serializers import ProductListSerializer, ProductDetailSerializer
 
 User = get_user_model()
+
+
+def chart_point(label, value):
+    return {"label": str(label), "value": int(value or 0)}
 
 
 class AdminOverviewView(APIView):
@@ -35,8 +42,8 @@ class AdminOverviewView(APIView):
         thirty_days_ago = now - timedelta(days=30)
         sixty_days_ago = now - timedelta(days=60)
 
-        # ── 1. Primary Metrics ──
         total_products = Product.objects.count()
+        total_categories = Category.objects.count()
         prev_products = Product.objects.filter(created_at__lt=thirty_days_ago).count()
         products_change = f"+{total_products - prev_products}" if total_products >= prev_products else f"-{prev_products - total_products}"
 
@@ -51,12 +58,22 @@ class AdminOverviewView(APIView):
         total_chats = ChatSession.objects.count()
         prev_chats = ChatSession.objects.filter(created_at__lt=thirty_days_ago).count()
         chats_change = f"+{total_chats - prev_chats}" if total_chats >= prev_chats else f"-{prev_chats - total_chats}"
+        website_visits = PageView.objects.count()
+        low_stock_count = StockItem.objects.filter(quantity_on_hand__lte=F('safety_stock_level')).count()
+        inventory_units = StockItem.objects.aggregate(total=Sum('quantity_on_hand'))['total'] or 0
 
         metrics = [
             {"label": "Products", "value": str(total_products), "change": f"{products_change} this month", "trend": "up" if total_products >= prev_products else "down"},
+            {"label": "Categories", "value": str(total_categories), "change": "Live catalog taxonomy", "trend": "flat"},
+            {"label": "Inventory Units", "value": str(float(inventory_units)), "change": "Live stock quantity", "trend": "flat"},
+            {"label": "Low Stock Alerts", "value": str(low_stock_count), "change": "Live inventory threshold", "trend": "down" if low_stock_count else "flat"},
             {"label": "Inquiries", "value": str(total_inquiries), "change": f"{inquiries_change} this month", "trend": "up" if total_inquiries >= prev_inquiries else "down"},
             {"label": "Quotes", "value": str(total_quotes), "change": f"{quotes_change} this month", "trend": "up" if total_quotes >= prev_quotes else "down"},
             {"label": "Chat Sessions", "value": str(total_chats), "change": f"{chats_change} this month", "trend": "up" if total_chats >= prev_chats else "down"},
+            {"label": "Website Visits", "value": str(website_visits), "change": "Tracked page views", "trend": "flat"},
+            {"label": "SEO Score", "value": str(self._seo_score()), "change": "Metadata completeness", "trend": "flat"},
+            {"label": "Performance Score", "value": str(self._performance_score()), "change": "API response health", "trend": "flat"},
+            {"label": "API Health", "value": "Online", "change": "Django API responding", "trend": "up"},
         ]
 
         # ── 2. Analytics Trend (Last 7 Days) ──
@@ -64,7 +81,7 @@ class AdminOverviewView(APIView):
         for i in range(6, -1, -1):
             day = now.date() - timedelta(days=i)
             count = PageView.objects.filter(timestamp__date=day).count()
-            visitors_trend.append({"x": day.strftime("%b %d"), "y": count})
+            visitors_trend.append(chart_point(day.strftime("%b %d"), count))
 
         # Donut Chart: Sourcing/Lead channels
         whatsapp_clicks = WhatsAppClick.objects.count()
@@ -73,10 +90,10 @@ class AdminOverviewView(APIView):
         contact_submissions = total_inquiries
 
         conversions_mix = [
-            {"x": "WhatsApp CTA", "y": whatsapp_clicks},
-            {"x": "Phone Call CTA", "y": phone_clicks},
-            {"x": "Quote Wizard", "y": quote_submissions},
-            {"x": "Contact Forms", "y": contact_submissions},
+            chart_point("WhatsApp CTA", whatsapp_clicks),
+            chart_point("Phone Call CTA", phone_clicks),
+            chart_point("Quote Wizard", quote_submissions),
+            chart_point("Contact Forms", contact_submissions),
         ]
 
         analytics = {
@@ -96,6 +113,7 @@ class AdminOverviewView(APIView):
                     "productName": p.name,
                     "sku": p.cas_number or f"SKU-{p.id}",
                     "stock": float(stock.quantity_on_hand),
+                    "threshold": float(stock.safety_stock_level),
                     "severity": "critical" if stock.quantity_on_hand <= (stock.safety_stock_level / 2) else "warning",
                     "supplier": "Default Warehouse" if not stock.warehouse_location else stock.warehouse_location.name
                 })
@@ -111,10 +129,11 @@ class AdminOverviewView(APIView):
             conversations.append({
                 "id": session.session_id,
                 "customerName": f"Visitor #{session.id}",
-                "channel": "Web Chat",
+                "channel": "web",
                 "question": question[:100] + "..." if len(question) > 100 else question,
                 "messageCount": session.msg_count,
-                "status": "resolved" if session.msg_count > 2 else "open"
+                "status": "resolved" if session.msg_count > 2 else "open",
+                "createdAt": session.created_at.strftime("%Y-%m-%d %H:%M"),
             })
 
         # ── 5. Recent additions ──
@@ -129,7 +148,10 @@ class AdminOverviewView(APIView):
                 "slug": p.slug,
                 "category": p.category.name if p.category else "Uncategorized",
                 "inventory": qty,
-                "updatedAt": p.updated_at.strftime("%Y-%m-%d")
+                "updatedAt": p.updated_at.strftime("%Y-%m-%d"),
+                "status": p.status,
+                "featured": p.is_featured,
+                "packaging": p.packaging_type or p.unit_of_measure,
             })
 
         recent_blog_posts = []
@@ -151,7 +173,9 @@ class AdminOverviewView(APIView):
             activity.append({
                 "title": "New Sourcing Request",
                 "description": f"Company {q.company} requested quote for {q.product.name if q.product else q.custom_product_name} ({q.quantity} {q.unit_of_measure})",
-                "time": f"{q.created_at.strftime('%H:%M')} today" if q.created_at.date() == now.date() else q.created_at.strftime("%b %d, %H:%M")
+                "timestamp": q.created_at.isoformat(),
+                "severity": "info",
+                "id": q.id,
             })
             
         recent_messages = ContactMessage.objects.order_by('-created_at')[:3]
@@ -159,14 +183,9 @@ class AdminOverviewView(APIView):
             activity.append({
                 "title": "New Contact Message",
                 "description": f"{m.full_name} ({m.company or 'Individual'}) sent a general customer support request",
-                "time": f"{m.created_at.strftime('%H:%M')} today" if m.created_at.date() == now.date() else m.created_at.strftime("%b %d, %H:%M")
-            })
-
-        if not activity:
-            activity.append({
-                "title": "System Active",
-                "description": "Finstar Chemical Enterprise services are fully operational.",
-                "time": "Just now"
+                "timestamp": m.created_at.isoformat(),
+                "severity": "success",
+                "id": m.id + 100000,
             })
 
         return Response({
@@ -176,8 +195,23 @@ class AdminOverviewView(APIView):
             "inventoryAlerts": alerts,
             "conversations": conversations,
             "recentProducts": recent_products,
-            "recentBlogPosts": recent_blog_posts
+            "recentBlogPosts": recent_blog_posts,
+            "quoteRequests": [],
+            "inquiries": [],
         }, status=status.HTTP_200_OK)
+
+    def _seo_score(self):
+        total = Product.objects.count()
+        if not total:
+            return 0
+        complete = Product.objects.exclude(seo_title__isnull=True).exclude(seo_title='').exclude(
+            seo_description__isnull=True
+        ).exclude(seo_description='').exclude(image_alt__isnull=True).exclude(image_alt='').count()
+        return round((complete / total) * 100)
+
+    def _performance_score(self):
+        failed_syncs = StockItem.objects.filter(sync_status='failed').count()
+        return 100 if failed_syncs == 0 else max(50, 100 - (failed_syncs * 10))
 
 
 class AdminAnalyticsView(APIView):
@@ -195,41 +229,84 @@ class AdminAnalyticsView(APIView):
         for i in range(6, -1, -1):
             day = now.date() - timedelta(days=i)
             count = PageView.objects.filter(timestamp__date=day).count()
-            visitors_trend.append({"x": day.strftime("%A"), "y": count})
+            visitors_trend.append(chart_point(day.strftime("%A"), count))
 
         # Device Mix
         devices = PageView.objects.values('device').annotate(count=Count('id'))
         device_mix = []
         for d in devices:
-            device_mix.append({"x": d['device'].capitalize(), "y": d['count']})
-
-        if not device_mix:
-            device_mix = [{"x": "Desktop", "y": 1}, {"x": "Mobile", "y": 0}]
+            device_mix.append(chart_point(d['device'].capitalize(), d['count']))
 
         # Top Search Terms
         searches = SearchQuery.objects.values('query').annotate(count=Count('id')).order_by('-count')[:5]
         search_terms = []
         for s in searches:
-            search_terms.append({"x": s['query'], "y": s['count']})
-
-        if not search_terms:
-            search_terms = [{"x": "Acetone", "y": 1}, {"x": "Methanol", "y": 1}]
+            search_terms.append(chart_point(s['query'], s['count']))
 
         # Quote Stage Conversion
         quotes = QuoteRequest.objects.values('status').annotate(count=Count('id'))
         conversions = []
         for q in quotes:
             label = q['status'].replace('_', ' ').capitalize()
-            conversions.append({"x": label, "y": q['count']})
+            conversions.append(chart_point(label, q['count']))
 
-        if not conversions:
-            conversions = [{"x": "Pending", "y": 1}, {"x": "Drafted", "y": 0}]
+        top_product_pages = (
+            PageView.objects.filter(page__contains='/products/')
+            .values('page')
+            .annotate(views=Count('id'))
+            .order_by('-views')[:8]
+        )
+        top_viewed_products = []
+        for row in top_product_pages:
+            slug = row['page'].rstrip('/').split('/')[-1]
+            product = Product.objects.filter(slug=slug).select_related('category').first()
+            if product:
+                top_viewed_products.append({
+                    'id': product.id,
+                    'name': product.name,
+                    'category': product.category.name if product.category else 'Uncategorized',
+                    'views': row['views'],
+                })
+
+        top_blog_pages = (
+            PageView.objects.filter(page__contains='/blog/')
+            .values('page')
+            .annotate(views=Count('id'))
+            .order_by('-views')[:8]
+        )
+        top_viewed_blog_posts = []
+        for row in top_blog_pages:
+            slug = row['page'].rstrip('/').split('/')[-1]
+            post = BlogPost.objects.filter(slug=slug).select_related('author').first()
+            if post:
+                top_viewed_blog_posts.append({
+                    'id': post.id,
+                    'title': post.title,
+                    'status': post.status,
+                    'author': post.author.username if post.author else (post.author_name or 'Finstar Admin'),
+                    'views': row['views'],
+                })
+
+        quote_rows = []
+        for q in QuoteRequest.objects.select_related('product').order_by('-created_at')[:10]:
+            quote_rows.append({
+                'id': q.id,
+                'name': q.full_name,
+                'company': q.company or 'N/A',
+                'product': q.product.name if q.product else q.custom_product_name,
+                'quantity': f'{q.quantity} {q.unit_of_measure}',
+                'status': q.status,
+                'createdAt': q.created_at.isoformat(),
+            })
 
         return Response({
             "visitors": visitors_trend,
             "deviceMix": device_mix,
             "searchTerms": search_terms,
-            "conversions": conversions
+            "conversions": conversions,
+            "topViewedProducts": top_viewed_products,
+            "topViewedBlogPosts": top_viewed_blog_posts,
+            "quoteRequests": quote_rows,
         }, status=status.HTTP_200_OK)
 
 
@@ -367,6 +444,50 @@ def _parse_json_field(value):
     return value
 
 
+def _blank_to_none(value):
+    return None if value == '' else value
+
+
+def _char(value, max_length=None):
+    value = _blank_to_none(value)
+    if value is None:
+        return None
+    value = str(value)
+    return value[:max_length] if max_length else value
+
+
+def _parse_decimal(value, default=None):
+    if value in (None, ''):
+        return default
+    try:
+        return Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
+        raise ValueError(f'Invalid decimal value: {value}')
+
+
+def _parse_datetime_or_none(value):
+    if value in (None, ''):
+        return None
+    parsed = parse_datetime(str(value))
+    if not parsed:
+        raise ValueError(f'Invalid datetime value: {value}')
+    return parsed
+
+
+def _as_bool(value, default=False):
+    if value in (None, ''):
+        return default
+    if isinstance(value, bool):
+        return value
+    return str(value).lower() in {'1', 'true', 'yes', 'on'}
+
+
+def _tag_name(value):
+    if isinstance(value, dict):
+        value = value.get('name') or value.get('label')
+    return str(value or '').strip()
+
+
 def _unique_slug(model, value):
     base = slugify(value) or 'item'
     slug = base
@@ -423,55 +544,60 @@ class AdminProductListView(APIView):
         try:
             product = Product.objects.create(
                 name=name, slug=slug, category=category,
-                short_description=d.get('short_description') or d.get('shortDescription'),
-                description=d.get('description'),
-                long_description=d.get('long_description') or d.get('longDescription'),
+                short_description=_char(d.get('short_description') or d.get('shortDescription'), 500),
+                description=_blank_to_none(d.get('description')),
+                long_description=_blank_to_none(d.get('long_description') or d.get('longDescription')),
                 applications=_parse_json_field(d.get('applications')),
                 benefits=_parse_json_field(d.get('benefits')),
                 features=_parse_json_field(d.get('features')),
                 industries_served=_parse_json_field(d.get('industriesServed') or d.get('industries_served')),
                 faqs=_parse_json_field(d.get('faqs')),
                 specifications=_parse_json_field(d.get('specifications')),
-                cas_number=d.get('casNumber') or d.get('cas_number'),
-                chemical_formula=d.get('chemicalFormula') or d.get('chemical_formula'),
-                purity=d.get('purity'),
-                appearance=d.get('appearance'),
-                density=d.get('density'),
-                packaging_type=d.get('packagingType') or d.get('packaging_type'),
-                pricing=d.get('pricing'),
-                min_order_quantity=d.get('minOrderQuantity') or d.get('min_order_quantity') or 1,
-                unit_of_measure=d.get('unitOfMeasure') or d.get('unit_of_measure') or 'KG',
-                hazard_classification=d.get('hazardClassification') or d.get('hazard_classification'),
-                cloudinary_url=d.get('cloudinaryUrl') or d.get('cloudinary_url'),
-                cloudinary_public_id=d.get('cloudinaryPublicId') or d.get('cloudinary_public_id'),
-                image_alt=d.get('imageAlt') or d.get('image_alt'),
-                image_title=d.get('imageTitle') or d.get('image_title'),
-                image_caption=d.get('imageCaption') or d.get('image_caption'),
-                seo_title=d.get('seoTitle') or d.get('seo_title'),
-                seo_description=d.get('seoDescription') or d.get('seo_description'),
-                seo_keywords=d.get('seoKeywords') or d.get('seo_keywords'),
-                og_title=d.get('ogTitle') or d.get('og_title'),
-                og_description=d.get('ogDescription') or d.get('og_description'),
-                twitter_description=d.get('twitterDescription') or d.get('twitter_description'),
+                cas_number=_char(d.get('casNumber') or d.get('cas_number'), 50),
+                chemical_formula=_char(d.get('chemicalFormula') or d.get('chemical_formula'), 100),
+                purity=_char(d.get('purity'), 100),
+                appearance=_char(d.get('appearance'), 255),
+                density=_char(d.get('density'), 100),
+                packaging_type=_char(d.get('packagingType') or d.get('packaging_type'), 100),
+                pricing=_char(d.get('pricing'), 255),
+                min_order_quantity=_parse_decimal(d.get('minOrderQuantity') or d.get('min_order_quantity'), Decimal('1')),
+                unit_of_measure=_blank_to_none(d.get('unitOfMeasure') or d.get('unit_of_measure')) or 'KG',
+                hazard_classification=_blank_to_none(d.get('hazardClassification') or d.get('hazard_classification')),
+                cloudinary_url=_char(d.get('cloudinaryUrl') or d.get('cloudinary_url'), 500),
+                cloudinary_public_id=_char(d.get('cloudinaryPublicId') or d.get('cloudinary_public_id'), 255),
+                image_alt=_char(d.get('imageAlt') or d.get('image_alt'), 125),
+                image_title=_char(d.get('imageTitle') or d.get('image_title'), 125),
+                image_caption=_char(d.get('imageCaption') or d.get('image_caption'), 255),
+                seo_title=_char(d.get('seoTitle') or d.get('seo_title'), 90),
+                seo_description=_char(d.get('seoDescription') or d.get('seo_description'), 220),
+                seo_keywords=_blank_to_none(d.get('seoKeywords') or d.get('seo_keywords')),
+                og_title=_char(d.get('ogTitle') or d.get('og_title'), 120),
+                og_description=_char(d.get('ogDescription') or d.get('og_description'), 260),
+                twitter_description=_char(d.get('twitterDescription') or d.get('twitter_description'), 260),
                 schema_markup=_parse_json_field(d.get('schemaMarkup') or d.get('schema_markup')),
-                whatsapp_template=d.get('whatsappTemplate') or d.get('whatsapp_template'),
-                quotation_template=d.get('quotationTemplate') or d.get('quotation_template'),
-                cta_content=d.get('ctaContent') or d.get('cta_content'),
+                whatsapp_template=_blank_to_none(d.get('whatsappTemplate') or d.get('whatsapp_template')),
+                quotation_template=_blank_to_none(d.get('quotationTemplate') or d.get('quotation_template')),
+                cta_content=_char(d.get('ctaContent') or d.get('cta_content'), 255),
                 status=d.get('status', 'draft'),
-                is_featured=d.get('isFeatured') or d.get('is_featured') or False,
-                is_new=d.get('isNew') if 'isNew' in d else d.get('is_new', True),
-                publish_at=d.get('publishAt') or d.get('publish_at') or None,
+                is_featured=_as_bool(d.get('isFeatured') if 'isFeatured' in d else d.get('is_featured'), False),
+                is_new=_as_bool(d.get('isNew') if 'isNew' in d else d.get('is_new'), True),
+                publish_at=_parse_datetime_or_none(d.get('publishAt') or d.get('publish_at')),
             )
         except IntegrityError:
             return Response(
                 {'detail': 'A product with this name or slug already exists.'},
                 status=status.HTTP_409_CONFLICT,
             )
+        except (ValueError, TypeError) as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         # Attach tags
         tag_names = d.get('tags', [])
         if isinstance(tag_names, list):
             for tag_name in tag_names:
+                tag_name = _tag_name(tag_name)
+                if not tag_name:
+                    continue
                 tag, _ = Tag.objects.get_or_create(name=tag_name, defaults={'slug': slugify(tag_name)})
                 product.tags.add(tag)
 

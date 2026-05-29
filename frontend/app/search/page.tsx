@@ -5,6 +5,7 @@ import ProductCard from '@/components/shared/ProductCard'
 import { breadcrumbSchema, toJsonLd } from '@/lib/schema'
 import Link from 'next/link'
 import { Search, RefreshCw, X, ArrowLeft } from 'lucide-react'
+import type { PaginatedProducts } from '@/types'
 
 export const revalidate = 0 // Search is always dynamic
 
@@ -29,7 +30,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
   const query = resolvedParams.q || ''
   const page = resolvedParams.page ? parseInt(resolvedParams.page) : 1
 
-  let paginatedResult = { count: 0, next: null, previous: null, results: [] as any[] }
+  let paginatedResult: PaginatedProducts = { count: 0, next: null, previous: null, results: [] }
 
   if (query.trim()) {
     try {

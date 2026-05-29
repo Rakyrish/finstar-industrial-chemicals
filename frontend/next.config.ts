@@ -12,10 +12,6 @@ const nextConfig: NextConfig = {
         hostname: '**.finstarindustrial.com',
       },
       {
-        protocol: 'http',
-        hostname: 'localhost',
-      },
-      {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
       },
@@ -71,21 +67,17 @@ const nextConfig: NextConfig = {
     ]
   },
 
-  // Rewrites for API proxy in development
+  // Rewrites for API proxy in development. The destination must come from env.
   async rewrites() {
-    return process.env.NODE_ENV === 'development'
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    return process.env.NODE_ENV === 'development' && apiUrl
       ? [
           {
             source: '/api/v1/:path*',
-            destination: 'http://localhost:8000/api/v1/:path*',
+            destination: `${apiUrl.replace(/\/$/, '')}/:path*`,
           },
         ]
       : []
-  },
-
-  // Env variables exposed to client
-  env: {
-    SITE_URL: process.env.SITE_URL || 'https://finstarindustrial.com',
   },
 
   // Experimental features for Next.js 15

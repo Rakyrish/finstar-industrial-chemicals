@@ -1,6 +1,9 @@
 import AdminPageHeader from '@/components/admin/AdminPageHeader'
+import { getSiteSettings } from '@/services/siteService'
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const { company } = await getSiteSettings()
+
   return (
     <div className="space-y-6">
       <AdminPageHeader title="Settings" description="Configure company details, security preferences, email integrations, and workflow defaults." />
@@ -8,9 +11,9 @@ export default function SettingsPage() {
         <div className="card space-y-4 p-6">
           <h3 className="text-lg font-bold text-text-primary">Company profile</h3>
           <div className="grid gap-4 sm:grid-cols-2">
-            <input className="input-base" placeholder="Company name" defaultValue="FINSTAR" />
-            <input className="input-base" placeholder="Support email" defaultValue="finstarindustrialsystems@gmail.com" />
-            <input className="input-base sm:col-span-2" placeholder="Address" defaultValue="KCB Building, Enterprise Road, Industrial Area, Nairobi" />
+            <input className="input-base" placeholder="Company name" defaultValue={company.brandName || company.name} readOnly />
+            <input className="input-base" placeholder="Support email" defaultValue={company.email} readOnly />
+            <input className="input-base sm:col-span-2" placeholder="Address" defaultValue={company.address} readOnly />
           </div>
         </div>
 

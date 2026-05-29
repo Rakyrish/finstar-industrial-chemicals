@@ -18,7 +18,8 @@ export default async function BlogPage() {
   let categories: any[] = []
 
   try {
-    posts = await blogService.list().catch(() => [])
+    const postsResponse = await blogService.list().catch(() => ({ results: [] }))
+    posts = postsResponse.results
     categories = await blogService.categories().catch(() => [])
   } catch (err) {
     console.error('Failed to load blog page data:', err)

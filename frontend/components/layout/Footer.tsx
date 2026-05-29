@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { FlaskConical, Mail, Phone, MapPin, ExternalLink } from 'lucide-react'
-import { FOOTER_COLUMNS, SOCIAL_LINKS, COMPANY_INFO } from '@/lib/constants'
+import { Mail, Phone, MapPin } from 'lucide-react'
+import type { CompanyInfo } from '@/services/siteService'
+import type { FooterColumn, SocialLink } from '@/types'
+
+
 
 function SocialIcon({ platform }: { platform: string }) {
   const icons: Record<string, string> = {
@@ -19,7 +22,8 @@ function SocialIcon({ platform }: { platform: string }) {
   )
 }
 
-export default function Footer() {
+
+export default function Footer({ company, footerColumns, socialLinks }: { company: CompanyInfo; footerColumns: FooterColumn[]; socialLinks: SocialLink[] }) {
   const year = new Date().getFullYear()
 
   return (
@@ -44,34 +48,34 @@ export default function Footer() {
             </Link>
 
             <p className="text-sm text-text-secondary leading-relaxed mb-6 max-w-xs">
-              {COMPANY_INFO.tagline} — trusted supplier of industrial chemicals across East Africa since {COMPANY_INFO.founded}.
+              {company.tagline}
             </p>
 
             {/* Contact info */}
             <ul className="space-y-2.5">
               <li>
-                <a href={`mailto:${COMPANY_INFO.email}`} className="flex items-center gap-2.5 text-sm text-text-secondary hover:text-amber-400 transition-colors group">
+                <a href={`mailto:${company.email}`} className="flex items-center gap-2.5 text-sm text-text-secondary hover:text-amber-400 transition-colors group">
                   <Mail className="w-4 h-4 text-amber-500/70 shrink-0" />
-                  {COMPANY_INFO.email}
+                  {company.email}
                 </a>
               </li>
               <li>
-                <a href={`tel:${COMPANY_INFO.phone.replace(/\s/g, '')}`} className="flex items-center gap-2.5 text-sm text-text-secondary hover:text-amber-400 transition-colors">
+                <a href={`tel:${company.phone.replace(/\s/g, '')}`} className="flex items-center gap-2.5 text-sm text-text-secondary hover:text-amber-400 transition-colors">
                   <Phone className="w-4 h-4 text-amber-500/70 shrink-0" />
-                  {COMPANY_INFO.phone}
+                  {company.phone}
                 </a>
               </li>
               <li>
-                <a href={COMPANY_INFO.addressLink} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2.5 text-sm text-text-secondary hover:text-amber-400 transition-colors group">
+                <a href={company.addressLink || '/contact'} target={company.addressLink ? '_blank' : undefined} rel="noopener noreferrer" className="flex items-start gap-2.5 text-sm text-text-secondary hover:text-amber-400 transition-colors group">
                   <MapPin className="w-4 h-4 text-amber-500/70 shrink-0 mt-0.5" />
-                  <span className="group-hover:underline">{COMPANY_INFO.address}</span>
+                  <span className="group-hover:underline">{company.address || 'Contact sales for dispatch details'}</span>
                 </a>
               </li>
             </ul>
 
             {/* Social */}
             <div className="flex items-center gap-3 mt-6">
-              {SOCIAL_LINKS.map((link) => (
+              {socialLinks.map((link) => (
                 <a
                   key={link.platform}
                   href={link.href}
@@ -87,7 +91,7 @@ export default function Footer() {
           </div>
 
           {/* Link columns */}
-          {FOOTER_COLUMNS.map((col) => (
+          {footerColumns.map((col) => (
             <div key={col.title}>
               <h3 className="text-xs font-semibold uppercase tracking-widest text-text-primary mb-4">
                 {col.title}
@@ -114,10 +118,7 @@ export default function Footer() {
       <div className="border-t border-surface-border">
         <div className="container-wide py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-text-muted">
-            © {year} {COMPANY_INFO.name}. All rights reserved.
-            {COMPANY_INFO.registration && (
-              <span className="ml-1 opacity-60">Reg: {COMPANY_INFO.registration}</span>
-            )}
+            © {year} {company.name}. All rights reserved.
           </p>
           
         </div>

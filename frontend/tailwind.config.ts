@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Brand palette — industrial dark navy + amber
+        // Brand palette — industrial dark navy + amber (works in both modes)
         brand: {
           50:  '#eef4ff',
           100: '#dce9ff',
@@ -36,16 +36,31 @@ const config: Config = {
           900: '#78350f',
           950: '#451a03',
         },
+        slate: {
+          50:  '#f8fafc',
+          100: '#f1f5f9',
+          200: '#e2e8f0',
+          300: '#cbd5e1',
+          400: '#94a3b8',
+          500: '#64748b',
+          600: '#475569',
+          700: '#334155',
+          800: '#1e293b',
+          900: '#0f172a',
+          950: '#020617',
+        },
         surface: {
-          DEFAULT: '#0a0f1e',
-          card:    '#0d1526',
-          border:  '#1a2540',
-          muted:   '#1e2d4a',
+          DEFAULT: 'var(--color-surface)',
+          card:    'var(--color-surface-card)',
+          border:  'var(--color-surface-border)',
+          muted:   'var(--color-surface-muted)',
+          hover:   'var(--color-surface-hover)',
+          active:  'var(--color-surface-active)',
         },
         text: {
-          primary:   '#f0f4ff',
-          secondary: '#9ab0d0',
-          muted:     '#5a6e8a',
+          primary:   'var(--color-text-primary)',
+          secondary: 'var(--color-text-secondary)',
+          muted:     'var(--color-text-muted)',
         },
       },
 
@@ -69,11 +84,14 @@ const config: Config = {
       },
 
       boxShadow: {
-        'glow-amber': '0 0 20px rgba(245, 158, 11, 0.25)',
-        'glow-blue':  '0 0 30px rgba(10, 92, 245, 0.3)',
-        'card':       '0 4px 24px rgba(0, 0, 0, 0.4)',
-        'card-hover': '0 8px 40px rgba(0, 0, 0, 0.6)',
+        'glow-amber': 'var(--shadow-glow-amber)',
+        'glow-blue':  'var(--shadow-glow-blue)',
+        'card':       'var(--shadow-card)',
+        'card-hover': 'var(--shadow-card-hover)',
         'inner-glow': 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+        'sm':         'var(--shadow-sm)',
+        'md':         'var(--shadow-md)',
+        'lg':         'var(--shadow-lg)',
       },
 
       borderRadius: {
@@ -109,6 +127,12 @@ const config: Config = {
 
       transitionTimingFunction: {
         'bounce-soft': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      },
+
+      transitionDuration: {
+        'fast':  'var(--transition-fast)',
+        'base':  'var(--transition-base)',
+        'slow':  'var(--transition-slow)',
       },
 
       spacing: {

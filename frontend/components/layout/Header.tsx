@@ -5,22 +5,23 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Search, ChevronDown, FlaskConical, Phone } from 'lucide-react'
-import { NAV_ITEMS, COMPANY_INFO } from '@/lib/constants'
+import { Menu, Search, ChevronDown, Phone } from 'lucide-react'
 import { cn } from '@/utils'
 import MegaMenu from './MegaMenu'
 import MobileSidebar from './MobileSidebar'
 import SearchBar from '../shared/SearchBar'
 import ThemeToggle from '../ThemeToggle'
+import type { CompanyInfo } from '@/services/siteService'
+import type { NavItem } from '@/types'
 
-export default function Header() {
+export default function Header({ navItems, company }: { navItems: NavItem[]; company: CompanyInfo }) {
   const [scrolled,       setScrolled]       = useState(false)
   const [mobileOpen,     setMobileOpen]     = useState(false)
   const [searchOpen,     setSearchOpen]     = useState(false)
   const [activeMenu,     setActiveMenu]     = useState<string | null>(null)
   const pathname = usePathname()
   const menuTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const phoneNumber = COMPANY_INFO.phone
+  const phoneNumber = company.phone
 
   // Detect scroll
   useEffect(() => {
@@ -77,7 +78,7 @@ export default function Header() {
 
             {/* Desktop Nav */}
             <nav className="hidden lg:flex items-center gap-1" aria-label="Main navigation">
-              {NAV_ITEMS.map((item) => {
+              {navItems.map((item) => {
                 const hasMenu = item.categories && item.categories.length > 0
                 const isActive = item.href ? pathname.startsWith(item.href) : false
 
@@ -209,6 +210,8 @@ export default function Header() {
       <MobileSidebar
         isOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
+        navItems={navItems}
+        company={company}
       />
     </>
   )

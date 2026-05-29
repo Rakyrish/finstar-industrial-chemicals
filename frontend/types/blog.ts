@@ -26,7 +26,7 @@ export interface BlogPost {
   coverImage?: string
   author: BlogAuthor
   category: BlogCategory
-  tags: string[]
+  tags: Array<string | { id: number; name: string; slug?: string }>
   status: BlogStatus
   publishedAt: string
   updatedAt: string
@@ -49,6 +49,7 @@ export interface BlogListItem {
   category: BlogCategory
   tags: string[]
   publishedAt: string
+  updatedAt?: string
   readingTime: number
 }
 

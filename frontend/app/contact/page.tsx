@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
-import { COMPANY_INFO } from '@/lib/constants'
+import { frontendConfig } from '@/lib/config'
+import { quoteService } from '@/services/quoteService'
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', company: '', message: '' })
@@ -23,12 +24,17 @@ export default function ContactPage() {
     setLoading(true)
     setError(null)
     try {
-      // Simulate API submit or post to Django backend
-      await new Promise((res) => setTimeout(res, 1200))
+      await quoteService.submitContact({
+        full_name: form.name,
+        email: form.email,
+        phone: form.phone,
+        company: form.company,
+        message: form.message,
+      })
       setSuccess(true)
       setForm({ name: '', email: '', phone: '', company: '', message: '' })
-    } catch {
-      setError('An unexpected error occurred. Please try again.')
+    } catch (error: any) {
+      setError(error?.response?.data?.detail || error?.message || 'An unexpected error occurred. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -199,8 +205,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <span className="block text-[10px] uppercase tracking-wider text-text-muted mb-0.5">Email Support</span>
-                    <a href={`mailto:${COMPANY_INFO.email}`} className="text-sm font-medium text-text-primary hover:text-amber-400 transition-colors">
-                      {COMPANY_INFO.email}
+                    <a href={`mailto:${frontendConfig.companyEmail}`} className="text-sm font-medium text-text-primary hover:text-amber-400 transition-colors">
+                      {frontendConfig.companyEmail}
                     </a>
                   </div>
                 </li>
@@ -211,21 +217,19 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <span className="block text-[10px] uppercase tracking-wider text-text-muted mb-0.5">Sales Hotlines</span>
-                    <a href={`tel:${COMPANY_INFO.phone.replace(/\s/g, '')}`} className="text-sm font-medium text-text-primary hover:text-amber-400 transition-colors">
-                      {COMPANY_INFO.phone}
+                    <a href={`tel:${frontendConfig.phoneNumber.replace(/\s/g, '')}`} className="text-sm font-medium text-text-primary hover:text-amber-400 transition-colors">
+                      {frontendConfig.phoneNumber}
                     </a>
                   </div>
                 </li>
 
                 <li className="flex items-start gap-4">
-                  <a href={COMPANY_INFO.addressLink} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0 mt-0.5 hover:bg-amber-500/20 hover:border-amber-500/40 transition-colors">
+                  <a href="/contact" className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0 mt-0.5 hover:bg-amber-500/20 hover:border-amber-500/40 transition-colors">
                     <MapPin className="w-5 h-5" />
                   </a>
                   <div>
                     <span className="block text-[10px] uppercase tracking-wider text-text-muted mb-0.5">Headquarters Warehouse</span>
-                    <a href={COMPANY_INFO.addressLink} target="_blank" rel="noopener noreferrer" className="text-xs text-text-secondary hover:text-amber-400 leading-relaxed transition-colors underline-offset-2 hover:underline">
-                      {COMPANY_INFO.address}
-                    </a>
+                    <span className="text-xs text-text-secondary leading-relaxed">Contact sales for dispatch and warehouse details.</span>
                   </div>
                 </li>
               </ul>

@@ -2,9 +2,10 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { productService } from '@/services/productService'
 import ProductCard from '@/components/shared/ProductCard'
+import type { ProductListItem } from '@/types'
 
 export default async function FeaturedProducts() {
-  let products = []
+  let products: ProductListItem[] = []
   try {
     products = await productService.featured(6)
   } catch {

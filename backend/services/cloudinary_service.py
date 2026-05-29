@@ -12,12 +12,12 @@ cloudinary.config(
     secure=True
 )
 
-_DEMO_URL = 'https://res.cloudinary.com/demo/image/upload/v1570975253/sample.jpg'
-_DEMO_PUBLIC_ID = 'sample'
-
-
 def _is_configured():
-    return bool(settings.CLOUDINARY_STORAGE.get('CLOUD_NAME'))
+    return all([
+        settings.CLOUDINARY_STORAGE.get('CLOUD_NAME'),
+        settings.CLOUDINARY_STORAGE.get('API_KEY'),
+        settings.CLOUDINARY_STORAGE.get('API_SECRET'),
+    ])
 
 
 def upload_image(file_or_path, folder='products'):
@@ -26,7 +26,7 @@ def upload_image(file_or_path, folder='products'):
     Returns dict: {url, public_id, width, height, format}
     """
     if not _is_configured():
-        return {'url': _DEMO_URL, 'public_id': _DEMO_PUBLIC_ID}
+        raise RuntimeError('Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.')
 
     try:
         response = cloudinary.uploader.upload(
@@ -46,8 +46,6 @@ def upload_image(file_or_path, folder='products'):
         }
     except Exception as e:
         print(f'Cloudinary upload error: {e}')
-        if settings.DEBUG:
-            return {'url': _DEMO_URL, 'public_id': _DEMO_PUBLIC_ID}
         raise e
 
 
@@ -58,7 +56,7 @@ def upload_from_url(image_url, folder='products'):
     Returns dict: {url, public_id, width, height, format}
     """
     if not _is_configured():
-        return {'url': _DEMO_URL, 'public_id': _DEMO_PUBLIC_ID}
+        raise RuntimeError('Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.')
 
     try:
         response = cloudinary.uploader.upload(
@@ -78,8 +76,6 @@ def upload_from_url(image_url, folder='products'):
         }
     except Exception as e:
         print(f'Cloudinary URL upload error: {e}')
-        if settings.DEBUG:
-            return {'url': image_url, 'public_id': _DEMO_PUBLIC_ID}
         raise e
 
 

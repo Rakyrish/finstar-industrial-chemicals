@@ -64,7 +64,7 @@ export default function QuoteWizardPage() {
           if (matched) {
             setForm((f) => ({
               ...f,
-              productId: matched.id,
+              productId: String(matched.id),
               unitOfMeasure: matched.unitOfMeasure || 'KG',
               customProductName: matched.name,
             }))
@@ -95,7 +95,7 @@ export default function QuoteWizardPage() {
   const handleProductChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const prodId = e.target.value
     setForm((f) => ({ ...f, productId: prodId }))
-    const found = products.find((p) => p.id === prodId)
+    const found = products.find((p) => String(p.id) === prodId)
     if (found) {
       setForm((f) => ({
         ...f,

@@ -59,10 +59,11 @@ export interface Inquiry {
 
 // Simple contact form
 export interface ContactFormData {
-  name: string
+  name?: string
+  full_name?: string
   email: string
   phone?: string
   company?: string
-  subject: string
+  subject?: string
   message: string
 }

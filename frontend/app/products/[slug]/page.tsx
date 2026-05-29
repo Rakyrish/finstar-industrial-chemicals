@@ -82,7 +82,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
               {product.primaryImage ? (
                 <Image
                   src={product.primaryImage}
-                  alt={product.name}
+                  alt={product.imageAlt || product.name}
                   fill
                   sizes="(max-width: 1024px) 100vw, 40vw"
                   className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
@@ -92,12 +92,18 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 <Award className="w-20 h-20 text-text-muted/30" />
               )}
 
+              <div className="absolute bottom-4 left-4 rounded bg-black/35 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.24em] text-white/80 backdrop-blur-sm">
+                Finstar
+              </div>
+
               {/* Status Indicator */}
               <div className="absolute top-4 left-4">
                 {product.status === 'active' ? (
                   <span className="badge-amber bg-amber-500/10 text-amber-400">Available</span>
                 ) : (
-                  <span className="badge-red">Out of Stock</span>
+                  <div className="absolute left-1/2 top-24 w-[145%] -translate-x-1/2 -rotate-12 bg-red-600 py-2 text-center shadow-2xl ring-1 ring-white/30">
+                    <span className="text-sm font-black uppercase tracking-[0.24em] text-white drop-shadow">Out of Stock</span>
+                  </div>
                 )}
               </div>
             </div>
@@ -223,6 +229,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
               >
                 <Send className="w-4 h-4" /> Request Quote & Spec Sheet
               </Link>
+              <WhatsAppButton
+                variant="inline"
+                message={product.whatsappTemplate || `Hello Finstar, I am interested in ${product.name}. Please send pricing and availability.`}
+                className="flex-1 justify-center"
+              />
               <button
                 className="btn-secondary flex items-center justify-center gap-2 py-3.5 px-6 text-sm"
                 aria-label="Download MSDS sheet"

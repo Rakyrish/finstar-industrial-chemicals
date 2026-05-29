@@ -7,6 +7,10 @@ const API_BASE = getBackendApiUrl()
 
 // POST /api/admin/upload — handles both file uploads and URL uploads
 export async function POST(request: NextRequest) {
+  if (!API_BASE) {
+    return NextResponse.json({ detail: 'Backend API URL is not configured.' }, { status: 503 })
+  }
+
   const cookieStore = await cookies()
   const token = cookieStore.get(ADMIN_ACCESS_COOKIE)?.value
   const contentType = request.headers.get('content-type') ?? ''

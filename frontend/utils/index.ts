@@ -51,7 +51,8 @@ export function formatNumber(n: number, locale = 'en-US'): string {
 
 /** Build an absolute URL from a path */
 export function absoluteUrl(path: string): string {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://finstarindustrial.com'
+  const base = process.env.NEXT_PUBLIC_SITE_URL
+  if (!base) return path
   return `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`
 }
 
