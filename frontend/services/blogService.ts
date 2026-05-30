@@ -20,6 +20,10 @@ export const blogService = {
     return get<BlogPost>(`${BASE}/${slug}/`)
   },
 
+  async detail(slug: string): Promise<BlogPost> {
+    return this.bySlug(slug)
+  },
+
   /** Get recent posts */
   async recent(limit = 3): Promise<BlogListItem[]> {
     const data = await get<PaginatedBlogPosts>(

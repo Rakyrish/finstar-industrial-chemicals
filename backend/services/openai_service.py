@@ -2,15 +2,18 @@ import os
 import json
 from openai import OpenAI
 from products.models import Product
+from django.conf import settings
 
 
 class OpenAIService:
     def __init__(self):
-        self.api_key = os.getenv('OPENAI_API_KEY', 'mock-key')
-        self.client = OpenAI(api_key=self.api_key)
+        self.api_key = getattr(settings, 'OPENAI_API_KEY', os.getenv('OPENAI_API_KEY', ''))
+        self.client = OpenAI(api_key=self.api_key) if self.api_key else None
 
-    def _is_mock(self):
-        return not self.api_key or self.api_key == 'mock-key'
+    def _client(self):
+        if not self.client:
+            raise RuntimeError('OPENAI_API_KEY is not configured on the backend.')
+        return self.client
 
     def _product_schema(self):
         string_list = {"type": "array", "items": {"type": "string"}}
@@ -125,20 +128,9 @@ Rules:
 
         full_messages = [{'role': 'system', 'content': system_prompt}] + messages
 
-        if self._is_mock():
-            last = messages[-1]['content'] if messages else ''
-            return {
-                'role': 'assistant',
-                'content': (
-                    f'[DEBUG MOCK] Thank you for asking about \'{last}\'. '
-                    'We stock high-purity industrial compounds under ISO 9001 quality guidelines. '
-                    'Please use our Quote Wizard (/quote) to obtain pricing specifications.'
-                ),
-            }
-
         try:
-            response = self.client.chat.completions.create(
-                model='gpt-4o',
+            response = self._client().chat.completions.create(
+                model=os.getenv('OPENAI_CHAT_MODEL', 'gpt-4.1-mini'),
                 messages=full_messages,
                 temperature=0.2,
                 max_tokens=400,
@@ -163,9 +155,6 @@ Rules:
         When only image_url is given, AI identifies the product from the image.
         Returns a dict with 27 SEO and content fields.
         """
-        if self._is_mock():
-            return self._mock_product_content(product_name or 'Industrial Chemical')
-
         name_instruction = (
             f"The product is: '{product_name}'."
             if product_name
@@ -235,9 +224,10 @@ SEO REQUIREMENTS:
             messages.append({'role': 'user', 'content': prompt})
 
         try:
-            if hasattr(self.client, 'responses'):
-                response = self.client.responses.create(
-                    model=os.getenv('OPENAI_PRODUCT_MODEL', 'gpt-4o'),
+            client = self._client()
+            if hasattr(client, 'responses'):
+                response = client.responses.create(
+                    model=os.getenv('OPENAI_PRODUCT_MODEL', 'gpt-4.1-mini'),
                     input=[{
                         'role': 'user',
                         'content': [
@@ -256,8 +246,8 @@ SEO REQUIREMENTS:
                 )
                 return json.loads(response.output_text)
 
-            response = self.client.chat.completions.create(
-                model=os.getenv('OPENAI_PRODUCT_MODEL', 'gpt-4o'),
+            response = client.chat.completions.create(
+                model=os.getenv('OPENAI_PRODUCT_MODEL', 'gpt-4.1-mini'),
                 messages=messages,
                 temperature=0.3,
                 max_tokens=2500,
@@ -275,54 +265,10 @@ SEO REQUIREMENTS:
             return json.loads(content.strip())
         except json.JSONDecodeError as e:
             print(f'OpenAI JSON parse error: {e}')
-            return self._mock_product_content(product_name or 'Industrial Chemical')
+            raise ValueError('OpenAI returned invalid product JSON. Please retry with a clearer product image or name.') from e
         except Exception as e:
-            print(f'GPT-4o Vision API error: {e}')
+            print(f'OpenAI product generation error: {e}')
             raise e
-
-    def _mock_product_content(self, product_name):
-        """Fallback mock data when OpenAI is not configured."""
-        slug = product_name.lower().replace(' ', '-')
-        return {
-            'product_name': product_name,
-            'seo_title': f'Buy {product_name} in Bulk | Industrial Grade | Finstar Chemicals',
-            'seo_meta_description': f'Order premium {product_name} in bulk from Finstar Industrial Chemicals. Fast delivery across East Africa. Contact us for pricing.',
-            'short_description': f'High-grade {product_name} for industrial applications. Available in bulk quantities.',
-            'long_description': f'{product_name} is a versatile industrial chemical widely used in manufacturing and synthesis. It exhibits excellent stability under standard conditions. Finstar supplies this product in bulk quantities with full documentation including COA and MSDS sheets.',
-            'technical_specifications': [
-                {'key': 'CAS Number', 'value': 'N/A'},
-                {'key': 'Purity', 'value': '≥99%'},
-                {'key': 'Appearance', 'value': 'Refer to datasheet'},
-            ],
-            'applications': ['Industrial manufacturing', 'Chemical synthesis', 'Laboratory use'],
-            'benefits': ['High purity grade', 'Bulk quantities available', 'Full documentation provided'],
-            'features': ['ISO 9001 certified', 'East Africa delivery', 'Technical support'],
-            'industries_served': ['Manufacturing', 'Pharmaceuticals', 'Agriculture', 'Mining'],
-            'faqs': [
-                {'q': 'What is the minimum order quantity?', 'a': 'Minimum order is 25kg. Contact us for bulk pricing.'},
-                {'q': 'Is a Certificate of Analysis available?', 'a': 'Yes, COA is available for all batches upon request.'},
-            ],
-            'seo_keywords': [product_name.lower(), 'industrial chemical', 'bulk supplier', 'East Africa'],
-            'product_tags': ['industrial', 'bulk', 'chemical'],
-            'seo_slug': slug,
-            'og_description': f'Premium {product_name} available in bulk. Trusted supplier in East Africa.',
-            'twitter_description': f'Order {product_name} in bulk from Finstar Chemicals. Industrial grade. East Africa delivery.',
-            'image_alt': f'{product_name} industrial grade chemical product',
-            'image_title': f'{product_name} | Finstar Industrial Chemicals',
-            'image_caption': f'{product_name} available in bulk quantities',
-            'whatsapp_template': f'Hello Finstar, I am interested in {product_name}. Please send me pricing and availability.',
-            'quotation_template': f'Dear Finstar Team,\n\nI would like to request a quotation for {product_name}.\n\nQuantity required: \nDelivery location: \nSpecial requirements: \n\nThank you.',
-            'cta_content': f'Request a Quote for {product_name} Today',
-            'schema_markup': {
-                '@context': 'https://schema.org',
-                '@type': 'Product',
-                'name': product_name,
-                'brand': {'@type': 'Brand', 'name': 'Finstar Industrial Chemicals'},
-            },
-            'internal_linking': ['Link to /products for full catalog'],
-            'product_category_suggestions': ['Industrial Chemicals'],
-            'structured_data_notes': 'Add Product schema to the product detail page.',
-        }
 
 
 # Singleton instance

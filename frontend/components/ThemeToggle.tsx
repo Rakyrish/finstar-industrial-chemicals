@@ -16,10 +16,17 @@ function getInitialTheme(): Theme {
 }
 
 export function applyTheme(theme: Theme) {
+  // Apply theme to document
   document.documentElement.dataset.theme = theme
+  
+  // Update localStorage for persistence
   localStorage.setItem(STORAGE_KEY, theme)
-  // Also write the admin theme cookie so SSR admin layout reads the correct value
+  
+  // Set admin cookie for SSR
   document.cookie = `${ADMIN_THEME_COOKIE}=${theme};path=/;max-age=31536000;SameSite=Lax`
+  
+  // Dispatch custom event for other components to listen
+  window.dispatchEvent(new CustomEvent('themechange', { detail: { theme } }))
 }
 
 export default function ThemeToggle({ className }: { className?: string }) {
@@ -31,6 +38,15 @@ export default function ThemeToggle({ className }: { className?: string }) {
     setTheme(initial)
     applyTheme(initial)
     setMounted(true)
+
+    // Listen for theme changes from other components
+    const handleThemeChange = (e: CustomEventInit) => {
+      const newTheme = e.detail?.theme
+      if (newTheme) setTheme(newTheme)
+    }
+
+    window.addEventListener('themechange', handleThemeChange as EventListener)
+    return () => window.removeEventListener('themechange', handleThemeChange as EventListener)
   }, [])
 
   const toggle = () => {
@@ -46,12 +62,18 @@ export default function ThemeToggle({ className }: { className?: string }) {
       onClick={toggle}
       aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
       title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-      className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-surface-border bg-surface-card text-text-secondary transition-all duration-200 hover:border-amber-500/40 hover:bg-surface-muted hover:text-amber-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/40 ${className ?? ''}`}
+      className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-surface-border bg-surface-card text-text-secondary transition-all duration-300 hover:border-amber-500/40 hover:bg-surface-muted hover:text-amber-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/40 ${className ?? ''}`}
     >
       {theme === 'dark' ? (
-        <Sun className="h-4 w-4 transition-transform duration-300 hover:rotate-45" />
+        <Sun 
+          className="h-4 w-4 transition-all duration-500 hover:rotate-45 hover:scale-110"
+          strokeWidth={1.5}
+        />
       ) : (
-        <Moon className="h-4 w-4 transition-transform duration-300" />
+        <Moon 
+          className="h-4 w-4 transition-all duration-500 hover:scale-110"
+          strokeWidth={1.5}
+        />
       )}
     </button>
   )

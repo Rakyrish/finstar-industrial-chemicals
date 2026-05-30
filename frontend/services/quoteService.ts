@@ -7,6 +7,10 @@ export const quoteService = {
     return post<QuoteResponse>('/inquiries/quotes/', data)
   },
 
+  async create(data: Record<string, unknown>): Promise<QuoteResponse> {
+    return post<QuoteResponse>('/inquiries/quotes/', data)
+  },
+
   /** Submit a contact form message */
   async submitContact(data: ContactFormData): Promise<{ success: boolean; message: string }> {
     return post('/inquiries/contact/', data)

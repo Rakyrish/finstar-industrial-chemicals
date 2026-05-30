@@ -91,12 +91,12 @@ class Product(models.Model):
     image_caption = models.CharField(max_length=255, blank=True, null=True)
 
     # ── SEO ───────────────────────────────────────────────────────────────────
-    seo_title = models.CharField(max_length=70, blank=True, null=True)
-    seo_description = models.CharField(max_length=160, blank=True, null=True)
+    seo_title = models.CharField(max_length=90, blank=True, null=True)
+    seo_description = models.CharField(max_length=220, blank=True, null=True)
     seo_keywords = models.TextField(blank=True, null=True)          # comma-separated
-    og_title = models.CharField(max_length=95, blank=True, null=True)
-    og_description = models.CharField(max_length=200, blank=True, null=True)
-    twitter_description = models.CharField(max_length=200, blank=True, null=True)
+    og_title = models.CharField(max_length=120, blank=True, null=True)
+    og_description = models.CharField(max_length=260, blank=True, null=True)
+    twitter_description = models.CharField(max_length=260, blank=True, null=True)
     schema_markup = models.TextField(blank=True, null=True)         # JSON-LD string
 
     # ── Engagement Templates ──────────────────────────────────────────────────

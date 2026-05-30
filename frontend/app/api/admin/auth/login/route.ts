@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server'
 import type { AdminLoginPayload, AdminAuthResponse } from '@/types/admin'
 import { ADMIN_ACCESS_COOKIE, ADMIN_REFRESH_COOKIE } from '@/lib/admin/auth'
+import { getBackendApiUrl } from '@/lib/config'
 
-const backendBaseUrl = process.env.ADMIN_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+const backendBaseUrl = getBackendApiUrl()
 
 async function loginWithBackend(payload: AdminLoginPayload): Promise<AdminAuthResponse> {
+  if (!backendBaseUrl) {
+    throw new Error('Backend API URL is not configured.')
+  }
+
   const response = await fetch(`${backendBaseUrl}/auth/login/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -22,7 +27,18 @@ async function loginWithBackend(payload: AdminLoginPayload): Promise<AdminAuthRe
 
 export async function POST(request: Request) {
   const payload = (await request.json()) as AdminLoginPayload
-  const result = await loginWithBackend(payload)
+  let result: AdminAuthResponse
+
+  try {
+    result = await loginWithBackend(payload)
+  } catch (error: any) {
+    const message = error?.message ?? 'Unable to authenticate with Django backend.'
+    return NextResponse.json(
+      { detail: message },
+      { status: message.includes('not configured') ? 503 : 401 }
+    )
+  }
+
   const response = NextResponse.json({
     accessToken: result.access,
     refreshToken: result.refresh,

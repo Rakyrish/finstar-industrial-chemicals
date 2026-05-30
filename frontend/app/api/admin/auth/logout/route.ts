@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server'
 import { ADMIN_ACCESS_COOKIE, ADMIN_REFRESH_COOKIE } from '@/lib/admin/auth'
+import { getBackendApiUrl } from '@/lib/config'
 
-const backendBaseUrl = process.env.ADMIN_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+const backendBaseUrl = getBackendApiUrl()
 
 export async function POST() {
-  await fetch(`${backendBaseUrl}/auth/logout/`, {
-    method: 'POST',
-    cache: 'no-store',
-  }).catch(() => null)
+  if (backendBaseUrl) {
+    await fetch(`${backendBaseUrl}/auth/logout/`, {
+      method: 'POST',
+      cache: 'no-store',
+    }).catch(() => null)
+  }
 
   const response = NextResponse.json({ success: true, message: 'Logged out' })
 

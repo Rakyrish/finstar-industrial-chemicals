@@ -6,21 +6,16 @@ logger = logging.getLogger(__name__)
 
 class ResendEmailService:
     def __init__(self):
-        self.api_key = os.getenv("RESEND_API_KEY", "mock-key")
+        self.api_key = os.getenv("RESEND_API_KEY", "")
         self.api_url = "https://api.resend.com/emails"
         self.default_from = os.getenv("DEFAULT_FROM_EMAIL", "Finstar Sourcing <sales@finstarindustrial.com>")
 
     def send_email(self, to, subject, html_content):
         """
         Sends an email using the Resend API service.
-        Falls back to console logger if RESEND_API_KEY is not set in .env.
         """
-        if self.api_key == "mock-key" or not self.api_key:
-            logger.info("Resend API Key not configured. Simulating email dispatch...")
-            logger.info(f"TO: {to}")
-            logger.info(f"SUBJECT: {subject}")
-            logger.info(f"HTML:\n{html_content}")
-            return True, "Mock Dispatch Success"
+        if not self.api_key:
+            return False, "RESEND_API_KEY is not configured."
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",

@@ -1,7 +1,7 @@
 "use client"
 
 import { MessageCircle } from 'lucide-react'
-import { SOCIAL_LINKS } from '@/lib/constants'
+import { getWhatsAppUrl } from '@/lib/config'
 import { cn } from '@/utils'
 import { useEffect, useState } from 'react'
 
@@ -15,9 +15,7 @@ export default function WhatsAppButton({ message = 'Hello, I would like to inqui
   const [whatsappLink, setWhatsappLink] = useState('')
 
   useEffect(() => {
-    const link = SOCIAL_LINKS.find((l) => l.platform === 'whatsapp')?.href || 'https://wa.me/254700000000'
-    const encodedMessage = encodeURIComponent(message)
-    setWhatsappLink(`${link}?text=${encodedMessage}`)
+    setWhatsappLink(getWhatsAppUrl(message))
   }, [message])
 
   const handleClick = async () => {
@@ -27,8 +25,12 @@ export default function WhatsAppButton({ message = 'Hello, I would like to inqui
     } catch (e) {
       // ignore
     }
-    window.open(whatsappLink, '_blank', 'noopener,noreferrer')
+    if (whatsappLink) {
+      window.open(whatsappLink, '_blank', 'noopener,noreferrer')
+    }
   }
+
+  if (!whatsappLink) return null
 
   if (variant === 'inline') {
     return (

@@ -7,6 +7,10 @@ import { getBackendApiUrl } from '@/lib/config'
 const API_BASE = getBackendApiUrl()
 
 async function forwardToBackend(method: string, path: string, body?: any, token?: string) {
+  if (!API_BASE) {
+    throw new Error('Backend API URL is not configured.')
+  }
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -21,21 +25,43 @@ async function forwardToBackend(method: string, path: string, body?: any, token?
   })
 }
 
-async function readBackendResponse(response: Response) {
+async function readBackendResponse(response: Response, path: string) {
   const contentType = response.headers.get('content-type') ?? ''
   const text = await response.text()
 
   if (contentType.includes('application/json')) {
     try {
-      return text ? JSON.parse(text) : {}
+      const payload = text ? JSON.parse(text) : {}
+      if (!response.ok) {
+        console.error('Admin products backend error', {
+          status: response.status,
+          path,
+          payload,
+        })
+      }
+      return payload
     } catch {
-      return { detail: text || 'Backend returned invalid JSON.' }
+      const payload = { detail: text || 'Backend returned invalid JSON.' }
+      console.error('Admin products backend JSON parse error', {
+        status: response.status,
+        path,
+        payload,
+      })
+      return payload
     }
   }
 
-  return {
+  const payload = {
     detail: text || `Backend request failed with ${response.status}`,
   }
+  if (!response.ok) {
+    console.error('Admin products backend non-JSON error', {
+      status: response.status,
+      path,
+      detail: payload.detail.slice(0, 1000),
+    })
+  }
+  return payload
 }
 
 // GET /api/admin/products  → list
@@ -61,8 +87,9 @@ export async function POST(request: NextRequest) {
   const token = cookieStore.get(ADMIN_ACCESS_COOKIE)?.value
   const body = await request.json()
   try {
-    const res = await forwardToBackend('POST', '/admin/products/', body, token)
-    const data = await readBackendResponse(res)
+    const backendPath = '/admin/products/'
+    const res = await forwardToBackend('POST', backendPath, body, token)
+    const data = await readBackendResponse(res, backendPath)
     return NextResponse.json(data, { status: res.status })
   } catch (error: any) {
     return NextResponse.json(

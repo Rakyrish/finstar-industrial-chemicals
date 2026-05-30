@@ -1,7 +1,8 @@
-import { adminSeoPages } from '@/lib/admin/mock-data'
+import { fetchAdminList } from '@/lib/admin/server'
+import type { AdminSeoRow } from '@/types/admin'
 import { SeoResourceScreen } from './SeoScreen'
 
-export default function SeoPage() {
-  const fallback = { results: adminSeoPages, count: adminSeoPages.length }
+export default async function SeoPage() {
+  const fallback = await fetchAdminList<AdminSeoRow>('seo')
   return <SeoResourceScreen fallback={fallback} />
 }

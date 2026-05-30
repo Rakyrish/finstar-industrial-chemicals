@@ -126,10 +126,10 @@ function scoreSeo(form: ProductFormValues) {
   const titleLength = form.seoTitle?.length ?? 0
   const descLength = form.seoDescription?.length ?? 0
 
-  if (titleLength >= 45 && titleLength <= 70) score += 15
-  else issues.push('Tune SEO title to 45-70 characters.')
-  if (descLength >= 120 && descLength <= 160) score += 15
-  else issues.push('Tune meta description to 120-160 characters.')
+  if (titleLength >= 45 && titleLength <= 90) score += 15
+  else issues.push('Tune SEO title to 45-90 characters.')
+  if (descLength >= 120 && descLength <= 220) score += 15
+  else issues.push('Tune meta description to 120-220 characters.')
   if (form.slug && form.slug.length > 4) score += 10
   else issues.push('Add an SEO-friendly slug.')
   if (form.imageAlt && form.imageAlt.length >= 20) score += 10
@@ -408,9 +408,9 @@ export default function ProductForm({ productId, initialData }: { productId?: st
         <section className="card p-5">
           <h3 className="text-base font-bold text-text-primary">SEO metadata</h3>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <Field label="SEO title" value={form.seoTitle ?? ''} onChange={(value) => patchForm({ seoTitle: value })} helper={`${form.seoTitle?.length ?? 0}/70`} />
+            <Field label="SEO title" value={form.seoTitle ?? ''} onChange={(value) => patchForm({ seoTitle: value })} helper={`${form.seoTitle?.length ?? 0}/90`} />
             <Field label="SEO keywords" value={form.seoKeywords ?? ''} onChange={(value) => patchForm({ seoKeywords: value })} />
-            <TextArea label="Meta description" value={form.seoDescription ?? ''} onChange={(value) => patchForm({ seoDescription: value })} rows={3} helper={`${form.seoDescription?.length ?? 0}/160`} className="md:col-span-2" />
+            <TextArea label="Meta description" value={form.seoDescription ?? ''} onChange={(value) => patchForm({ seoDescription: value })} rows={3} helper={`${form.seoDescription?.length ?? 0}/220`} className="md:col-span-2" />
             <Field label="OpenGraph description" value={form.ogDescription ?? ''} onChange={(value) => patchForm({ ogDescription: value })} />
             <Field label="Image alt text" value={form.imageAlt ?? ''} onChange={(value) => patchForm({ imageAlt: value })} />
           </div>

@@ -54,10 +54,18 @@ export default function ProductCard({ product, className, priority = false }: Pr
         </div>
 
         {!isAvailable && (
-          <div className="absolute inset-0 bg-surface/60 backdrop-blur-[2px] flex items-center justify-center">
-            <span className="badge-red">Out of Stock</span>
+          <div className="absolute inset-0 bg-black/35 backdrop-blur-[1px]">
+            <div className="absolute left-1/2 top-1/2 w-[145%] -translate-x-1/2 -translate-y-1/2 -rotate-12 bg-red-600 py-2 text-center shadow-2xl ring-1 ring-white/30">
+              <span className="text-sm font-black uppercase tracking-[0.24em] text-white drop-shadow">
+                Out of Stock
+              </span>
+            </div>
           </div>
         )}
+
+        <div className="absolute bottom-3 left-3 rounded bg-black/35 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white/80 backdrop-blur-sm">
+          Finstar
+        </div>
 
         {/* Hover arrow */}
         <div className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 shadow-glow-amber">

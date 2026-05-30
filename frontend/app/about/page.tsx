@@ -46,7 +46,7 @@ export default function AboutPage() {
           <h1 className="font-display font-bold text-text-primary text-4xl md:text-5xl mb-4">
             About Finstar Chemicals
           </h1>
-          <p className="text-text-secondary max-w-xl mx-auto text-sm md:text-base leading-relaxed">
+          <p className="text-white max-w-xl mx-auto text-sm md:text-base leading-relaxed">
             Finstar Chemicals supplies high-quality industrial chemicals and raw materials to businesses across East Africa, offering reliable products, efficient delivery, and expert support to meet diverse manufacturing and industrial needs.
 
           </p>
@@ -64,29 +64,8 @@ export default function AboutPage() {
               A Trusted Partner for East Africa&rsquo;s Industrial sector
             </h2>
             <p className="text-sm text-text-secondary leading-relaxed">
-              Finstar Industrial Chemicals has established itself as one of the premier chemical sourcing and distribution entities in the region. We cater to diverse industrial sectors, including paints & coatings, water treatment, food manufacturing, construction chemicals, and laboratory research.
+              Finstar Industrial Chemicals is a trusted supplier of industrial and specialty chemicals in East Africa, providing reliable sourcing and distribution solutions for industries including water treatment, food manufacturing, construction, paints & coatings, and laboratory research. We are committed to delivering quality products that support efficient production and dependable industrial performance.
             </p>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              We understand that raw material quality directly impacts your final product performance. That is why our supply chain is ISO 9001:2015 certified, offering full batch traceability, safety documentation compliance, and laboratory verification on every scheduled chemical delivery.
-            </p>
-            <div className="grid grid-cols-2 gap-4 pt-4 text-xs text-text-muted">
-              <div className="flex items-center gap-2">
-                <Building className="w-4 h-4 text-amber-400" />
-                <span>Nairobi Headquarters</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-amber-400" />
-                <span>East Africa Logistics</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-amber-400" />
-                <span>ISO 9001 Certified</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-amber-400" />
-                <span>15+ YearsSourced</span>
-              </div>
-            </div>
           </div>
 
           {/* Graphical narrative block */}
@@ -99,11 +78,11 @@ export default function AboutPage() {
               Certified Sourcing
             </h3>
             <p className="text-xs text-text-secondary leading-relaxed">
-              All chemicals supplied by Finstar are fully certified. We verify purity, handling safety, and compliance with local authorities like KEBS and international GHS directives.
+              All chemicals supplied by Finstar Industrial Chemicals are fully certified. We verify purity, safe handling, and adherence to internationally recognized quality and safety standards.
             </p>
             <div className="pt-4 border-t border-surface-border flex justify-around text-xs">
               <div>
-                <span className="font-bold text-lg text-amber-400 block">500+</span>
+                <span className="font-bold text-lg text-amber-400 block">1000+</span>
                 <span className="text-text-muted">Products</span>
               </div>
               <div className="border-r border-surface-border" />
@@ -151,53 +130,24 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Historical Milestones */}
-      <section className="container-wide py-20 space-y-12">
-        <div className="text-center max-w-xl mx-auto space-y-3">
-          <span className="section-label">Milestones</span>
-          <h2 className="font-display font-bold text-2xl md:text-3xl text-text-primary">
-            Timeline of Excellence
-          </h2>
-          <p className="text-xs text-text-secondary">
-            A history of continuous growth, storage expansions, and regional supply integrations.
-          </p>
-        </div>
-
-        <div className="relative border-l border-surface-border pl-6 max-w-3xl mx-auto space-y-8">
-          {MILESTONES.map((stone) => (
-            <div key={stone.year} className="relative">
-              {/* Dot indicator */}
-              <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-amber-gradient border-2 border-surface shadow-glow-amber" />
-              <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
-                <span className="font-display font-bold text-amber-400 text-base shrink-0 pt-0.5">
-                  {stone.year}
-                </span>
-                <div>
-                  <h3 className="font-semibold text-sm text-text-primary mb-1">{stone.title}</h3>
-                  <p className="text-xs text-text-secondary leading-relaxed">{stone.desc}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+     
 
       {/* CTA Warehouse visit */}
       <div className="container-wide max-w-4xl">
         <div className="rounded-3xl bg-hero-gradient border border-brand-700/50 p-8 md:p-12 text-center space-y-6">
           <MapPin className="w-12 h-12 text-amber-400 mx-auto animate-bounce" />
           <h2 className="font-display font-semibold text-xl md:text-2xl text-text-primary">
-            Visit Our Main Warehouse & Sourcing Labs
+            Reliable Chemical Supply Solutions
           </h2>
-          <p className="text-xs md:text-sm text-text-secondary max-w-xl mx-auto leading-relaxed">
-            Interested in viewing our storage facilities or auditing our quality management controls? Reach out to schedule a facility walkthrough at our Industrial Area, Nairobi complex.
+          <p className="text-xs md:text-sm text-white max-w-xl mx-auto leading-relaxed">
+            We provide dependable industrial chemical sourcing and distribution services tailored to meet the needs of manufacturers, laboratories, and processing industries across East Africa.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="/contact" className="btn-primary">
-              <Mail className="w-4 h-4" /> Schedule Facility Visit
+              <Mail className="w-4 h-4" /> Contact Our Team
             </Link>
             <Link href="/products" className="btn-outline">
-              Browse Sourced Chemicals
+              Explore Our Products
             </Link>
           </div>
         </div>

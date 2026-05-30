@@ -6,6 +6,7 @@ import { organizationSchema, toJsonLd } from '@/lib/schema'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import ChatbotWidget from '@/components/shared/ChatbotWidget'
+import { getSiteChromeData } from '@/services/siteService'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -21,12 +22,13 @@ const outfit = Outfit({
 
 export const metadata: Metadata = defaultMetadata
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   const orgSchema = organizationSchema()
+  const chrome = await getSiteChromeData()
 
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
@@ -48,11 +50,11 @@ export default function RootLayout({
         <meta name="theme-color" content="#052974" />
       </head>
       <body className="bg-surface text-text-primary antialiased">
-        <Header />
+        <Header navItems={chrome.navItems} company={chrome.company} />
         <main id="main-content" tabIndex={-1}>
           {children}
         </main>
-        <Footer />
+        <Footer company={chrome.company} footerColumns={chrome.footerColumns} socialLinks={chrome.socialLinks} />
         <ChatbotWidget />
       </body>
     </html>

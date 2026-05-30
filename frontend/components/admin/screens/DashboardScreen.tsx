@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { Plus, ArrowRight, Bot, AlertTriangle, PackageSearch, PencilLine } from 'lucide-react'
 import { adminQuickActions } from '@/lib/admin/navigation'
-import { adminOverview } from '@/lib/admin/mock-data'
 import { useAdminResource } from '@/lib/admin/client'
 import AdminStatCard from '../AdminStatCard'
 import AdminChartCard from '../AdminChartCard'
@@ -13,8 +12,8 @@ import AdminPageHeader from '../AdminPageHeader'
 import type { AdminDashboardResponse, AdminProductRow } from '@/types/admin'
 
 export default function DashboardScreen({ fallback }: { fallback: AdminDashboardResponse }) {
-  const { data } = useAdminResource<AdminDashboardResponse>('overview', fallback ?? adminOverview)
-  const overview = data ?? fallback ?? adminOverview
+  const { data } = useAdminResource<AdminDashboardResponse>('overview', fallback)
+  const overview = data ?? fallback
 
   return (
     <div className="space-y-8">

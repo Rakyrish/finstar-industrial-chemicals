@@ -6,6 +6,10 @@ import { getBackendApiUrl } from '@/lib/config'
 const API_BASE = getBackendApiUrl()
 
 async function forward(method: string, pk: string, body?: any) {
+  if (!API_BASE) {
+    throw new Error('Backend API URL is not configured.')
+  }
+
   const cookieStore = await cookies()
   const token = cookieStore.get(ADMIN_ACCESS_COOKIE)?.value
   const headers: Record<string, string> = { Accept: 'application/json' }
@@ -36,15 +40,19 @@ async function readBackendResponse(response: Response) {
   }
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  const res = await forward('GET', params.id)
+type RouteContext = { params: Promise<{ id: string }> }
+
+export async function GET(_req: NextRequest, context: RouteContext) {
+  const { id } = await context.params
+  const res = await forward('GET', id)
   return NextResponse.json(await readBackendResponse(res), { status: res.status })
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, context: RouteContext) {
+  const { id } = await context.params
   const body = await request.json()
   try {
-    const res = await forward('PATCH', params.id, body)
+    const res = await forward('PATCH', id, body)
     return NextResponse.json(await readBackendResponse(res), { status: res.status })
   } catch (error: any) {
     return NextResponse.json(
@@ -54,7 +62,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  const res = await forward('DELETE', params.id)
-  return NextResponse.json({ success: true }, { status: res.status })
+export async function DELETE(_req: NextRequest, context: RouteContext) {
+  const { id } = await context.params
+  const res = await forward('DELETE', id)
+  return NextResponse.json(await readBackendResponse(res), { status: res.status })
 }

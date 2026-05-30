@@ -34,7 +34,9 @@ class ProductListSerializer(serializers.ModelSerializer):
         ]
 
     def get_category(self, obj):
-        return obj.category.name if obj.category else 'Uncategorized'
+        if not obj.category:
+            return {'id': None, 'name': 'Uncategorized', 'slug': 'uncategorized'}
+        return {'id': obj.category.id, 'name': obj.category.name, 'slug': obj.category.slug}
 
     def get_primaryImage(self, obj):
         return obj.get_primary_image_url()

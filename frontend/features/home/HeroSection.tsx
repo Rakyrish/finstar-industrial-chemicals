@@ -6,7 +6,6 @@ import { ArrowRight, ChevronDown, Shield, Zap, Globe } from 'lucide-react'
 import HeroCarousel from './HeroCarousel'
 
 const HERO_BADGES = [
-  { icon: Shield, label: 'ISO 9001:2015' },
   { icon: Zap,    label: 'Fast Delivery' },
   { icon: Globe,  label: 'East Africa Wide' },
 ]
@@ -14,7 +13,7 @@ const HERO_BADGES = [
 export default function HeroSection() {
   return (
     <section
-      className="relative min-h-[60vh] sm:min-h-[75vh] lg:min-h-[90vh] flex items-center overflow-hidden bg-mesh noise-overlay pt-[72px]"
+      className="relative min-h-[60vh] sm:min-h-[75vh] lg:min-h-[60vh] flex items-center overflow-hidden bg-mesh noise-overlay pt-[72px]"
       aria-label="Hero section"
     >
       {/* Background gradient layers */}
@@ -30,13 +29,13 @@ export default function HeroSection() {
           backgroundSize: '60px 60px',
         }}
       />
-
+      
       {/* Glowing orbs */}
-      <div className="absolute top-1/4 right-1/4 w-96 h-96 rounded-full bg-brand-600/20 blur-[120px] animate-pulse-slow" />
-      <div className="absolute bottom-1/4 left-1/4 w-64 h-64 rounded-full bg-amber-500/15 blur-[100px] animate-float" />
+      {/* <div className="absolute top-1/4 right-1/4 w-96 h-96 rounded-full bg-brand-600/20 blur-[120px] animate-pulse-slow" /> */}
+      {/* <div className="absolute bottom-1/4 left-1/4 w-64 h-64 rounded-full bg-amber-500/15 blur-[100px] animate-float" /> */}
 
       {/* Content */}
-      <div className="relative container-wide py-12 sm:py-16 md:py-20 lg:py-24">
+      <div className="relative container-wide py-0 sm:py-0 md:py-0 lg:py-0">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center lg:items-stretch">
           {/* Left column */}
           <div className="max-w-2xl flex flex-col justify-center">

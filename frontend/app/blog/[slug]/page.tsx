@@ -123,8 +123,8 @@ export default async function BlogDetailPage({ params }: PageProps) {
             {post.tags && post.tags.length > 0 && (
               <div className="pt-6 border-t border-surface-border flex flex-wrap gap-1.5">
                 {post.tags.map((tag) => (
-                  <span key={tag.id} className="badge-muted text-[10px]">
-                    #{tag.name}
+                  <span key={typeof tag === 'string' ? tag : tag.id} className="badge-muted text-[10px]">
+                    #{typeof tag === 'string' ? tag : tag.name}
                   </span>
                 ))}
               </div>

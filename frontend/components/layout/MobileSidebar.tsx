@@ -4,15 +4,18 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ChevronDown, FlaskConical, Phone, ArrowRight } from 'lucide-react'
-import { NAV_ITEMS, COMPANY_INFO, SOCIAL_LINKS } from '@/lib/constants'
 import { cn } from '@/utils'
+import type { CompanyInfo } from '@/services/siteService'
+import type { NavItem } from '@/types'
 
 interface MobileSidebarProps {
   isOpen: boolean
   onClose: () => void
+  navItems: NavItem[]
+  company: CompanyInfo
 }
 
-export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
+export default function MobileSidebar({ isOpen, onClose, navItems, company }: MobileSidebarProps) {
   const [openCategory, setOpenCategory] = useState<string | null>(null)
 
   const toggleCategory = (label: string) => {
@@ -66,7 +69,7 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
 
             {/* Nav Items */}
             <nav className="flex-1 px-3 py-4 space-y-1" aria-label="Mobile navigation">
-              {NAV_ITEMS.map((item) => {
+              {navItems.map((item) => {
                 const hasMenu = item.categories && item.categories.length > 0
                 const isExpanded = openCategory === item.label
 
@@ -154,13 +157,15 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
               >
                 Get a Quote
               </Link>
-              <a
-                href={`tel:${COMPANY_INFO.phone.replace(/\s/g, '')}`}
-                className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all border border-surface-border"
-              >
-                <Phone className="w-4 h-4 text-amber-400" />
-                {COMPANY_INFO.phone}
-              </a>
+              {company.phone ? (
+                <a
+                  href={`tel:${company.phone.replace(/\s/g, '')}`}
+                  className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all border border-surface-border"
+                >
+                  <Phone className="w-4 h-4 text-amber-400" />
+                  {company.phone}
+                </a>
+              ) : null}
             </div>
           </motion.aside>
         </>

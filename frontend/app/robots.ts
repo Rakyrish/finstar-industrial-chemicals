@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
-  const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://finstarindustrial.com'
+  const BASE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
   return {
     rules: [
       {
@@ -10,6 +10,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/admin/', '/_next/'],
       },
     ],
-    sitemap: `${BASE}/sitemap.xml`,
+    sitemap: BASE ? `${BASE}/sitemap.xml` : undefined,
   }
 }
