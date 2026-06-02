@@ -5,9 +5,22 @@ from .models import Category, Tag, Product
 
 class CategorySerializer(serializers.ModelSerializer):
     productCount = serializers.IntegerField(source='products.count', read_only=True)
+    seoTitle = serializers.SerializerMethodField()
+    seoDescription = serializers.SerializerMethodField()
+    seoKeywords = serializers.SerializerMethodField()
+
+    def get_seoTitle(self, obj):
+        return getattr(obj, 'seo_title', '') or ''
+
+    def get_seoDescription(self, obj):
+        return getattr(obj, 'seo_description', '') or ''
+
+    def get_seoKeywords(self, obj):
+        return getattr(obj, 'seo_keywords', '') or ''
+
     class Meta:
         model = Category
-        fields = ['id', 'name', 'slug', 'description', 'is_featured', 'productCount']
+        fields = ['id', 'name', 'slug', 'description', 'seoTitle', 'seoDescription', 'seoKeywords', 'is_featured', 'productCount']
 
 
 class TagSerializer(serializers.ModelSerializer):

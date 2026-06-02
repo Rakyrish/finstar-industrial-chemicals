@@ -1,7 +1,8 @@
 import { get } from '@/lib/api'
 import type { BlogPost, BlogListItem, BlogFilters, PaginatedBlogPosts, BlogCategory } from '@/types'
 
-const BASE = '/blog'
+// Backend router: /api/v1/blog/posts/, /api/v1/blog/categories/, /api/v1/blog/tags/
+const BASE = '/blog/posts'
 
 export const blogService = {
   /** List blog posts with filters */
@@ -24,21 +25,38 @@ export const blogService = {
     return this.bySlug(slug)
   },
 
-  /** Get recent posts */
+  /** Get recent posts — uses the /recent/ action on the backend ViewSet */
   async recent(limit = 3): Promise<BlogListItem[]> {
-    const data = await get<PaginatedBlogPosts>(
-      `${BASE}/?ordering=-published_at&page_size=${limit}`
-    )
-    return data?.results ?? []
+    try {
+      // Try dedicated action endpoint first
+      const data = await get<BlogListItem[]>(`${BASE}/recent/?limit=${limit}`)
+      return Array.isArray(data) ? data : []
+    } catch {
+      // Fallback to list ordered by published_at
+      const data = await get<PaginatedBlogPosts>(
+        `${BASE}/?ordering=-published_at&page_size=${limit}`
+      )
+      return data?.results ?? []
+    }
   },
 
-  /** List blog categories */
+  /** List blog categories — backend mounts at /blog/categories/ */
   async categories(): Promise<BlogCategory[]> {
-    return get<BlogCategory[]>('/blog-categories/')
+    try {
+      const data = await get<any>('/blog/categories/')
+      return Array.isArray(data) ? data : (data?.results ?? [])
+    } catch {
+      return []
+    }
   },
 
-  /** Get related posts */
+  /** Get related posts for a given post slug */
   async related(slug: string, limit = 3): Promise<BlogListItem[]> {
-    return get<BlogListItem[]>(`${BASE}/${slug}/related/?limit=${limit}`)
+    try {
+      const data = await get<any>(`${BASE}/${slug}/related/?limit=${limit}`)
+      return Array.isArray(data) ? data : (data?.results ?? [])
+    } catch {
+      return []
+    }
   },
 }

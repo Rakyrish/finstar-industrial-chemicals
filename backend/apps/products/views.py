@@ -7,8 +7,10 @@ from .serializers import CategorySerializer, TagSerializer, ProductListSerialize
 
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
+    def get_queryset(self):
+        return Category.objects.only('id', 'name', 'slug', 'description', 'is_featured')
     lookup_field = 'slug'
 
 
@@ -30,12 +32,12 @@ class ProductViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Product.objects.filter(status='active')
         
-        # Filtering by category slug
+        # Filter by category slug
         category_slug = self.request.query_params.get('category', None)
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
             
-        # Filtering by search query term (Search by name, CAS Number, formula, tag, description)
+        # Full-text search
         search_query = self.request.query_params.get('search', None)
         if search_query:
             queryset = queryset.filter(
@@ -46,10 +48,29 @@ class ProductViewSet(viewsets.ModelViewSet):
                 Q(tags__name__icontains=search_query)
             ).distinct()
 
-        # Filtering by tags
+        # Filter by tag slug
         tag_slug = self.request.query_params.get('tag', None)
         if tag_slug:
             queryset = queryset.filter(tags__slug=tag_slug)
+
+        # Filter by is_featured (supports ?is_featured=true/false/1/0)
+        is_featured_param = self.request.query_params.get('is_featured', None)
+        if is_featured_param is not None:
+            queryset = queryset.filter(
+                is_featured=is_featured_param.lower() in ('true', '1', 'yes')
+            )
+
+        # Filter by is_new
+        is_new_param = self.request.query_params.get('is_new', None)
+        if is_new_param is not None:
+            queryset = queryset.filter(
+                is_new=is_new_param.lower() in ('true', '1', 'yes')
+            )
+
+        # Ordering
+        ordering = self.request.query_params.get('ordering', None)
+        if ordering:
+            queryset = queryset.order_by(ordering)
 
         return queryset
 

@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.db import OperationalError, ProgrammingError
 import uuid
 
 from services.openai_service import openai_service
@@ -49,43 +50,57 @@ class ChatbotMessageView(APIView):
         if not session_id:
             session_id = str(uuid.uuid4())
 
-        session, created = ChatSession.objects.get_or_create(session_id=session_id)
+        session = None
+        openai_messages = [{'role': 'user', 'content': message_text}]
+        persistence_enabled = True
 
-        # 2. Save user message to database
-        ChatMessage.objects.create(session=session, role='user', content=message_text)
+        try:
+            session, created = ChatSession.objects.get_or_create(session_id=session_id)
 
-        # 3. Retrieve recent conversation history for RAG / OpenAI context
-        db_messages = ChatMessage.objects.filter(session=session).order_by('timestamp')
-        openai_messages = []
-        for msg in db_messages:
-            openai_messages.append({
-                'role': msg.role,
-                'content': msg.content
-            })
+            # 2. Save user message to database
+            ChatMessage.objects.create(session=session, role='user', content=message_text)
 
-        # Limit conversation buffer size to past 10 messages for token control
-        openai_messages = openai_messages[-10:]
+            # 3. Retrieve recent conversation history for RAG / OpenAI context
+            db_messages = ChatMessage.objects.filter(session=session).order_by('timestamp')
+            openai_messages = []
+            for msg in db_messages:
+                openai_messages.append({
+                    'role': msg.role,
+                    'content': msg.content
+                })
+
+            # Limit conversation buffer size to past 10 messages for token control
+            openai_messages = openai_messages[-10:]
+        except (OperationalError, ProgrammingError):
+            # The chatbot app may be deployed before its migration has been applied.
+            # Keep the assistant usable, but skip session logging until tables exist.
+            persistence_enabled = False
 
         # 4. Generate response using OpenAIService
         bot_response = openai_service.generate_chat_response(openai_messages)
         assistant_reply = bot_response.get('content', '')
 
         # 5. Save assistant message to database
-        ChatMessage.objects.create(session=session, role='assistant', content=assistant_reply)
+        if persistence_enabled and session:
+            try:
+                ChatMessage.objects.create(session=session, role='assistant', content=assistant_reply)
+            except (OperationalError, ProgrammingError):
+                persistence_enabled = False
 
-        # 6. Extract dynamic product suggestions based on name/formula mentions in response
+        # 6. Extract dynamic product suggestions based on product mentions in the query or response.
         product_suggestions = []
         active_products = Product.objects.filter(status='active').select_related('category')
+        suggestion_text = f'{message_text}\n{assistant_reply}'.lower()
         
         for prod in active_products:
             if len(product_suggestions) >= 3:
                 break
             
-            # Simple check if product name or chemical formula is mentioned in AI response
-            name_mentioned = prod.name.lower() in assistant_reply.lower()
-            formula_mentioned = prod.chemical_formula and prod.chemical_formula.lower() in assistant_reply.lower()
+            name_mentioned = prod.name.lower() in suggestion_text
+            formula_mentioned = prod.chemical_formula and prod.chemical_formula.lower() in suggestion_text
+            cas_mentioned = prod.cas_number and prod.cas_number.lower() in suggestion_text
             
-            if name_mentioned or formula_mentioned:
+            if name_mentioned or formula_mentioned or cas_mentioned:
                 img_url = None
                 if prod.primary_image:
                     request_obj = self.request

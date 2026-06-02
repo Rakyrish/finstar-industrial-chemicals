@@ -10,6 +10,13 @@ interface ProductCardProps {
   priority?: boolean
 }
 
+function displayCopy(value?: string | null) {
+  return (value ?? '')
+    .replace(/\bpricing\b/gi, 'quotation details')
+    .replace(/\bprices\b/gi, 'quotations')
+    .replace(/\bprice\b/gi, 'quotation')
+}
+
 export default function ProductCard({ product, className, priority = false }: ProductCardProps) {
   const isAvailable = product.status === 'active'
 
@@ -90,7 +97,7 @@ export default function ProductCard({ product, className, priority = false }: Pr
 
         {/* Description */}
         <p className="text-xs text-text-muted line-clamp-2 leading-relaxed flex-1">
-          {product.shortDescription}
+          {displayCopy(product.shortDescription)}
         </p>
 
         {/* Tags */}
@@ -109,9 +116,6 @@ export default function ProductCard({ product, className, priority = false }: Pr
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-2 border-t border-surface-border mt-auto">
-          <span className="text-xs text-text-muted">
-            MOQ: {product.minOrderQuantity} {product.unitOfMeasure}
-          </span>
           <span className="text-xs font-semibold text-amber-400 group-hover:gap-1.5 flex items-center gap-1 transition-all">
             View Details
             <ArrowRight className="w-3 h-3 -translate-x-1 group-hover:translate-x-0 transition-transform" />

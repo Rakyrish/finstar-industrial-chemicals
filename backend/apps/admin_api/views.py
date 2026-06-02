@@ -188,6 +188,37 @@ class AdminOverviewView(APIView):
                 "id": m.id + 100000,
             })
 
+        # ── 7. Quote Requests ──
+        quote_requests_data = []
+        for q in QuoteRequest.objects.select_related('product').order_by('-created_at')[:20]:
+            quote_requests_data.append({
+                "id": q.id,
+                "name": q.full_name,
+                "company": q.company or 'N/A',
+                "product": q.product.name if q.product else (q.custom_product_name or 'Custom request'),
+                "quantity": f"{q.quantity} {q.unit_of_measure}".strip(),
+                "status": q.status,
+                "createdAt": q.created_at.isoformat(),
+                "email": getattr(q, 'email', ''),
+                "phone": getattr(q, 'phone', ''),
+                "notes": getattr(q, 'notes', ''),
+            })
+
+        # ── 8. Contact Inquiries ──
+        inquiries_data = []
+        for m in ContactMessage.objects.order_by('-created_at')[:20]:
+            inquiries_data.append({
+                "id": m.id,
+                "name": m.full_name,
+                "email": m.email,
+                "company": getattr(m, 'company', None),
+                "subject": str(m.message)[:80] if m.message else 'Customer inquiry',
+                "status": m.status if hasattr(m, 'status') else 'pending',
+                "createdAt": m.created_at.isoformat(),
+                "message": m.message,
+                "phone": getattr(m, 'phone', ''),
+            })
+
         return Response({
             "metrics": metrics,
             "analytics": analytics,
@@ -196,8 +227,8 @@ class AdminOverviewView(APIView):
             "conversations": conversations,
             "recentProducts": recent_products,
             "recentBlogPosts": recent_blog_posts,
-            "quoteRequests": [],
-            "inquiries": [],
+            "quoteRequests": quote_requests_data,
+            "inquiries": inquiries_data,
         }, status=status.HTTP_200_OK)
 
     def _seo_score(self):
@@ -510,6 +541,16 @@ def _get_or_create_category(name):
     return Category.objects.create(
         name=category_name,
         slug=_unique_slug(Category, category_name),
+        description=f'Browse {category_name} from Finstar Industrial Chemicals for industrial buyers in Kenya, Uganda, Tanzania, and Rwanda.',
+        seo_title=f'{category_name} in Kenya, Uganda, Tanzania & Rwanda | Finstar'[:90],
+        seo_description=f'Find {category_name} from Finstar Industrial Chemicals for B2B procurement across Kenya, Uganda, Tanzania, and Rwanda.'[:220],
+        seo_keywords=', '.join([
+            category_name,
+            f'{category_name} Kenya',
+            f'{category_name} Uganda',
+            f'{category_name} Tanzania',
+            f'{category_name} Rwanda',
+        ]),
     )
 
 
@@ -678,7 +719,7 @@ class AdminProductDetailView(APIView):
         if 'category' in d:
             cat_name = d['category']
             if cat_name:
-                cat, _ = Category.objects.get_or_create(name=cat_name, defaults={'slug': slugify(cat_name)})
+                cat = _get_or_create_category(cat_name)
                 product.category = cat
                 updated.append('category')
 
@@ -760,12 +801,15 @@ class AdminCategoryListView(APIView):
     permission_classes = [permissions.IsAdminUser]
 
     def get(self, request):
-        cats = Category.objects.all().order_by('name')
+        cats = Category.objects.only('id', 'name', 'slug', 'description').order_by('name')
         data = [{
             'id': c.id,
             'name': c.name,
             'slug': c.slug,
             'description': c.description or '',
+            'seoTitle': getattr(c, 'seo_title', '') or '',
+            'seoDescription': getattr(c, 'seo_description', '') or '',
+            'seoKeywords': getattr(c, 'seo_keywords', '') or '',
         } for c in cats]
         return Response({'count': len(data), 'results': data})
 
@@ -780,11 +824,17 @@ class AdminCategoryListView(APIView):
             name=name,
             slug=_unique_slug(Category, request.data.get('slug') or name),
             description=request.data.get('description', ''),
+            seo_title=_char(request.data.get('seoTitle') or request.data.get('seo_title'), 90),
+            seo_description=_char(request.data.get('seoDescription') or request.data.get('seo_description'), 220),
+            seo_keywords=_blank_to_none(request.data.get('seoKeywords') or request.data.get('seo_keywords')),
         )
         if not created:
             category.name = name
             category.description = request.data.get('description', category.description)
-            category.save(update_fields=['name', 'description'])
+            category.seo_title = _char(request.data.get('seoTitle') or request.data.get('seo_title'), 90) or category.seo_title
+            category.seo_description = _char(request.data.get('seoDescription') or request.data.get('seo_description'), 220) or category.seo_description
+            category.seo_keywords = _blank_to_none(request.data.get('seoKeywords') or request.data.get('seo_keywords')) or category.seo_keywords
+            category.save(update_fields=['name', 'description', 'seo_title', 'seo_description', 'seo_keywords'])
 
         return Response(
             {
@@ -792,6 +842,9 @@ class AdminCategoryListView(APIView):
                 'name': category.name,
                 'slug': category.slug,
                 'description': category.description or '',
+                'seoTitle': category.seo_title or '',
+                'seoDescription': category.seo_description or '',
+                'seoKeywords': category.seo_keywords or '',
             },
             status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
         )

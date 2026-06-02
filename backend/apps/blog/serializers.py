@@ -23,6 +23,7 @@ class BlogPostListSerializer(serializers.ModelSerializer):
     coverImage = serializers.CharField(source='cover_image_url', default=None)
     publishedAt = serializers.DateTimeField(source='published_at')
     readingTime = serializers.IntegerField(source='reading_time')
+    updatedAt = serializers.DateTimeField(source='updated_at', format='%Y-%m-%d', read_only=True)
 
     class Meta:
         model = BlogPost
@@ -38,11 +39,6 @@ class BlogPostListSerializer(serializers.ModelSerializer):
         if obj.author:
             return obj.author.get_full_name() or obj.author.username
         return 'Finstar Team'
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['updatedAt'] = instance.updated_at.strftime('%Y-%m-%d') if instance.updated_at else None
-        return data
 
 
 class BlogPostDetailSerializer(BlogPostListSerializer):

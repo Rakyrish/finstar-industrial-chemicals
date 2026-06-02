@@ -53,19 +53,19 @@ export default function StatsSection() {
 
         setStats([
           {
-            value: products.count ?? products.results.length,
+            value: 1000,
             suffix: '+',
             label: 'Chemical Products',
             desc: 'Live product records in the catalog',
           },
           {
-            value: categories.length,
+            value: 500,
             suffix: '+',
-            label: 'Product Categories',
-            desc: 'Industrial categories available for inquiry',
+            label: 'Client Served ',
+            desc: 'Served clients across industries with our chemical data solutions',
           },
           {
-            value: posts.count ?? posts.results.length,
+            value: 200,
             suffix: '+',
             label: 'Knowledge Resources',
             desc: 'Published guides and technical updates',

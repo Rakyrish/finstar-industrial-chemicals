@@ -7,7 +7,7 @@ import HeroCarousel from './HeroCarousel'
 
 const HERO_BADGES = [
   { icon: Zap,    label: 'Fast Delivery' },
-  { icon: Globe,  label: 'East Africa Wide' },
+  { icon: Globe,  label: 'Kenya, Uganda, Tanzania & Rwanda' },
 ]
 
 export default function HeroSection() {
@@ -68,9 +68,9 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg md:text-xl text-text-secondary max-w-2xl mb-10 leading-relaxed"
           >
-            East Africa&rsquo;s trusted source for high-purity industrial solvents,
-            acids, reagents, and specialty chemicals. Reliable supply, competitive
-            pricing, and expert technical support.
+            Kenya, Uganda, Tanzania, and Rwanda&rsquo;s trusted source for high-purity
+            industrial solvents, acids, reagents, and specialty chemicals. Reliable
+            supply, competitive pricing, and expert technical support.
           </motion.p>
 
           {/* CTAs */}

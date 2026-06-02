@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = generatePageMetadata({
   title: 'About Us — Certified Industrial Chemical Distributor',
-  description: 'Learn about Finstar Industrial Chemicals: our mission, ISO certified quality, 15+ years experience, and our robust distribution network across East Africa.',
+  description: 'Learn about Finstar Industrial Chemicals: our mission, ISO certified quality, 15+ years experience, and our robust distribution network across Kenya, Uganda, Tanzania, and Rwanda.',
   canonical: '/about',
   keywords: ['chemical distributor Kenya', 'Finstar chemistry team', 'chemical supplier credentials', 'Nairobi chemical warehouse'],
 })
@@ -15,7 +15,7 @@ const MILESTONES = [
   { year: '2011', title: 'Company Founded', desc: 'Finstar began operations in Nairobi, supplying general industrial solvents to local manufacturers.' },
   { year: '2015', title: 'Warehouse Expansion', desc: 'Opened our modern 25,000 sq ft compliant chemical storage warehouse facility in Industrial Area, Nairobi.' },
   { year: '2018', title: 'ISO 9001:2015 Certification', desc: 'Awarded full ISO certification for quality management, supply chain traceability, and safe chemical storage.' },
-  { year: '2022', title: 'Regional Footprint', desc: 'Established cross-border supply hubs in Uganda and Tanzania to support East Africa-wide manufacturing.' },
+  { year: '2022', title: 'Regional Footprint', desc: 'Established cross-border supply hubs in Uganda and Tanzania to support manufacturers in Kenya, Uganda, Tanzania, and Rwanda.' },
 ]
 
 const VALUES = [
@@ -47,7 +47,7 @@ export default function AboutPage() {
             About Finstar Chemicals
           </h1>
           <p className="text-white max-w-xl mx-auto text-sm md:text-base leading-relaxed">
-            Finstar Chemicals supplies high-quality industrial chemicals and raw materials to businesses across East Africa, offering reliable products, efficient delivery, and expert support to meet diverse manufacturing and industrial needs.
+            Finstar Chemicals supplies high-quality industrial chemicals and raw materials to businesses across Kenya, Uganda, Tanzania, and Rwanda, offering reliable products, efficient delivery, and expert support to meet diverse manufacturing and industrial needs.
 
           </p>
         </div>
@@ -61,10 +61,10 @@ export default function AboutPage() {
               Who We Are
             </span>
             <h2 className="font-display font-semibold text-2xl md:text-3xl text-text-primary leading-tight">
-              A Trusted Partner for East Africa&rsquo;s Industrial sector
+              A Trusted Partner for Kenya, Uganda, Tanzania, and Rwanda&rsquo;s Industrial Sector
             </h2>
             <p className="text-sm text-text-secondary leading-relaxed">
-              Finstar Industrial Chemicals is a trusted supplier of industrial and specialty chemicals in East Africa, providing reliable sourcing and distribution solutions for industries including water treatment, food manufacturing, construction, paints & coatings, and laboratory research. We are committed to delivering quality products that support efficient production and dependable industrial performance.
+              Finstar Industrial Chemicals is a trusted supplier of industrial and specialty chemicals in Kenya, Uganda, Tanzania, and Rwanda, providing reliable sourcing and distribution solutions for industries including water treatment, food manufacturing, construction, paints & coatings, and laboratory research. We are committed to delivering quality products that support efficient production and dependable industrial performance.
             </p>
           </div>
 
@@ -140,7 +140,7 @@ export default function AboutPage() {
             Reliable Chemical Supply Solutions
           </h2>
           <p className="text-xs md:text-sm text-white max-w-xl mx-auto leading-relaxed">
-            We provide dependable industrial chemical sourcing and distribution services tailored to meet the needs of manufacturers, laboratories, and processing industries across East Africa.
+            We provide dependable industrial chemical sourcing and distribution services tailored to meet the needs of manufacturers, laboratories, and processing industries across Kenya, Uganda, Tanzania, and Rwanda.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="/contact" className="btn-primary">

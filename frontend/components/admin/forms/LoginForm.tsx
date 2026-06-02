@@ -1,5 +1,6 @@
 "use client"
 
+import { message } from 'antd'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -7,13 +8,11 @@ import { ShieldCheck, Loader2 } from 'lucide-react'
 import { adminLoginSchema } from '@/lib/admin/schemas'
 import type { AdminLoginPayload } from '@/types/admin'
 import { cn } from '@/utils'
-import { useAdminToast } from '../AdminToastProvider'
 import { useAdminAuth } from '../AdminAuthProvider'
 
 export default function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { toast } = useAdminToast()
   const { login } = useAdminAuth()
   const {
     register,
@@ -27,12 +26,12 @@ export default function LoginForm() {
   const onSubmit = async (values: AdminLoginPayload) => {
     try {
       await login(values)
-      toast({ title: 'Welcome back', description: 'Signed in with Django admin credentials.', variant: 'success' })
+      message.success('Welcome back. Signed in with Django admin credentials.')
       const nextPath = searchParams.get('next') ?? '/admin'
       router.replace(nextPath)
       router.refresh()
     } catch {
-      toast({ title: 'Login failed', description: 'Invalid username/password or insufficient admin access.', variant: 'error' })
+      message.error('Login failed. Invalid username/password or insufficient admin access.')
     }
   }
 
