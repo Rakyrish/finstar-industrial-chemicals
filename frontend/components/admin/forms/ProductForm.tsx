@@ -18,6 +18,38 @@ type ProductFormValues = AdminProductDraft & {
   faqs?: Faq[]
 }
 
+const BLOCKED_AI_SPEC_KEYS = ['assay', 'concentration', 'density', 'purity', 'specific gravity']
+
+const FINSTAR_CATEGORY_OPTIONS = [
+  { name: 'Building and Architecture', slug: 'building-and-architecture' },
+  { name: 'Ceramics', slug: 'ceramics' },
+  { name: 'Cleaning & Disinfection Chemicals', slug: 'cleaning-disinfection-chemicals' },
+  { name: 'Dyes Colors and Candles', slug: 'dyes-colors-and-candles' },
+  { name: 'Farming Chemicals', slug: 'farming-chemicals' },
+  { name: 'Food & Pharmaceutical Ingredients', slug: 'food-pharmaceutical-ingredients' },
+  { name: 'Food and Beverages', slug: 'food-and-beverages' },
+  { name: 'Fragrances', slug: 'fragrances' },
+  { name: 'Industrial Additives & Coating Chemicals', slug: 'industrial-additives-coating-chemicals' },
+  { name: 'Industrial Binders & Alkyd Resins', slug: 'industrial-binders-alkyd-resins' },
+  { name: 'Industrial Chemicals', slug: 'industrial-chemicals' },
+  { name: 'Lubricants & Greases', slug: 'lubricants-greases' },
+  { name: 'Micronutrients and Fertilizers', slug: 'micronutrients-and-fertilizers' },
+  { name: 'Agricultural Chemicals', slug: 'agricultural-chemicals' },
+  { name: 'Mining and metal processing', slug: 'mining-and-metal-processing' },
+  { name: 'Paints ink and coatings', slug: 'paints-ink-and-coatings' },
+  { name: 'Pharmaceuticals', slug: 'pharmaceuticals' },
+  { name: 'Pigments & Dyes', slug: 'pigments-dyes' },
+  { name: 'Plastic Rubber & PVC Products', slug: 'plastic-rubber-pvc-products' },
+  { name: 'Rubber & Plastic Industry Chemicals', slug: 'rubber-plastic-industry-chemicals' },
+  { name: 'Skin and Cosmetics', slug: 'skin-and-cosmetics' },
+  { name: 'Soaps and Detergents', slug: 'soaps-and-detergents' },
+  { name: 'Solvents', slug: 'solvents' },
+  { name: 'Solvents & Thinners', slug: 'solvents-thinners' },
+  { name: 'Specialty Chemicals', slug: 'specialty-chemicals' },
+  { name: 'Textile, Rubber, and Leather Processing', slug: 'texting-rubber-and-leather-processing' },
+  { name: 'Water treatment', slug: 'water-treatment' },
+]
+
 const emptyProduct: ProductFormValues = {
   name: '',
   slug: '',
@@ -44,7 +76,12 @@ function listFrom(value: unknown): string[] {
 }
 
 function specsFrom(value: unknown): Spec[] {
-  return Array.isArray(value) ? value.map((item: any) => ({ key: String(item.key ?? ''), value: String(item.value ?? '') })).filter((item) => item.key || item.value) : []
+  return Array.isArray(value)
+    ? value
+        .map((item: any) => ({ key: String(item.key ?? ''), value: String(item.value ?? '') }))
+        .filter((item) => item.key || item.value)
+        .filter((item) => !BLOCKED_AI_SPEC_KEYS.some((blocked) => item.key.toLowerCase().includes(blocked)))
+    : []
 }
 
 function faqsFrom(value: unknown): Faq[] {
@@ -116,8 +153,52 @@ function mapGenerated(data: any): Partial<ProductFormValues> {
     ctaContent: data.cta_content ?? '',
     schemaMarkup: data.schema_markup,
     hazardClassification: listFrom(data.safety_considerations).join('\n'),
-    category: data.product_category_suggestions?.[0] ?? '',
   }
+}
+
+function resetProductForm(): ProductFormValues {
+  return {
+    ...emptyProduct,
+    tags: [],
+    applications: [],
+    benefits: [],
+    features: [],
+    industriesServed: [],
+    specifications: [],
+    faqs: [],
+  }
+}
+
+function categorySeoDefaults(name: string, productKeywords = '') {
+  const trimmed = name.trim()
+  return {
+    name: trimmed,
+    slug: slugify(trimmed),
+    description: `Browse ${trimmed} from Finstar Industrial Chemicals for industrial buyers in Kenya, Uganda, Tanzania, and Rwanda.`,
+    seoTitle: `${trimmed} in Kenya, Uganda, Tanzania & Rwanda | Finstar`,
+    seoDescription: `Find ${trimmed} from Finstar Industrial Chemicals for B2B procurement, industrial sourcing, and quote requests across Kenya, Uganda, Tanzania, and Rwanda.`,
+    seoKeywords: [trimmed, `${trimmed} Kenya`, `${trimmed} Uganda`, `${trimmed} Tanzania`, `${trimmed} Rwanda`, productKeywords]
+      .filter(Boolean)
+      .join(', '),
+  }
+}
+
+function mergeCategoryOptions(savedCategories: CategoryOption[]) {
+  const byName = new Map<string, CategoryOption>()
+
+  FINSTAR_CATEGORY_OPTIONS.forEach((category, index) => {
+    byName.set(category.name.toLowerCase(), {
+      id: -(index + 1),
+      ...categorySeoDefaults(category.name),
+      slug: category.slug,
+    })
+  })
+
+  savedCategories.forEach((category) => {
+    byName.set(category.name.toLowerCase(), category)
+  })
+
+  return Array.from(byName.values()).sort((a, b) => a.name.localeCompare(b.name))
 }
 
 function scoreSeo(form: ProductFormValues) {
@@ -159,7 +240,7 @@ export default function ProductForm({ productId, initialData }: { productId?: st
   const [isSaving, setIsSaving] = useState(false)
   const [categorySearch, setCategorySearch] = useState('')
   const [showCategoryModal, setShowCategoryModal] = useState(false)
-  const [newCategory, setNewCategory] = useState({ name: '', slug: '', description: '', seoTitle: '', seoDescription: '' })
+  const [newCategory, setNewCategory] = useState({ name: '', slug: '', description: '', seoTitle: '', seoDescription: '', seoKeywords: '' })
 
   useEffect(() => {
     const normalized = normalizeInitial(initialData)
@@ -167,8 +248,10 @@ export default function ProductForm({ productId, initialData }: { productId?: st
     setPreviewUrl(normalized.cloudinaryUrl ?? '')
   }, [initialData])
 
-  const categories = categoriesData?.results ?? []
+  const categories = useMemo(() => mergeCategoryOptions(categoriesData?.results ?? []), [categoriesData?.results])
   const filteredCategories = categories.filter((category) => category.name.toLowerCase().includes(categorySearch.toLowerCase()))
+  const visibleCategories = (categorySearch ? filteredCategories : categories).slice(0, 12)
+  const hasExactCategoryMatch = categories.some((category) => category.name.toLowerCase() === (categorySearch || form.category || '').trim().toLowerCase())
   const seo = useMemo(() => scoreSeo(form), [form])
   const hasImage = Boolean(form.cloudinaryUrl || previewUrl || imageUrl)
 
@@ -271,13 +354,22 @@ export default function ProductForm({ productId, initialData }: { productId?: st
 
   const createCategory = async () => {
     if (!newCategory.name.trim()) return
-    const slug = newCategory.slug || slugify(newCategory.name)
+    const defaults = categorySeoDefaults(newCategory.name, form.seoKeywords)
+    const payload = {
+      ...defaults,
+      ...newCategory,
+      slug: newCategory.slug || defaults.slug,
+      description: newCategory.description || defaults.description,
+      seoTitle: newCategory.seoTitle || defaults.seoTitle,
+      seoDescription: newCategory.seoDescription || defaults.seoDescription,
+      seoKeywords: newCategory.seoKeywords || defaults.seoKeywords,
+    }
     try {
-      const category = await adminApiRequest<CategoryOption>('/admin/categories/', 'POST', { ...newCategory, slug, seoKeywords: form.seoKeywords ?? '' })
+      const category = await adminApiRequest<CategoryOption>('/admin/categories/', 'POST', payload)
       patchForm({ category: category.name })
       setCategorySearch(category.name)
       setShowCategoryModal(false)
-      setNewCategory({ name: '', slug: '', description: '', seoTitle: '', seoDescription: '' })
+      setNewCategory({ name: '', slug: '', description: '', seoTitle: '', seoDescription: '', seoKeywords: '' })
       message.success(`${category.name} has been created and selected.`)
     } catch (error: any) {
       message.error(error.message || 'Category creation failed.')
@@ -292,6 +384,15 @@ export default function ProductForm({ productId, initialData }: { productId?: st
       const path = productId ? `/admin/products/${productId}/` : '/admin/products/'
       await adminApiRequest(path, method, payload)
       message.success(status === 'active' ? 'Product published.' : 'Product draft saved.')
+      if (!productId) {
+        setForm(resetProductForm())
+        setImageUrl('')
+        setPreviewUrl('')
+        setImageStatus('idle')
+        setImageError('')
+        setCategorySearch('')
+        message.info('Form cleared. You can add another product.')
+      }
     } catch (error: any) {
       message.error(error.message || 'Save failed.')
     } finally {
@@ -352,7 +453,7 @@ export default function ProductForm({ productId, initialData }: { productId?: st
               <div className="rounded-xl border border-surface-border bg-surface/40 p-4">
                 <p className="text-sm font-semibold text-text-primary">Generation checklist</p>
                 <div className="mt-3 grid gap-2 text-sm text-text-secondary sm:grid-cols-2">
-                  {['Identify product and category', 'Write SEO title and meta', 'Draft description and FAQs', 'Create image alt text', 'Suggest internal links', 'Prepare schema data'].map((item) => (
+                  {['Identify product details', 'Write SEO title and meta', 'Draft description and FAQs', 'Create image alt text', 'Suggest internal links', 'Prepare schema data'].map((item) => (
                     <span key={item} className="inline-flex items-center gap-2"><Check className="h-3.5 w-3.5 text-amber-400" /> {item}</span>
                   ))}
                 </div>
@@ -437,20 +538,30 @@ export default function ProductForm({ productId, initialData }: { productId?: st
           <h3 className="text-base font-bold text-text-primary">Publishing</h3>
           <div className="mt-4 space-y-4">
             <label className="block text-sm font-semibold text-text-primary">Category</label>
+            <p className="text-xs text-text-muted">Choose from Finstar categories or type a custom category and create it manually.</p>
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-text-muted" />
               <input value={categorySearch || form.category || ''} onChange={(event) => { setCategorySearch(event.target.value); patchForm({ category: event.target.value }) }} className="input w-full pl-9" placeholder="Search or create category" />
             </div>
-            {categorySearch && (
-              <div className="max-h-48 overflow-auto rounded-xl border border-surface-border bg-surface/80">
-                {filteredCategories.map((category) => (
-                  <button key={category.id} type="button" onClick={() => { patchForm({ category: category.name }); setCategorySearch(category.name) }} className="block w-full px-3 py-2 text-left text-sm text-text-secondary hover:bg-surface-muted hover:text-text-primary">
-                    {category.name}
-                  </button>
-                ))}
-                <button type="button" onClick={() => { setNewCategory((current) => ({ ...current, name: categorySearch, slug: slugify(categorySearch) })); setShowCategoryModal(true) }} className="block w-full border-t border-surface-border px-3 py-2 text-left text-sm font-semibold text-amber-400">
-                  Create "{categorySearch}"
+            <div className="max-h-56 overflow-auto rounded-xl border border-surface-border bg-surface/80">
+              {visibleCategories.map((category) => (
+                <button key={`${category.id}-${category.slug}`} type="button" onClick={() => { patchForm({ category: category.name }); setCategorySearch('') }} className={cn('block w-full px-3 py-2 text-left text-sm hover:bg-surface-muted hover:text-text-primary', form.category === category.name ? 'text-amber-400' : 'text-text-secondary')}>
+                  <span className="block font-medium">{category.name}</span>
+                  {category.description ? <span className="mt-0.5 block line-clamp-1 text-xs text-text-muted">{category.description}</span> : null}
                 </button>
+              ))}
+              {visibleCategories.length === 0 && (
+                <p className="px-3 py-3 text-sm text-text-muted">No matching category found.</p>
+              )}
+              {(categorySearch || form.category) && !hasExactCategoryMatch && (
+                <button type="button" onClick={() => { setNewCategory(categorySeoDefaults(categorySearch || form.category || '', form.seoKeywords)); setShowCategoryModal(true) }} className="block w-full border-t border-surface-border px-3 py-2 text-left text-sm font-semibold text-amber-400">
+                  Create "{categorySearch || form.category}"
+                </button>
+              )}
+            </div>
+            {form.category && !categorySearch && (
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
+                Selected category: {form.category}
               </div>
             )}
             <select value={form.status} onChange={(event) => patchForm({ status: event.target.value as ProductFormValues['status'] })} className="input w-full">
@@ -491,11 +602,12 @@ export default function ProductForm({ productId, initialData }: { productId?: st
               <button type="button" onClick={() => setShowCategoryModal(false)} className="btn-ghost px-3"><X className="h-4 w-4" /></button>
             </div>
             <div className="mt-4 space-y-4">
-              <Field label="Category name" value={newCategory.name} onChange={(value) => setNewCategory((current) => ({ ...current, name: value, slug: current.slug || slugify(value) }))} />
+              <Field label="Category name" value={newCategory.name} onChange={(value) => setNewCategory((current) => ({ ...current, ...categorySeoDefaults(value, form.seoKeywords), slug: current.slug && current.slug !== slugify(current.name) ? current.slug : slugify(value) }))} />
               <Field label="Slug" value={newCategory.slug} onChange={(value) => setNewCategory((current) => ({ ...current, slug: slugify(value) }))} />
               <TextArea label="Description" value={newCategory.description} onChange={(value) => setNewCategory((current) => ({ ...current, description: value }))} rows={3} />
-              <Field label="SEO title" value={newCategory.seoTitle} onChange={(value) => setNewCategory((current) => ({ ...current, seoTitle: value }))} />
-              <TextArea label="SEO description" value={newCategory.seoDescription} onChange={(value) => setNewCategory((current) => ({ ...current, seoDescription: value }))} rows={2} />
+              <Field label="SEO title" value={newCategory.seoTitle} onChange={(value) => setNewCategory((current) => ({ ...current, seoTitle: value }))} helper={`${newCategory.seoTitle.length}/90`} />
+              <TextArea label="SEO description" value={newCategory.seoDescription} onChange={(value) => setNewCategory((current) => ({ ...current, seoDescription: value }))} rows={2} helper={`${newCategory.seoDescription.length}/220`} />
+              <TextArea label="SEO keywords" value={newCategory.seoKeywords} onChange={(value) => setNewCategory((current) => ({ ...current, seoKeywords: value }))} rows={2} />
               <button type="button" onClick={createCategory} className="btn-primary w-full justify-center">Create and select</button>
             </div>
           </div>

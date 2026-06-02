@@ -1,15 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { Mail, Phone, MapPin, Clock, Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
+import { message } from 'antd'
+import { Mail, Phone, MapPin, Clock, Send, Loader2 } from 'lucide-react'
 import { frontendConfig } from '@/lib/config'
 import { quoteService } from '@/services/quoteService'
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', company: '', message: '' })
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -18,11 +17,10 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.name || !form.email || !form.message) {
-      setError('Please fill in all required fields.')
+      message.warning('Please fill in all required fields.')
       return
     }
     setLoading(true)
-    setError(null)
     try {
       await quoteService.submitContact({
         full_name: form.name,
@@ -31,10 +29,10 @@ export default function ContactPage() {
         company: form.company,
         message: form.message,
       })
-      setSuccess(true)
+      message.success('Message dispatched. Our team will review it and reply shortly.')
       setForm({ name: '', email: '', phone: '', company: '', message: '' })
     } catch (error: any) {
-      setError(error?.response?.data?.detail || error?.message || 'An unexpected error occurred. Please try again.')
+      message.error(error?.response?.data?.detail || error?.message || 'An unexpected error occurred. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -67,26 +65,6 @@ export default function ContactPage() {
             <p className="text-xs text-text-muted mb-8">
               Fill in the form below. A certified chemical sales representative will review your message and respond within 12 hours.
             </p>
-
-            {success && (
-              <div className="flex items-start gap-3 p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-xs text-text-secondary mb-6">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-semibold text-text-primary block mb-1">Message Dispatched</span>
-                  Thank you! Your sourcing message was sent successfully. Our team will review it and reply shortly.
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <div className="flex items-start gap-3 p-4 rounded-xl border border-red-500/20 bg-red-500/5 text-xs text-text-secondary mb-6">
-                <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-semibold text-text-primary block mb-1">Validation Error</span>
-                  {error}
-                </div>
-              </div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

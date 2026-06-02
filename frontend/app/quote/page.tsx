@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
+import { message } from 'antd'
 import { useSearchParams } from 'next/navigation'
 import {
   FileText,
   Send,
   Loader2,
   CheckCircle2,
-  AlertCircle,
   FlaskConical,
   Phone,
   Layers,
@@ -18,7 +18,7 @@ import { productService } from '@/services/productService'
 import { quoteService } from '@/services/quoteService'
 import type { ProductListItem } from '@/types'
 
-export default function QuoteWizardPage() {
+function QuoteWizardContent() {
   const searchParams = useSearchParams()
   const initialProductSlug = searchParams.get('product')
 
@@ -48,7 +48,6 @@ export default function QuoteWizardPage() {
 
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   // Fetch product list for dropdown selection
   useEffect(() => {
@@ -72,6 +71,7 @@ export default function QuoteWizardPage() {
         }
       } catch (err) {
         console.error('Failed to load products for wizard:', err)
+        message.error('Failed to load products for the quote wizard.')
       } finally {
         setLoadingProducts(false)
       }
@@ -108,34 +108,30 @@ export default function QuoteWizardPage() {
   const handleNext = () => {
     if (step === 1) {
       if (!form.productId && !form.customProductName) {
-        setError('Please select a chemical compound or enter custom product name.')
+        message.warning('Please select a chemical compound or enter custom product name.')
         return
       }
-      setError(null)
       setStep(2)
     } else if (step === 2) {
       if (!form.quantity) {
-        setError('Please state requested volume / quantity.')
+        message.warning('Please state requested volume / quantity.')
         return
       }
-      setError(null)
       setStep(3)
     }
   }
 
   const handleBack = () => {
-    setError(null)
     setStep((s) => s - 1)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.fullName || !form.email || !form.phone || !form.company) {
-      setError('Please fill in all requested client details.')
+      message.warning('Please fill in all requested client details.')
       return
     }
     setSubmitting(true)
-    setError(null)
     try {
       await quoteService.create({
         product: form.productId || undefined,
@@ -155,8 +151,9 @@ export default function QuoteWizardPage() {
         additionalNotes: form.additionalNotes,
       })
       setSuccess(true)
+      message.success('Quote request submitted. Our team will review it shortly.')
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'An error occurred submitting the quote request.')
+      message.error(err?.response?.data?.message || 'An error occurred submitting the quote request.')
     } finally {
       setSubmitting(false)
     }
@@ -248,16 +245,6 @@ export default function QuoteWizardPage() {
           ) : (
             /* Wizard Steps */
             <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
-                <div className="flex items-start gap-3 p-4 rounded-xl border border-red-500/20 bg-red-500/5 text-xs text-text-secondary">
-                  <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-semibold text-text-primary block mb-1">Warning</span>
-                    {error}
-                  </div>
-                </div>
-              )}
-
               {/* Step 1: Product Selection */}
               {step === 1 && (
                 <div className="space-y-4">
@@ -615,5 +602,13 @@ export default function QuoteWizardPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function QuoteWizardPage() {
+  return (
+    <Suspense fallback={null}>
+      <QuoteWizardContent />
+    </Suspense>
   )
 }

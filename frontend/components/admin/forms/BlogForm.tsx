@@ -1,12 +1,11 @@
 "use client"
 
-import { useState } from 'react'
+import { message } from 'antd'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { adminBlogSchema } from '@/lib/admin/schemas'
 import type { AdminBlogDraft } from '@/types/admin'
-import { useAdminToast } from '../AdminToastProvider'
 
 type BlogFormValues = AdminBlogDraft
 
@@ -25,8 +24,6 @@ const defaultValues: BlogFormValues = {
 }
 
 export default function BlogForm() {
-  const [message, setMessage] = useState('')
-  const { toast } = useAdminToast()
   const {
     register,
     handleSubmit,
@@ -39,17 +36,20 @@ export default function BlogForm() {
   })
 
   const onSubmit = async (values: BlogFormValues) => {
-    setMessage('')
-    const response = await fetch('/api/admin/blog', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(values),
-      credentials: 'include',
-    })
+    try {
+      const response = await fetch('/api/admin/blog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+        credentials: 'include',
+      })
 
-    const result = await response.json()
-    setMessage(result.message ?? 'Blog post saved successfully')
-    toast({ title: 'Blog post saved', description: result.message ?? 'Blog post saved successfully', variant: 'success' })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.detail ?? result.message ?? 'Blog post save failed.')
+      message.success(result.message ?? 'Blog post saved successfully.')
+    } catch (error: any) {
+      message.error(error.message || 'Blog post save failed.')
+    }
   }
 
   return (
@@ -72,7 +72,6 @@ export default function BlogForm() {
       </section>
 
       {errors.title ? <p className="text-sm text-red-400">{errors.title.message}</p> : null}
-      {message ? <p className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">{message}</p> : null}
 
       <button type="submit" disabled={isSubmitting} className="btn-primary">
         {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}

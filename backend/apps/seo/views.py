@@ -25,7 +25,7 @@ class SiteSettingsView(APIView):
             'company': {
                 'name': getattr(settings, 'COMPANY_NAME', 'Finstar Industrial Chemicals'),
                 'brandName': getattr(settings, 'COMPANY_BRAND_NAME', 'FINSTAR'),
-                'tagline': getattr(settings, 'COMPANY_TAGLINE', 'Industrial chemical supply for East Africa'),
+                'tagline': getattr(settings, 'COMPANY_TAGLINE', 'Industrial chemical supply for Kenya, Uganda, Tanzania, and Rwanda'),
                 'description': getattr(settings, 'COMPANY_DESCRIPTION', 'Supplier of industrial chemicals, solvents, acids, alkalis, and specialty raw materials.'),
                 'email': getattr(settings, 'COMPANY_EMAIL', ''),
                 'phone': getattr(settings, 'COMPANY_PHONE', ''),

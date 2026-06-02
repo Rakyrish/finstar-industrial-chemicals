@@ -39,23 +39,34 @@ export interface Product {
   id: number
   name: string
   slug: string
-  sku: string
-  description: string
-  shortDescription: string
+  sku?: string
+  description?: string
+  shortDescription?: string
+  longDescription?: string
   category: Category
   tags: Tag[]
-  images: ProductImage[]
+  images?: ProductImage[]
   primaryImage?: string
   specifications: ProductSpec[]
+  applications?: string[]
+  benefits?: string[]
+  features?: string[]
+  industriesServed?: string[]
+  faqs?: Array<{ q?: string; question?: string; a?: string; answer?: string }>
   casNumber?: string
   chemicalFormula?: string
   purity?: string
   appearance?: string
   density?: string
   packagingType?: string
+  pricing?: string
   hazardClassification?: string
   imageAlt?: string
+  imageTitle?: string
+  imageCaption?: string
   whatsappTemplate?: string
+  quotationTemplate?: string
+  ctaContent?: string
   status: ProductStatus
   unitOfMeasure: UnitOfMeasure
   minOrderQuantity: number

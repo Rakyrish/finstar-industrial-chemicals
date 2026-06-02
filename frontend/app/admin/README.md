@@ -22,7 +22,7 @@ This folder contains the full admin panel scaffold for the FINSTAR industrial ch
 - App Router layouts live under `app/admin/`.
 - `middleware.ts` protects admin pages and API routes.
 - `app/api/admin/*` provides secure proxy/auth endpoints and mock fallbacks.
-- `components/admin/*` contains shared shell, charts, tables, forms, toasts, and loading states.
+- `components/admin/*` contains shared shell, charts, tables, forms, Ant Design messages, and loading states.
 - `lib/admin/*` contains auth helpers, mock data, validation schemas, navigation config, and server/client data helpers.
 
 ## Auth Flow
@@ -50,7 +50,7 @@ If the backend endpoints differ, update the mappings in:
 
 - Responsive sidebar and topbar
 - Dark/light mode toggle with cookie persistence
-- Toast notifications
+- Ant Design message notifications
 - Loading skeletons
 - Search and filter bars
 - Table and chart components

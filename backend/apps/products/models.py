@@ -7,6 +7,9 @@ class Category(models.Model):
     name = models.CharField(max_length=255, unique=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     description = models.TextField(blank=True, null=True)
+    seo_title = models.CharField(max_length=90, blank=True, null=True)
+    seo_description = models.CharField(max_length=220, blank=True, null=True)
+    seo_keywords = models.TextField(blank=True, null=True)
     is_featured = models.BooleanField(default=False)
 
     class Meta:

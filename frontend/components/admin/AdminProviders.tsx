@@ -3,7 +3,6 @@
 import { SWRConfig } from 'swr'
 import type { AdminSession } from '@/types/admin'
 import AdminAuthProvider from './AdminAuthProvider'
-import AdminToastProvider from './AdminToastProvider'
 
 const fetcher = async (url: string) => {
   const response = await fetch(url, { credentials: 'include' })
@@ -29,7 +28,7 @@ export default function AdminProviders({
       }}
     >
       <AdminAuthProvider initialSession={initialSession}>
-        <AdminToastProvider>{children}</AdminToastProvider>
+        {children}
       </AdminAuthProvider>
     </SWRConfig>
   )

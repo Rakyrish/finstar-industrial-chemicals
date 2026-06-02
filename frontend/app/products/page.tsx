@@ -188,6 +188,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                 <div className="grid-products">
                   {products.map((product) => (
                     <ProductCard key={product.id} product={product} />
+              
                   ))}
                 </div>
 

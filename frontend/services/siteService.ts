@@ -28,7 +28,7 @@ export type SiteChromeData = SiteSettings & {
 const fallbackCompany: CompanyInfo = {
   name: 'Finstar Industrial Chemicals',
   brandName: 'FINSTAR',
-  tagline: 'Industrial chemical supply for East Africa',
+  tagline: 'Industrial chemical supply for Kenya, Uganda, Tanzania, and Rwanda',
   description: 'Supplier of industrial chemicals, solvents, acids, alkalis, and specialty raw materials.',
   email: frontendConfig.companyEmail,
   phone: frontendConfig.phoneNumber,
