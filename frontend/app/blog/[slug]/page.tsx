@@ -24,7 +24,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       keywords: [post.title, 'chemical guide', 'technical article', post.category.name],
     })
   } catch {
-    return generatePageMetadata({ title: 'Article Not Found' })
+    return generatePageMetadata({
+      title: 'Article Not Found',
+      description: 'The requested Finstar Industrial Chemicals article could not be found.',
+    })
   }
 }
 

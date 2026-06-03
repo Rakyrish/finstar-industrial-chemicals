@@ -65,7 +65,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       keywords: [product.name, `${product.name} supplier`, `${product.name} formula`, 'industrial chemicals'],
     })
   } catch {
-    return generatePageMetadata({ title: 'Product Not Found' })
+    return generatePageMetadata({
+      title: 'Product Not Found',
+      description: 'The requested Finstar Industrial Chemicals product could not be found.',
+    })
   }
 }
 
