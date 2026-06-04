@@ -3,6 +3,11 @@ const API_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ||
   'http://127.0.0.1:8000'
 
+const INTERNAL_API_URL =
+  process.env.API_BASE_URL ||      // ← reads the existing production env var
+  process.env.INTERNAL_API_URL ||
+  API_URL
+
 export const frontendConfig = {
   apiUrl: API_URL,
   companyEmail: process.env.NEXT_PUBLIC_EMAIL || 'info@finstarindustrial.com',
@@ -16,4 +21,7 @@ export const getWhatsAppUrl = (message?: string) => {
   return `https://wa.me/${number}${text}`
 }
 
-export const getBackendApiUrl = () => frontendConfig.apiUrl
+export const getBackendApiUrl = () => {
+  const isServer = typeof window === 'undefined'
+  return isServer ? INTERNAL_API_URL : API_URL
+}

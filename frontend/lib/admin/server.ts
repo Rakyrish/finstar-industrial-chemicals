@@ -42,12 +42,12 @@ export async function fetchAdminDashboard(): Promise<AdminDashboardResponse> {
     const token = cookieStore.get(ADMIN_ACCESS_COOKIE)?.value
 
     if (!token) {
-      // Not authenticated — return fallback
       return adminOverview as AdminDashboardResponse
     }
 
     const apiUrl =
-      (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) ||
+      process.env.API_BASE_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
       'http://localhost:8000/api/v1'
 
     const response = await fetch(`${apiUrl}/admin/overview/`, {
@@ -61,7 +61,6 @@ export async function fetchAdminDashboard(): Promise<AdminDashboardResponse> {
     })
 
     if (!response.ok) {
-      // API error — return fallback
       return adminOverview as AdminDashboardResponse
     }
 
@@ -69,7 +68,6 @@ export async function fetchAdminDashboard(): Promise<AdminDashboardResponse> {
     return data as AdminDashboardResponse
   } catch (error) {
     console.error('Error fetching admin dashboard:', error)
-    // On error, return mock data as fallback
     return adminOverview as AdminDashboardResponse
   }
 }
@@ -113,7 +111,8 @@ export async function fetchAdminList<T>(resource: string): Promise<AdminListResp
     }
 
     const apiUrl =
-      (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) ||
+      process.env.API_BASE_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
       'http://localhost:8000/api/v1'
 
     const response = await fetch(`${apiUrl}/admin/${resource}/`, {
@@ -131,7 +130,6 @@ export async function fetchAdminList<T>(resource: string): Promise<AdminListResp
     }
 
     const data = await response.json()
-    // Normalise array data or object data
     if (Array.isArray(data)) {
       return { results: data, count: data.length }
     }
@@ -147,7 +145,6 @@ export async function fetchAdminList<T>(resource: string): Promise<AdminListResp
 
 /**
  * Fetch a single admin resource by ID (server-side only).
- * Returns null if not found or unauthenticated.
  */
 export async function fetchAdminDetail<T>(resource: string, id: string | number): Promise<T | null> {
   try {
@@ -157,7 +154,8 @@ export async function fetchAdminDetail<T>(resource: string, id: string | number)
     if (!token) return null
 
     const apiUrl =
-      (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) ||
+      process.env.API_BASE_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
       'http://localhost:8000/api/v1'
 
     const response = await fetch(`${apiUrl}/admin/${resource}/${id}/`, {
@@ -191,7 +189,8 @@ export async function fetchAdminResource(resource: string, searchParams?: URLSea
     }
 
     const apiUrl =
-      (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) ||
+      process.env.API_BASE_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
       'http://localhost:8000/api/v1'
 
     const query = searchParams ? `?${searchParams.toString()}` : ''
@@ -225,7 +224,6 @@ export function hasAdminPermission(
 ): boolean {
   if (!session) return false
   if (session.isSuperuser) return true
-
   return session.permissions.some((p) => p.codename === requiredPermission)
 }
 
@@ -237,14 +235,7 @@ export function hasAdminRole(
   requiredRole: 'superuser' | 'staff'
 ): boolean {
   if (!session) return false
-
-  if (requiredRole === 'superuser') {
-    return session.isSuperuser
-  }
-
-  if (requiredRole === 'staff') {
-    return session.isStaff
-  }
-
+  if (requiredRole === 'superuser') return session.isSuperuser
+  if (requiredRole === 'staff') return session.isStaff
   return false
 }

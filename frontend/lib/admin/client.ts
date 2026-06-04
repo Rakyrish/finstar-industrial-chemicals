@@ -12,7 +12,9 @@
 import { useState, useEffect, useCallback } from 'react'
 
 const ADMIN_API_BASE =
-  (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) ||
+  (typeof window !== 'undefined'
+    ? process.env.NEXT_PUBLIC_API_URL
+    : process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_URL) ||
   'http://localhost:8000/api/v1'
 
 interface UseAdminResourceResult<T> {
@@ -36,7 +38,7 @@ export function useAdminResource<T>(
 
     try {
       const response = await fetch(`${ADMIN_API_BASE}/admin/${resource}/`, {
-        credentials: 'include',           // sends httpOnly JWT cookies
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
@@ -45,7 +47,6 @@ export function useAdminResource<T>(
       })
 
       if (response.status === 401 || response.status === 403) {
-        // Not authenticated or not admin — use fallback silently
         setData(fallback)
         return
       }
@@ -59,7 +60,6 @@ export function useAdminResource<T>(
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load data'
       setError(message)
-      // Fall back to stub data so the page still renders
       setData(fallback)
     } finally {
       setLoading(false)
@@ -96,7 +96,6 @@ export async function adminApiRequest<T = unknown>(
     throw new Error(message)
   }
 
-  // 204 No Content
   if (response.status === 204) return undefined as T
 
   return (await response.json()) as T

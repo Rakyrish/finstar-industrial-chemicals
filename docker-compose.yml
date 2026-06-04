@@ -1,14 +1,12 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: finstar-db
+    container_name: finstar-chemicals-db
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -23,7 +21,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: finstar-backend
+    container_name: finstar-chemicals-backend
     restart: unless-stopped
     env_file:
       - .env
@@ -31,7 +29,8 @@ services:
       DJANGO_SETTINGS_MODULE: config.settings.docker
       DEBUG: ${DJANGO_DEBUG:-False}
       SECRET_KEY: ${SECRET_KEY}
-      ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,backend}
+      ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,backend,finstar-chemicals-backend}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,backend,finstar-chemicals-backend}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
       CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-http://localhost:3000}
       DB_ENGINE: django.db.backends.postgresql
@@ -41,22 +40,20 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
-      API_BASE_URL: http://backend:8000/api/v1
-      SITE_URL: ${SITE_URL:-http://localhost:3000}
+      API_BASE_URL: http://finstar-chemicals-backend:8000/api/v1
+      SITE_URL: ${SITE_URL:-https://finstarindustrialchemicals.com}
       EMAIL_BACKEND: ${EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}
       EMAIL_HOST: ${EMAIL_HOST:-}
       EMAIL_PORT: ${EMAIL_PORT:-587}
       EMAIL_USE_TLS: ${EMAIL_USE_TLS:-True}
       EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
       EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
-      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-Finstar Sourcing <sales@example.com>}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-Finstar Industrial Chemicals <sales@finstarindustrialchemicals.com>}
       SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-False}
-      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-False}
-      CSRF_COOKIE_SECURE: ${CSRF_COOKIE_SECURE:-False}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-True}
+      CSRF_COOKIE_SECURE: ${CSRF_COOKIE_SECURE:-True}
       DJANGO_COLLECTSTATIC: ${DJANGO_COLLECTSTATIC:-1}
       DJANGO_MIGRATE: ${DJANGO_MIGRATE:-1}
-    ports:
-      - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - static_data:/app/staticfiles
       - media_data:/app/media
@@ -65,29 +62,37 @@ services:
         condition: service_healthy
     networks:
       - finstar-network
+      - shared-nginx
 
   frontend:
     build:
       context: .
       dockerfile: frontend/Dockerfile
-    container_name: finstar-frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://finstarindustrialchemicals.com/api/v1}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://finstarindustrialchemicals.com}
+        NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:-}
+        NEXT_PUBLIC_WHATSAPP_NUMBER: ${NEXT_PUBLIC_WHATSAPP_NUMBER:-}
+        NEXT_PUBLIC_PHONE_NUMBER: ${NEXT_PUBLIC_PHONE_NUMBER:-}
+        NEXT_PUBLIC_COMPANY_EMAIL: ${NEXT_PUBLIC_COMPANY_EMAIL:-}
+    container_name: finstar-chemicals-frontend
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
-      API_BASE_URL: http://backend:8000/api/v1
-      ADMIN_BACKEND_URL: http://backend:8000/api/v1
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://finstarindustrialchemicals.com}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://finstarindustrialchemicals.com/api/v1}
+      API_BASE_URL: http://finstar-chemicals-backend:8000/api/v1
+      ADMIN_BACKEND_URL: http://finstar-chemicals-backend:8000/api/v1
+      INTERNAL_API_URL: http://finstar-chemicals-backend:8000/api/v1
       NEXT_PUBLIC_WHATSAPP_NUMBER: ${NEXT_PUBLIC_WHATSAPP_NUMBER:-}
       NEXT_PUBLIC_PHONE_NUMBER: ${NEXT_PUBLIC_PHONE_NUMBER:-}
       NEXT_PUBLIC_COMPANY_EMAIL: ${NEXT_PUBLIC_COMPANY_EMAIL:-}
       NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:-}
-    ports:
-      - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
       - backend
     networks:
       - finstar-network
+      - shared-nginx
 
 volumes:
   postgres_data:
@@ -97,3 +102,6 @@ volumes:
 networks:
   finstar-network:
     driver: bridge
+  shared-nginx:
+    external: true
+    name: finstarindustrialsystems_finstar-network

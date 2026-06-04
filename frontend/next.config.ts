@@ -3,6 +3,7 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: 'standalone',
+  trailingSlash: false,
 
   // Image optimization
   images: {
@@ -52,21 +53,26 @@ const nextConfig: NextConfig = {
     ]
   },
 
-  // SEO-safe redirects
   async redirects() {
-    return [
-      {
-        source: '/home',
-        destination: '/',
-        permanent: true,
-      },
-      {
-        source: '/chemicals',
-        destination: '/products',
-        permanent: true,
-      },
-    ]
-  },
+  return [
+    {
+      source: '/home',
+      destination: '/',
+      permanent: true,
+    },
+    {
+      source: '/chemicals',
+      destination: '/products',
+      permanent: true,
+    },
+    {
+      source: '/admin/',
+      destination: 'https://finstarindustrialchemicals.com/admin',
+      permanent: true,
+      basePath: false,
+    },
+  ]
+},
 
   // Rewrites for API proxy in development. The destination must come from env.
   async rewrites() {

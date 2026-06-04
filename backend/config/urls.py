@@ -14,6 +14,8 @@ urlpatterns = [
     
     # API Routers
     path('api/v1/auth/', include('authentication.urls')),
+    path('api/admin/auth/', include('authentication.urls')),
+    path('api/admin/auth/', include('authentication.urls')),
     path('api/v1/products/', include('products.urls')),
     path('api/v1/inventory/', include('inventory.urls')),
     path('api/v1/inquiries/', include('inquiries.urls')),
