@@ -580,6 +580,15 @@
       radial-gradient(at 0% 100%, rgba(245, 158, 11, 0.03) 0px, transparent 50%);
   }
 
+  [data-theme='light'] .hero-dark.bg-mesh {
+    background-image:
+      radial-gradient(at 40% 20%, rgba(10, 92, 245, 0.12) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgba(245, 158, 11, 0.08) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, rgba(5, 41, 116, 0.2) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, rgba(10, 92, 245, 0.06) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(245, 158, 11, 0.06) 0px, transparent 50%);
+  }
+
   /* Noise texture overlay */
   .noise-overlay::before {
     content: '';
@@ -593,6 +602,10 @@
 
   [data-theme='light'] .noise-overlay::before {
     opacity: 0.2;
+  }
+
+  [data-theme='light'] .hero-dark.noise-overlay::before {
+    opacity: 0.4;
   }
 
   /* Text balance */

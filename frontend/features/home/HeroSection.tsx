@@ -13,12 +13,12 @@ const HERO_BADGES = [
 export default function HeroSection() {
   return (
     <section
-      className="relative min-h-[60vh] sm:min-h-[75vh] lg:min-h-[60vh] flex items-center overflow-hidden bg-mesh noise-overlay pt-[72px] pb-6 sm:pb-0"
+      className="hero-dark relative min-h-[60vh] sm:min-h-[75vh] lg:min-h-[60vh] flex items-center overflow-hidden bg-[#0a0f1e] bg-mesh noise-overlay pt-[72px] pb-6 sm:pb-0"
       aria-label="Hero section"
     >
       {/* Background gradient layers */}
       <div className="absolute inset-0 bg-hero-gradient" />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface/80" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0a0f1e]/80" />
 
       {/* Decorative grid lines */}
       <div
@@ -45,7 +45,7 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <span className="section-label mb-6">
+            <span className="section-label mb-6 !border-amber-500/20 !bg-amber-500/10 !text-amber-400">
               ⚗️ Trusted Industrial Chemical Partner
             </span>
           </motion.div>
@@ -55,7 +55,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="font-display font-bold text-text-primary mb-6 leading-[1.1] text-balance"
+            className="font-display font-bold text-[#f0f4ff] mb-6 leading-[1.1] text-balance"
           >
             Precision Chemistry.{' '}
             <span className="block sm:inline text-gradient-brand">Industrial Scale.</span>
@@ -66,7 +66,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-base sm:text-lg md:text-xl text-text-secondary max-w-2xl mb-8 sm:mb-10 leading-relaxed"
+            className="text-base sm:text-lg md:text-xl text-[#9ab0d0] max-w-2xl mb-8 sm:mb-10 leading-relaxed"
           >
             Kenya, Uganda, Tanzania, and Rwanda&rsquo;s trusted source for high-purity
             industrial solvents, acids, reagents, and specialty chemicals. Reliable
@@ -84,7 +84,7 @@ export default function HeroSection() {
               Request a Quote
               <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link href="/products" className="btn-outline px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base">
+            <Link href="/products" className="btn-outline px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base !border-amber-500/40 !text-amber-400 hover:!border-amber-400 hover:!bg-amber-500/10">
               Browse Products
             </Link>
           </motion.div>
@@ -99,7 +99,7 @@ export default function HeroSection() {
             {HERO_BADGES.map(({ icon: Icon, label }) => (
               <div
                 key={label}
-                className="flex min-h-11 items-center gap-2 px-3 py-2 rounded-lg glass-card-light text-xs font-medium text-text-secondary break-anywhere"
+                className="flex min-h-11 items-center gap-2 px-3 py-2 rounded-lg glass-card-light text-xs font-medium text-[#9ab0d0] break-anywhere"
               >
                 <Icon className="w-3.5 h-3.5 text-amber-400" />
                 {label}
@@ -136,12 +136,12 @@ export default function HeroSection() {
         className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1"
         aria-hidden="true"
       >
-        <span className="text-[10px] uppercase tracking-widest text-text-muted">Scroll</span>
+        <span className="text-[10px] uppercase tracking-widest text-[#5a6e8a]">Scroll</span>
         <motion.div
           animate={{ y: [0, 6, 0] }}
           transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
         >
-          <ChevronDown className="w-4 h-4 text-text-muted" />
+          <ChevronDown className="w-4 h-4 text-[#5a6e8a]" />
         </motion.div>
       </motion.div>
     </section>
