@@ -26,7 +26,7 @@ export default function LoginForm() {
   const onSubmit = async (values: AdminLoginPayload) => {
     try {
       await login(values)
-      message.success('Welcome back. Signed in with Django admin credentials.')
+      message.success('Welcome Login Successful.')
       const nextPath = searchParams.get('next') ?? '/admin'
       router.replace(nextPath)
       router.refresh()

@@ -18,8 +18,8 @@ export default function AdminDataTable<T extends object>({
 }) {
   return (
     <div className="overflow-hidden rounded-3xl border border-surface-border bg-surface-card shadow-card">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-surface-border text-left text-sm">
+      <div className="overflow-x-auto" role="region" aria-label="Scrollable data table" tabIndex={0}>
+        <table className="min-w-[720px] divide-y divide-surface-border text-left text-sm">
           <thead className="bg-surface/40 text-xs uppercase tracking-[0.2em] text-text-muted">
             <tr>
               {columns.map((column) => (

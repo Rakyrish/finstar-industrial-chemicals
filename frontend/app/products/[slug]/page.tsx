@@ -138,14 +138,14 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
       {/* Navigation Breadcrumb bar */}
       <div className="border-b border-surface-border bg-surface-card/30 py-4">
-        <div className="container-wide flex items-center justify-between text-xs">
+        <div className="container-wide flex min-w-0 items-center justify-between gap-3 text-xs">
           <Link
             href="/products"
-            className="flex items-center gap-1.5 text-text-secondary hover:text-amber-400 transition-colors"
+            className="flex min-h-11 shrink-0 items-center gap-1.5 text-text-secondary hover:text-amber-400 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Catalogue
           </Link>
-          <div className="flex items-center gap-2 text-text-muted">
+          <div className="hidden min-w-0 items-center gap-2 text-text-muted sm:flex">
             <Link href="/" className="hover:text-text-secondary">Home</Link>
             <span>/</span>
             <Link href="/products" className="hover:text-text-secondary">Catalogue</Link>
@@ -203,7 +203,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
               >
                 {product.category.name}
               </Link>
-              <h1 className="font-display font-bold text-text-primary text-3xl md:text-4xl leading-tight">
+              <h1 className="font-display font-bold text-text-primary text-2xl sm:text-3xl md:text-4xl leading-tight break-anywhere">
                 {product.name}
               </h1>
               {product.chemicalFormula && (
@@ -231,9 +231,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
               </h3>
               <div className="divide-y divide-surface-border">
                 {specificationRows.map((spec) => (
-                  <div key={spec.label} className="flex items-center justify-between gap-4 py-2 text-xs">
-                    <span className="text-text-muted">{spec.label}</span>
-                    <span className="text-right font-medium text-text-secondary">{spec.value}</span>
+                  <div key={spec.label} className="grid grid-cols-1 gap-1 py-2 text-xs sm:grid-cols-2 sm:gap-4">
+                    <span className="text-text-muted break-anywhere">{spec.label}</span>
+                    <span className="font-medium text-text-secondary break-anywhere sm:text-right">{spec.value}</span>
                   </div>
                 ))}
               </div>
@@ -280,17 +280,17 @@ export default async function ProductDetailPage({ params }: PageProps) {
             <div className="lg:col-span-7 space-y-8">
               {overviewRows.length > 0 && (
                 <div className="glass-card overflow-hidden">
-                  <div className="border-b border-surface-border px-6 py-4">
+                  <div className="border-b border-surface-border px-4 py-4 sm:px-6">
                     <h3 className="font-display text-lg font-semibold text-text-primary">Product Overview</h3>
                   </div>
                   <div className="divide-y divide-surface-border">
                     {overviewRows.map((row) => (
-                      <div key={row.label} className="grid grid-cols-1 gap-2 px-6 py-4 text-sm sm:grid-cols-3">
+                      <div key={row.label} className="grid grid-cols-1 gap-2 px-4 py-4 text-sm sm:grid-cols-3 sm:px-6">
                         <span className="font-medium text-text-muted">{row.label}</span>
                         <span className="sm:col-span-2 text-text-secondary">{row.value}</span>
                       </div>
                     ))}
-                    <p>
+                    <p className="px-4 py-4 text-sm leading-7 sm:px-6">
                       Explore related{' '}
                       <Link
                         href={internalResources[0].href}

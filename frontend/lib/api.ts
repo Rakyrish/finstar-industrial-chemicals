@@ -1,10 +1,9 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, AxiosError } from 'axios'
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1'
+import { frontendConfig } from './config'
 
 /** Shared Axios instance with base config */
 export const apiClient: AxiosInstance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: frontendConfig.apiUrl,
   timeout: 15_000,
   headers: {
     'Content-Type': 'application/json',

@@ -43,7 +43,7 @@ export default function MobileSidebar({ isOpen, onClose, navItems, company }: Mo
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed top-0 right-0 bottom-0 z-[70] w-[320px] max-w-[90vw] bg-surface-card border-l border-surface-border overflow-y-auto flex flex-col"
+            className="fixed top-0 right-0 bottom-0 z-[70] w-[320px] max-w-full bg-surface-card border-l border-surface-border overflow-y-auto flex flex-col"
             aria-label="Mobile navigation menu"
             role="dialog"
             aria-modal="true"
@@ -60,7 +60,7 @@ export default function MobileSidebar({ isOpen, onClose, navItems, company }: Mo
               </div>
               <button
                 onClick={onClose}
-                className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all"
+                className="touch-target inline-flex items-center justify-center rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all"
                 aria-label="Close navigation menu"
               >
                 <X className="w-5 h-5" />
@@ -78,7 +78,7 @@ export default function MobileSidebar({ isOpen, onClose, navItems, company }: Mo
                     <div key={item.label}>
                       <button
                         onClick={() => toggleCategory(item.label)}
-                        className="flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all duration-150"
+                        className="flex min-h-11 items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all duration-150"
                         aria-expanded={isExpanded}
                       >
                         {item.label}
@@ -105,7 +105,7 @@ export default function MobileSidebar({ isOpen, onClose, navItems, company }: Mo
                                   <Link
                                     href={cat.href}
                                     onClick={onClose}
-                                    className="block px-4 py-2 text-xs font-semibold text-text-primary hover:text-amber-400 transition-colors uppercase tracking-wider"
+                                    className="block min-h-11 px-4 py-3 text-xs font-semibold text-text-primary hover:text-amber-400 transition-colors uppercase tracking-wider break-anywhere"
                                   >
                                     {cat.label}
                                   </Link>
@@ -116,7 +116,7 @@ export default function MobileSidebar({ isOpen, onClose, navItems, company }: Mo
                                           <Link
                                             href={sub.href}
                                             onClick={onClose}
-                                            className="flex items-center gap-1.5 px-4 py-1.5 text-xs text-text-muted hover:text-text-secondary transition-colors"
+                                            className="flex min-h-11 items-center gap-1.5 px-4 py-2 text-xs text-text-muted hover:text-text-secondary transition-colors break-anywhere"
                                           >
                                             <ArrowRight className="w-3 h-3 text-amber-500/60" />
                                             {sub.label}
@@ -140,7 +140,7 @@ export default function MobileSidebar({ isOpen, onClose, navItems, company }: Mo
                     key={item.label}
                     href={item.href ?? '#'}
                     onClick={onClose}
-                    className="flex items-center px-4 py-3 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all duration-150"
+                    className="flex min-h-11 items-center px-4 py-3 rounded-xl text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all duration-150"
                   >
                     {item.label}
                   </Link>
@@ -160,7 +160,7 @@ export default function MobileSidebar({ isOpen, onClose, navItems, company }: Mo
               {company.phone ? (
                 <a
                   href={`tel:${company.phone.replace(/\s/g, '')}`}
-                  className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all border border-surface-border"
+                  className="flex min-h-11 items-center justify-center gap-2 py-3 rounded-xl text-sm text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all border border-surface-border"
                 >
                   <Phone className="w-4 h-4 text-amber-400" />
                   {company.phone}

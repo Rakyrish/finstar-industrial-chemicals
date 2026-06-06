@@ -1,18 +1,52 @@
 import type { NextConfig } from 'next'
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+const rootEnvPath = resolve(process.cwd(), '..', '.env')
+
+if (existsSync(rootEnvPath)) {
+  const envFile = readFileSync(rootEnvPath, 'utf8')
+
+  envFile.split(/\r?\n/).forEach((line) => {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) return
+
+    const separatorIndex = trimmed.indexOf('=')
+    if (separatorIndex === -1) return
+
+    const key = trimmed.slice(0, separatorIndex).trim()
+    const value = trimmed.slice(separatorIndex + 1).trim().replace(/^['"]|['"]$/g, '')
+
+    if (key && process.env[key] === undefined) {
+      process.env[key] = value
+    }
+  })
+}
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
+const siteImageHostname = siteUrl ? new URL(siteUrl).hostname : undefined
+const extraImageHostnames = (process.env.NEXT_PUBLIC_IMAGE_HOSTNAMES || '')
+  .split(',')
+  .map((hostname) => hostname.trim())
+  .filter(Boolean)
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   trailingSlash: false,
+  skipTrailingSlashRedirect: true,
 
   // Image optimization
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**.finstarindustrial.com',
-      },
+      ...(siteImageHostname
+        ? [{ protocol: 'https' as const, hostname: siteImageHostname }]
+        : []),
+      ...extraImageHostnames.map((hostname) => ({
+        protocol: 'https' as const,
+        hostname,
+      })),
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
@@ -54,25 +88,29 @@ const nextConfig: NextConfig = {
   },
 
   async redirects() {
-  return [
-    {
-      source: '/home',
-      destination: '/',
-      permanent: true,
-    },
-    {
-      source: '/chemicals',
-      destination: '/products',
-      permanent: true,
-    },
-    {
-      source: '/admin/',
-      destination: 'https://finstarindustrialchemicals.com/admin',
-      permanent: true,
-      basePath: false,
-    },
-  ]
-},
+    return [
+      {
+        source: '/home',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/chemicals',
+        destination: '/products',
+        permanent: true,
+      },
+      ...(siteUrl
+        ? [
+            {
+              source: '/admin/',
+              destination: `${siteUrl}/admin`,
+              permanent: true,
+              basePath: false as const,
+            },
+          ]
+        : []),
+    ]
+  },
 
   // Rewrites for API proxy in development. The destination must come from env.
   async rewrites() {

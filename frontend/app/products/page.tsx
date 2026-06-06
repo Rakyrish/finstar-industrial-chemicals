@@ -105,7 +105,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                   placeholder="Keyword search..."
                   className="input-base py-2.5 pl-3.5 pr-8 text-xs"
                 />
-                <button type="submit" className="absolute right-2.5 p-1 text-text-muted hover:text-amber-400">
+                <button type="submit" className="absolute right-0 flex h-11 w-11 items-center justify-center text-text-muted hover:text-amber-400" aria-label="Apply product search">
                   <Search className="w-3.5 h-3.5" />
                 </button>
               </form>
@@ -129,7 +129,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                 <li>
                   <Link
                     href={`/products${searchQuery ? `?search=${searchQuery}` : ''}`}
-                    className={`block px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                    className={`block min-h-11 px-3 py-3 rounded-lg text-xs font-medium transition-all ${
                       !categorySlug
                         ? 'text-amber-400 bg-amber-500/10 border border-amber-500/20 shadow-glow-amber'
                         : 'text-text-secondary hover:text-text-primary hover:bg-surface-muted border border-transparent'
@@ -142,7 +142,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                   <li key={cat.id}>
                     <Link
                       href={`/products?category=${cat.slug}${searchQuery ? `&search=${searchQuery}` : ''}`}
-                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all border ${
+                      className={`flex min-h-11 items-center justify-between gap-2 px-3 py-3 rounded-lg text-xs font-medium transition-all border break-anywhere ${
                         categorySlug === cat.slug
                           ? 'text-amber-400 bg-amber-500/10 border-amber-500/20 shadow-glow-amber'
                           : 'text-text-secondary hover:text-text-primary hover:bg-surface-muted border-transparent'
@@ -194,7 +194,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
 
                 {/* Pagination */}
                 {paginatedResult.count > 12 && (
-                  <div className="flex justify-between items-center py-6 border-t border-surface-border">
+                  <div className="flex flex-wrap items-center justify-between gap-3 py-6 border-t border-surface-border">
                     <Link
                       href={`/products?page=${page - 1}${categorySlug ? `&category=${categorySlug}` : ''}${
                         searchQuery ? `&search=${searchQuery}` : ''

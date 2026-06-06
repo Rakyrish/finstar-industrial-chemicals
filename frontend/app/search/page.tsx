@@ -82,7 +82,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Main search bar form */}
           <div className="glass-card p-6 border border-surface-border">
-            <form action="/search" method="GET" className="relative flex items-center gap-3">
+            <form action="/search" method="GET" className="relative flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
               <div className="relative flex-grow">
                 <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-text-muted pointer-events-none" />
                 <input
@@ -96,7 +96,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
                 {query && (
                   <Link
                     href="/search"
-                    className="absolute right-3.5 top-3.5 p-0.5 text-text-muted hover:text-text-primary transition-colors"
+                    className="absolute right-1.5 top-1.5 flex h-11 w-11 items-center justify-center text-text-muted hover:text-text-primary transition-colors"
                     aria-label="Clear search"
                   >
                     <X className="w-4 h-4" />
@@ -113,9 +113,9 @@ export default async function SearchPage({ searchParams }: PageProps) {
           {query.trim() ? (
             products.length > 0 ? (
               <div className="space-y-8">
-                <div className="flex justify-between items-center text-xs text-text-muted">
+                <div className="flex flex-col gap-3 text-xs text-text-muted sm:flex-row sm:items-center sm:justify-between">
                   <span>Found {paginatedResult.count} matching chemical compounds</span>
-                  <Link href="/products" className="text-amber-400 hover:text-amber-300 flex items-center gap-1">
+                  <Link href="/products" className="inline-flex min-h-11 items-center gap-1 text-amber-400 hover:text-amber-300">
                     <ArrowLeft className="w-3.5 h-3.5" /> Back to Full Catalogue
                   </Link>
                 </div>
@@ -128,7 +128,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
 
                 {/* Pagination */}
                 {paginatedResult.count > 12 && (
-                  <div className="flex justify-between items-center py-6 border-t border-surface-border">
+                  <div className="flex flex-wrap justify-between gap-3 py-6 border-t border-surface-border">
                     <Link
                       href={`/search?page=${page - 1}&q=${encodeURIComponent(query)}`}
                       className={`btn-secondary text-xs px-4 py-2 ${
@@ -163,7 +163,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
                 <p className="text-xs text-text-muted max-w-sm mx-auto leading-relaxed">
                   We couldn&rsquo;t find any product matching &ldquo;{query}&rdquo;. Double check the spelling, CAS registry number, or try searching by category instead.
                 </p>
-                <div className="flex justify-center gap-4 pt-2">
+                <div className="flex flex-col justify-center gap-3 pt-2 sm:flex-row sm:gap-4">
                   <Link href="/products" className="btn-primary text-xs">
                     Browse All Products
                   </Link>

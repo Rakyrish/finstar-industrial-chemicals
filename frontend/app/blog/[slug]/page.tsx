@@ -51,14 +51,14 @@ export default async function BlogDetailPage({ params }: PageProps) {
 
       {/* Navigation Breadcrumbs bar */}
       <div className="border-b border-surface-border bg-surface-card/30 py-4">
-        <div className="container-wide flex items-center justify-between text-xs">
+        <div className="container-wide flex min-w-0 items-center justify-between gap-3 text-xs">
           <Link
             href="/blog"
-            className="flex items-center gap-1.5 text-text-secondary hover:text-amber-400 transition-colors"
+            className="flex min-h-11 shrink-0 items-center gap-1.5 text-text-secondary hover:text-amber-400 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Knowledge Base
           </Link>
-          <div className="flex items-center gap-2 text-text-muted">
+          <div className="hidden min-w-0 items-center gap-2 text-text-muted sm:flex">
             <Link href="/" className="hover:text-text-secondary">Home</Link>
             <span>/</span>
             <Link href="/blog" className="hover:text-text-secondary">Blog</Link>
@@ -118,7 +118,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
           <main className="lg:col-span-8 glass-card p-6 md:p-8 border border-surface-border space-y-6 text-sm md:text-base text-text-secondary leading-relaxed font-sans">
             {/* HTML / Raw Content Render */}
             <div
-              className="prose prose-invert prose-amber max-w-none space-y-4"
+              className="prose-finstar max-w-none space-y-4 break-anywhere"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 

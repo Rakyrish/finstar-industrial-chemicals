@@ -13,7 +13,7 @@ const HERO_BADGES = [
 export default function HeroSection() {
   return (
     <section
-      className="relative min-h-[60vh] sm:min-h-[75vh] lg:min-h-[60vh] flex items-center overflow-hidden bg-mesh noise-overlay pt-[72px]"
+      className="relative min-h-[60vh] sm:min-h-[75vh] lg:min-h-[60vh] flex items-center overflow-hidden bg-mesh noise-overlay pt-[72px] pb-6 sm:pb-0"
       aria-label="Hero section"
     >
       {/* Background gradient layers */}
@@ -58,7 +58,7 @@ export default function HeroSection() {
             className="font-display font-bold text-text-primary mb-6 leading-[1.1] text-balance"
           >
             Precision Chemistry.{' '}
-            <span className="text-gradient-brand">Industrial Scale.</span>
+            <span className="block sm:inline text-gradient-brand">Industrial Scale.</span>
           </motion.h1>
 
           {/* Sub */}
@@ -66,7 +66,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg md:text-xl text-text-secondary max-w-2xl mb-10 leading-relaxed"
+            className="text-base sm:text-lg md:text-xl text-text-secondary max-w-2xl mb-8 sm:mb-10 leading-relaxed"
           >
             Kenya, Uganda, Tanzania, and Rwanda&rsquo;s trusted source for high-purity
             industrial solvents, acids, reagents, and specialty chemicals. Reliable
@@ -99,7 +99,7 @@ export default function HeroSection() {
             {HERO_BADGES.map(({ icon: Icon, label }) => (
               <div
                 key={label}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg glass-card-light text-xs font-medium text-text-secondary"
+                className="flex min-h-11 items-center gap-2 px-3 py-2 rounded-lg glass-card-light text-xs font-medium text-text-secondary break-anywhere"
               >
                 <Icon className="w-3.5 h-3.5 text-amber-400" />
                 {label}

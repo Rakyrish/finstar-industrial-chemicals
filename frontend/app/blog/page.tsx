@@ -72,7 +72,7 @@ export default async function BlogPage() {
                 </div>
               )}
               <div className="lg:col-span-5 p-6 md:p-8 space-y-4">
-                <div className="flex items-center gap-3 text-xs text-text-muted">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-text-muted">
                   <span className="badge bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded text-[10px]">
                     {featuredPost.category.name}
                   </span>
@@ -114,11 +114,11 @@ export default async function BlogPage() {
             <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mr-2">
               Browse Category:
             </span>
-            <button className="badge-amber text-xs px-3 py-1.5">All Guides</button>
+            <button className="badge-amber min-h-11 text-xs px-3 py-1.5">All Guides</button>
             {categories.map((cat) => (
               <button
                 key={cat.id}
-                className="badge-muted text-xs px-3 py-1.5 cursor-pointer hover:border-amber-500/30 hover:text-text-primary transition-all"
+                className="badge-muted min-h-11 text-xs px-3 py-1.5 cursor-pointer hover:border-amber-500/30 hover:text-text-primary transition-all"
               >
                 {cat.name}
               </button>
@@ -145,7 +145,7 @@ export default async function BlogPage() {
                 )}
                 <div className="p-5 flex-1 flex flex-col justify-between gap-4">
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 text-[10px] text-text-muted">
+                    <div className="flex flex-wrap items-center gap-2 text-[10px] text-text-muted">
                       <span className="badge-amber bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded">
                         {post.category.name}
                       </span>

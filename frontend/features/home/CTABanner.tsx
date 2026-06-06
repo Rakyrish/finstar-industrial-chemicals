@@ -13,7 +13,7 @@ export default function CTABanner() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="relative overflow-hidden rounded-3xl bg-hero-gradient border border-brand-700/50 px-8 py-16 md:px-16 text-center"
+          className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-hero-gradient border border-brand-700/50 px-4 py-10 sm:px-8 sm:py-14 md:px-16 md:py-16 text-center"
         >
           {/* BG glow */}
           <div className="absolute inset-0 bg-mesh pointer-events-none" />
@@ -26,16 +26,16 @@ export default function CTABanner() {
               Get a Custom Quote in{' '}
               <span className="text-gradient-brand">Under 24 Hours</span>
             </h2>
-            <p className="text-text-secondary max-w-xl mx-auto mb-10 text-lg">
+            <p className="text-text-secondary max-w-xl mx-auto mb-8 sm:mb-10 text-base sm:text-lg">
               Tell us what you need and our team will prepare a competitive, itemised quote with
               full technical documentation.
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/quote" className="btn-primary px-10 py-4 text-base">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap justify-center gap-3 sm:gap-4">
+              <Link href="/quote" className="btn-primary px-6 sm:px-10 py-4 text-base">
                 Request a Quote
                 <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link href="/contact" className="btn-outline px-10 py-4 text-base">
+              <Link href="/contact" className="btn-outline px-6 sm:px-10 py-4 text-base">
                 <Mail className="w-4 h-4" />
                 Send a Message
               </Link>

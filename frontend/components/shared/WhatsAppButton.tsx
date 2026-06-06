@@ -1,7 +1,7 @@
 "use client"
 
 import { MessageCircle } from 'lucide-react'
-import { getWhatsAppUrl } from '@/lib/config'
+import { frontendConfig, getWhatsAppUrl } from '@/lib/config'
 import { cn } from '@/utils'
 import { useEffect, useState } from 'react'
 
@@ -21,7 +21,7 @@ export default function WhatsAppButton({ message = 'Hello, I would like to inqui
   const handleClick = async () => {
     // Optionally track the click in analytics
     try {
-      await fetch('/api/v1/analytics/whatsapp-click/', { method: 'POST' }).catch(() => {})
+      await fetch(`${frontendConfig.apiUrl}/analytics/whatsapp-click/`, { method: 'POST' }).catch(() => {})
     } catch (e) {
       // ignore
     }

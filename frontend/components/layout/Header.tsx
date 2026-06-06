@@ -56,21 +56,21 @@ export default function Header({ navItems, company }: { navItems: NavItem[]; com
         )}
       >
         <div className="container-wide">
-          <div className="flex items-center justify-between h-[72px] gap-4">
+          <div className="flex items-center justify-between h-[72px] gap-2 sm:gap-4">
             {/* Logo */}
             <Link
               href="/"
-              className="flex items-center gap-2.5 shrink-0 group"
+              className="flex min-h-11 min-w-0 items-center gap-2.5 group"
               aria-label="Finstar Industrial Chemicals — Home"
             >
               <div className="w-9 h-9 rounded-xl shadow-glow-amber group-hover:scale-105 transition-transform duration-200 overflow-hidden flex-shrink-0">
                 <Image src="/finlogo.jpeg" alt="Finstar Logo" width={36} height={36} className="w-9 h-9 object-cover" />
               </div>
-              <div className="hidden sm:block">
-                <span className="font-display font-bold text-base text-text-primary leading-none">
+              <div className="min-w-0 block">
+                <span className="block truncate font-display font-bold text-sm sm:text-base text-text-primary leading-none">
                   Finstar
                 </span>
-                <span className="block text-[10px] text-text-muted tracking-widest uppercase">
+                <span className="block text-[8.5px] leading-tight sm:text-[10px] text-text-muted tracking-wide sm:tracking-widest uppercase">
                   Industrial Chemicals
                 </span>
               </div>
@@ -138,13 +138,13 @@ export default function Header({ navItems, company }: { navItems: NavItem[]; com
             </nav>
 
             {/* Right Actions */}
-            <div className="flex items-center gap-2">
-              <ThemeToggle className="hidden sm:flex" />
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+              <ThemeToggle />
 
               {/* Search toggle */}
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all duration-150"
+                className="touch-target inline-flex items-center justify-center rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all duration-150"
                 aria-label="Toggle search"
               >
                 <Search className="w-4.5 h-4.5" />
@@ -154,7 +154,7 @@ export default function Header({ navItems, company }: { navItems: NavItem[]; com
               {phoneNumber ? (
                 <a
                   href={`tel:${phoneNumber.replace(/\s/g, '')}`}
-                  className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all duration-150"
+                  className="hidden min-h-11 md:flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all duration-150"
                 >
                   <Phone className="w-3.5 h-3.5 text-amber-400" />
                   {phoneNumber}
@@ -172,7 +172,7 @@ export default function Header({ navItems, company }: { navItems: NavItem[]; com
               {/* Mobile hamburger */}
               <button
                 onClick={() => setMobileOpen(true)}
-                className="lg:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-muted transition-all duration-150"
+                className="touch-target lg:hidden inline-flex items-center justify-center rounded-lg border border-surface-border bg-surface-card/80 text-text-primary shadow-sm backdrop-blur hover:bg-surface-muted transition-all duration-150"
                 aria-label="Open navigation menu"
               >
                 <Menu className="w-5 h-5" />

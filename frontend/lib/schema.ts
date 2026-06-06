@@ -2,8 +2,9 @@ import type {
   SchemaOrganization, SchemaProduct, SchemaBreadcrumb,
   SchemaArticle, BreadcrumbItem, Product, BlogPost,
 } from '@/types'
+import { frontendConfig } from './config'
 
-const SITE_URL   = process.env.NEXT_PUBLIC_SITE_URL  ?? 'https://finstarindustrial.com'
+const SITE_URL   = frontendConfig.siteUrl
 const SITE_NAME  = process.env.NEXT_PUBLIC_SITE_NAME ?? 'Finstar Industrial Chemicals'
 const LOGO_URL   = `${SITE_URL}/logo.png`
 
@@ -32,9 +33,10 @@ export function organizationSchema(): SchemaOrganization {
       },
     ],
     sameAs: [
-      'https://www.linkedin.com/company/finstar-industrial',
-      'https://twitter.com/finstarindustrial',
-    ],
+      process.env.NEXT_PUBLIC_LINKEDIN_URL,
+      process.env.NEXT_PUBLIC_TWITTER_URL,
+      process.env.NEXT_PUBLIC_FACEBOOK_URL,
+    ].filter(Boolean) as string[],
   }
 }
 

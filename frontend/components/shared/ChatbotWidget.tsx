@@ -25,10 +25,8 @@ interface Message {
 
 type SupportView = 'desk' | 'chat'
 
-const FALLBACK_PHONE = '+254 726 417966'
-const FALLBACK_EMAIL = 'info@finstarindustrial.com'
-const PHONE_DISPLAY = frontendConfig.phoneNumber || FALLBACK_PHONE
-const EMAIL_DISPLAY = frontendConfig.companyEmail || FALLBACK_EMAIL
+const PHONE_DISPLAY = frontendConfig.phoneNumber
+const EMAIL_DISPLAY = frontendConfig.companyEmail
 
 const QUICK_SUGGESTIONS = [
   { label: 'Find a product', text: 'Do you supply citric acid in Kenya, Uganda, Tanzania, or Rwanda?' },
@@ -58,8 +56,10 @@ export default function ChatbotWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const whatsappLink = getWhatsAppUrl('Hello Finstar, I need help with industrial chemical pricing, availability, or product guidance.')
-  const phoneHref = `tel:${PHONE_DISPLAY.replace(/[^\d+]/g, '')}`
-  const emailHref = `mailto:${EMAIL_DISPLAY}?subject=${encodeURIComponent('Industrial chemical inquiry')}`
+  const phoneHref = PHONE_DISPLAY ? `tel:${PHONE_DISPLAY.replace(/[^\d+]/g, '')}` : undefined
+  const emailHref = EMAIL_DISPLAY
+    ? `mailto:${EMAIL_DISPLAY}?subject=${encodeURIComponent('Industrial chemical inquiry')}`
+    : undefined
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -131,31 +131,37 @@ export default function ChatbotWidget() {
   }
 
   const supportRows = [
-    {
-      title: 'WhatsApp',
-      description: 'Quick response for pricing, quotations, and follow-up',
-      badge: 'Recommended',
-      icon: MessageCircle,
-      iconClass: 'bg-emerald-100 text-emerald-600',
-      action: () => {
-        if (whatsappLink) window.open(whatsappLink, '_blank', 'noopener,noreferrer')
-      },
-    },
-    {
-      title: 'Call Us',
-      description: PHONE_DISPLAY,
-      badge: 'Direct',
-      icon: Phone,
-      iconClass: 'bg-blue-100 text-blue-600',
-      href: phoneHref,
-    },
-    {
-      title: 'Email',
-      description: EMAIL_DISPLAY,
-      icon: Mail,
-      iconClass: 'bg-violet-100 text-violet-600',
-      href: emailHref,
-    },
+    ...(frontendConfig.whatsappNumber
+      ? [{
+          title: 'WhatsApp',
+          description: 'Quick response for pricing, quotations, and follow-up',
+          badge: 'Recommended',
+          icon: MessageCircle,
+          iconClass: 'bg-emerald-100 text-emerald-600',
+          action: () => {
+            window.open(whatsappLink, '_blank', 'noopener,noreferrer')
+          },
+        }]
+      : []),
+    ...(phoneHref
+      ? [{
+          title: 'Call Us',
+          description: PHONE_DISPLAY,
+          badge: 'Direct',
+          icon: Phone,
+          iconClass: 'bg-blue-100 text-blue-600',
+          href: phoneHref,
+        }]
+      : []),
+    ...(emailHref
+      ? [{
+          title: 'Email',
+          description: EMAIL_DISPLAY,
+          icon: Mail,
+          iconClass: 'bg-violet-100 text-violet-600',
+          href: emailHref,
+        }]
+      : []),
     {
       title: 'AI Assistant',
       description: 'Product guidance, quotation prep, and category discovery',
@@ -205,11 +211,11 @@ export default function ChatbotWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 28, scale: 0.96 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="fixed bottom-24 right-4 z-[60] flex h-[min(620px,calc(100vh-112px))] w-[392px] max-w-[calc(100vw-32px)] flex-col overflow-hidden rounded-[24px] border border-white/70 bg-[#f7f9fd] shadow-[0_24px_80px_rgba(4,22,63,0.35)]"
+            className="fixed bottom-24 right-2 z-[60] flex h-[min(620px,calc(100vh-112px))] w-[392px] max-w-[calc(100vw-16px)] flex-col overflow-hidden rounded-[20px] border border-white/70 bg-[#f7f9fd] shadow-[0_24px_80px_rgba(4,22,63,0.35)] sm:right-4 sm:max-w-[calc(100vw-32px)] sm:rounded-[24px]"
             role="dialog"
             aria-label="Finstar support desk"
           >
-            <header className="relative shrink-0 overflow-hidden bg-gradient-to-br from-[#123a86] via-[#1c75a6] to-[#a16f4f] px-6 py-5 text-white">
+            <header className="relative shrink-0 overflow-hidden bg-gradient-to-br from-[#123a86] via-[#1c75a6] to-[#a16f4f] px-4 py-4 text-white sm:px-6 sm:py-5">
               <div className="absolute -left-7 top-0 h-16 w-16 rounded-full bg-[#ff6b00]" />
               <div className="relative flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
@@ -223,7 +229,7 @@ export default function ChatbotWidget() {
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="rounded-xl bg-white/20 p-2 text-white transition-colors hover:bg-white/30"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 text-white transition-colors hover:bg-white/30"
                   aria-label="Close support desk"
                 >
                   <X className="h-5 w-5" />
@@ -274,7 +280,7 @@ export default function ChatbotWidget() {
                 <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
                   <button
                     onClick={() => setView('desk')}
-                    className="text-xs font-semibold uppercase tracking-wide text-slate-400 transition-colors hover:text-[#ff6b00]"
+                    className="flex min-h-11 items-center text-xs font-semibold uppercase tracking-wide text-slate-400 transition-colors hover:text-[#ff6b00]"
                   >
                     Support Options
                   </button>
@@ -303,7 +309,7 @@ export default function ChatbotWidget() {
                               <a
                                 key={s.id}
                                 href={`/products/${s.slug}`}
-                                className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-[#ff6b00] transition hover:bg-orange-100"
+                                className="inline-flex min-h-11 items-center rounded-full border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-semibold text-[#ff6b00] transition hover:bg-orange-100"
                               >
                                 {s.name}
                               </a>
@@ -357,7 +363,7 @@ export default function ChatbotWidget() {
                         <button
                           key={s.label}
                           onClick={() => handleSend(s.text)}
-                          className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-500 transition hover:border-orange-200 hover:text-[#ff6b00]"
+                          className="min-h-11 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-500 transition hover:border-orange-200 hover:text-[#ff6b00]"
                         >
                           {s.label}
                         </button>

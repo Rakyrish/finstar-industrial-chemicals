@@ -53,7 +53,7 @@ const FINSTAR_CATEGORY_OPTIONS = [
 const emptyProduct: ProductFormValues = {
   name: '',
   slug: '',
-  status: 'draft',
+  status: 'active',
   category: '',
   tags: [],
   applications: [],

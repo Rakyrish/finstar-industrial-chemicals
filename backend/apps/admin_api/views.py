@@ -554,6 +554,19 @@ def _get_or_create_category(name):
     )
 
 
+def _get_or_create_tag(value):
+    tag_name = _tag_name(value)
+    if not tag_name:
+        return None
+
+    tag_slug = slugify(tag_name)
+    existing = Tag.objects.filter(Q(name__iexact=tag_name) | Q(slug=tag_slug)).first()
+    if existing:
+        return existing
+
+    return Tag.objects.create(name=tag_name, slug=tag_slug)
+
+
 class AdminProductListView(APIView):
     permission_classes = [permissions.IsAdminUser]
 
@@ -636,11 +649,9 @@ class AdminProductListView(APIView):
         tag_names = d.get('tags', [])
         if isinstance(tag_names, list):
             for tag_name in tag_names:
-                tag_name = _tag_name(tag_name)
-                if not tag_name:
-                    continue
-                tag, _ = Tag.objects.get_or_create(name=tag_name, defaults={'slug': slugify(tag_name)})
-                product.tags.add(tag)
+                tag = _get_or_create_tag(tag_name)
+                if tag:
+                    product.tags.add(tag)
 
         return Response(
             ProductDetailSerializer(product, context={'request': request}).data,
@@ -727,8 +738,9 @@ class AdminProductDetailView(APIView):
         if 'tags' in d:
             product.tags.clear()
             for tag_name in d.get('tags', []):
-                tag, _ = Tag.objects.get_or_create(name=tag_name, defaults={'slug': slugify(tag_name)})
-                product.tags.add(tag)
+                tag = _get_or_create_tag(tag_name)
+                if tag:
+                    product.tags.add(tag)
 
         if updated:
             product.save(update_fields=list(set(updated)) + ['updated_at'])

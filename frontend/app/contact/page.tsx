@@ -183,7 +183,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <span className="block text-[10px] uppercase tracking-wider text-text-muted mb-0.5">Email Support</span>
-                    <a href={`mailto:${frontendConfig.companyEmail}`} className="text-sm font-medium text-text-primary hover:text-amber-400 transition-colors">
+                    <a href={`mailto:${frontendConfig.companyEmail}`} className="inline-flex min-h-11 items-center text-sm font-medium text-text-primary hover:text-amber-400 transition-colors break-anywhere">
                       {frontendConfig.companyEmail}
                     </a>
                   </div>
@@ -195,14 +195,14 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <span className="block text-[10px] uppercase tracking-wider text-text-muted mb-0.5">Sales Hotlines</span>
-                    <a href={`tel:${frontendConfig.phoneNumber.replace(/\s/g, '')}`} className="text-sm font-medium text-text-primary hover:text-amber-400 transition-colors">
+                    <a href={`tel:${frontendConfig.phoneNumber.replace(/\s/g, '')}`} className="inline-flex min-h-11 items-center text-sm font-medium text-text-primary hover:text-amber-400 transition-colors">
                       {frontendConfig.phoneNumber}
                     </a>
                   </div>
                 </li>
 
                 <li className="flex items-start gap-4">
-                  <a href="/contact" className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0 mt-0.5 hover:bg-amber-500/20 hover:border-amber-500/40 transition-colors">
+                  <a href="/contact" className="touch-target rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0 mt-0.5 hover:bg-amber-500/20 hover:border-amber-500/40 transition-colors" aria-label="Warehouse contact details">
                     <MapPin className="w-5 h-5" />
                   </a>
                   <div>
@@ -220,15 +220,15 @@ export default function ContactPage() {
                 Warehouse & Lab Hours
               </h2>
               <div className="divide-y divide-surface-border text-xs text-text-secondary">
-                <div className="flex justify-between py-2.5">
+                <div className="flex flex-col gap-1 py-2.5 sm:flex-row sm:justify-between">
                   <span className="text-text-muted">Monday - Friday</span>
                   <span className="font-medium text-text-primary">8:00 AM - 5:00 PM</span>
                 </div>
-                <div className="flex justify-between py-2.5">
+                <div className="flex flex-col gap-1 py-2.5 sm:flex-row sm:justify-between">
                   <span className="text-text-muted">Saturdays</span>
                   <span className="font-medium text-text-primary">8:30 AM - 1:00 PM</span>
                 </div>
-                <div className="flex justify-between py-2.5">
+                <div className="flex flex-col gap-1 py-2.5 sm:flex-row sm:justify-between">
                   <span className="text-text-muted">Sundays & Holidays</span>
                   <span className="font-medium text-text-muted italic">Closed / Scheduled Dispatch Only</span>
                 </div>

@@ -176,7 +176,7 @@ function QuoteWizardContent() {
       </header>
 
       {/* Progress Steps Indicator */}
-      <div className="container-wide max-w-3xl mt-12 mb-8">
+      <div className="container-wide max-w-3xl mt-10 mb-8">
         <div className="flex items-center justify-between relative px-2">
           {/* Timeline Connector Line */}
           <div className="absolute top-[18px] left-0 right-0 h-[2px] bg-surface-border z-0" />
@@ -190,7 +190,7 @@ function QuoteWizardContent() {
             <button
               key={num}
               onClick={() => num < step && setStep(num)}
-              className={`relative z-10 w-9 h-9 rounded-full flex items-center justify-center font-semibold text-xs transition-all border ${
+              className={`relative z-10 w-11 h-11 rounded-full flex items-center justify-center font-semibold text-xs transition-all border ${
                 step === num
                   ? 'bg-amber-500 text-white border-amber-500 shadow-glow-amber scale-105'
                   : step > num
@@ -202,10 +202,10 @@ function QuoteWizardContent() {
             </button>
           ))}
         </div>
-        <div className="flex justify-between text-[10px] uppercase tracking-wider text-text-muted mt-2 px-1">
-          <span>1. Sourcing Compound</span>
-          <span>2. Vol. & Specs</span>
-          <span>3. Client Details</span>
+        <div className="grid grid-cols-3 gap-2 text-center text-[9px] xs:text-[10px] uppercase tracking-wider text-text-muted mt-2 px-1">
+          <span className="break-anywhere">Sourcing</span>
+          <span className="break-anywhere">Specs</span>
+          <span className="break-anywhere">Client</span>
         </div>
       </div>
 
@@ -227,7 +227,7 @@ function QuoteWizardContent() {
               <div className="p-4 rounded-xl border border-surface-border bg-surface-muted/40 max-w-sm mx-auto text-xs text-text-muted">
                 An automated confirmation email has been dispatched. Our verified PDF quote will arrive in under 24 hours.
               </div>
-              <div className="flex justify-center gap-4 pt-4">
+              <div className="flex flex-col justify-center gap-3 pt-4 sm:flex-row sm:gap-4">
                 <button
                   onClick={() => {
                     setStep(1)
@@ -419,8 +419,8 @@ function QuoteWizardContent() {
                     </div>
                   </div>
 
-                  <div className="flex gap-6 pt-2">
-                    <label className="flex items-center gap-2 text-xs text-text-secondary cursor-pointer">
+                  <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:flex-wrap sm:gap-6">
+                    <label className="flex min-h-11 items-center gap-2 text-xs text-text-secondary cursor-pointer">
                       <input
                         type="checkbox"
                         name="needMSDS"
@@ -430,7 +430,7 @@ function QuoteWizardContent() {
                       />
                       <span>Request MSDS Sheet</span>
                     </label>
-                    <label className="flex items-center gap-2 text-xs text-text-secondary cursor-pointer">
+                    <label className="flex min-h-11 items-center gap-2 text-xs text-text-secondary cursor-pointer">
                       <input
                         type="checkbox"
                         name="needCOA"
@@ -555,7 +555,7 @@ function QuoteWizardContent() {
               )}
 
               {/* Wizard Nav buttons */}
-              <div className="flex justify-between pt-6 border-t border-surface-border mt-8">
+              <div className="flex flex-wrap justify-between gap-3 pt-6 border-t border-surface-border mt-8">
                 {step > 1 ? (
                   <button
                     type="button"

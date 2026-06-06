@@ -33,7 +33,7 @@ export default function Footer({ company, footerColumns, socialLinks }: { compan
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-12">
           {/* Brand column */}
           <div className="lg:col-span-2">
-            <Link href="/" className="inline-flex items-center gap-2.5 mb-5 group">
+            <Link href="/" className="inline-flex min-h-11 min-w-11 items-center gap-2.5 mb-5 group">
               <div className="w-10 h-10 rounded-xl shadow-glow-amber group-hover:scale-105 transition-transform duration-200 overflow-hidden flex-shrink-0">
                 <Image src="/finlogo.jpeg" alt="Finstar Logo" width={40} height={40} className="w-10 h-10 object-cover" />
               </div>
@@ -54,19 +54,19 @@ export default function Footer({ company, footerColumns, socialLinks }: { compan
             {/* Contact info */}
             <ul className="space-y-2.5">
               <li>
-                <a href={`mailto:${company.email}`} className="flex items-center gap-2.5 text-sm text-text-secondary hover:text-amber-400 transition-colors group">
+                <a href={`mailto:${company.email}`} className="flex min-h-11 items-center gap-2.5 text-sm text-text-secondary hover:text-amber-400 transition-colors group break-anywhere">
                   <Mail className="w-4 h-4 text-amber-500/70 shrink-0" />
                   {company.email}
                 </a>
               </li>
               <li>
-                <a href={`tel:${company.phone.replace(/\s/g, '')}`} className="flex items-center gap-2.5 text-sm text-text-secondary hover:text-amber-400 transition-colors">
+                <a href={`tel:${company.phone.replace(/\s/g, '')}`} className="flex min-h-11 items-center gap-2.5 text-sm text-text-secondary hover:text-amber-400 transition-colors">
                   <Phone className="w-4 h-4 text-amber-500/70 shrink-0" />
                   {company.phone}
                 </a>
               </li>
               <li>
-                <a href={company.addressLink || '/contact'} target={company.addressLink ? '_blank' : undefined} rel="noopener noreferrer" className="flex items-start gap-2.5 text-sm text-text-secondary hover:text-amber-400 transition-colors group">
+                <a href={company.addressLink || '/contact'} target={company.addressLink ? '_blank' : undefined} rel="noopener noreferrer" className="flex min-h-11 items-start gap-2.5 text-sm text-text-secondary hover:text-amber-400 transition-colors group">
                   <MapPin className="w-4 h-4 text-amber-500/70 shrink-0 mt-0.5" />
                   <span className="group-hover:underline">{company.address || 'Contact sales for dispatch details'}</span>
                 </a>
@@ -82,7 +82,7 @@ export default function Footer({ company, footerColumns, socialLinks }: { compan
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={link.label}
-                  className="w-9 h-9 rounded-lg bg-surface-muted border border-surface-border flex items-center justify-center text-text-muted hover:text-amber-400 hover:border-amber-500/40 hover:bg-amber-500/10 transition-all duration-200"
+                  className="touch-target rounded-lg bg-surface-muted border border-surface-border flex items-center justify-center text-text-muted hover:text-amber-400 hover:border-amber-500/40 hover:bg-amber-500/10 transition-all duration-200"
                 >
                   <SocialIcon platform={link.platform} />
                 </a>
@@ -101,7 +101,7 @@ export default function Footer({ company, footerColumns, socialLinks }: { compan
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-text-secondary hover:text-text-primary transition-colors duration-150"
+                      className="inline-flex min-h-11 min-w-11 items-center text-sm text-text-secondary hover:text-text-primary transition-colors duration-150"
                     >
                       {link.label}
                     </Link>

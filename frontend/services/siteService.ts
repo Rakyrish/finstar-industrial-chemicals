@@ -1,4 +1,4 @@
-import { frontendConfig, getWhatsAppUrl } from '@/lib/config'
+import { frontendConfig, getBackendApiUrl, getWhatsAppUrl } from '@/lib/config'
 import { productService } from './productService'
 import type { FooterColumn, NavItem, SocialLink } from '@/types'
 
@@ -39,12 +39,14 @@ const fallbackCompany: CompanyInfo = {
 }
 
 export async function getSiteSettings(): Promise<SiteSettings> {
-  if (!frontendConfig.apiUrl) {
+  const apiUrl = getBackendApiUrl()
+
+  if (!apiUrl) {
     return { company: fallbackCompany, socialLinks: [] }
   }
 
   try {
-    const response = await fetch(`${frontendConfig.apiUrl}/seo/site-settings/`, {
+    const response = await fetch(`${apiUrl}/seo/site-settings/`, {
       cache: 'no-store',
       headers: { Accept: 'application/json' },
     })

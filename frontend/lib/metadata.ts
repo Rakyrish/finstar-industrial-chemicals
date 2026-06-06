@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import type { SeoConfig } from '@/types'
 import { absoluteUrl } from '@/utils'
+import { frontendConfig } from './config'
 
 const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME ?? 'Finstar Industrial Chemicals'
-const SITE_URL  = process.env.NEXT_PUBLIC_SITE_URL  ?? 'https://finstarindustrial.com'
+const SITE_URL  = frontendConfig.siteUrl
 const DEFAULT_OG = `${SITE_URL}/og-default.png`
 
 export function generatePageMetadata(config: SeoConfig): Metadata {
@@ -21,7 +22,7 @@ export function generatePageMetadata(config: SeoConfig): Metadata {
     description,
     keywords: keywords.join(', '),
     ...(author ? { authors: [{ name: author }] } : {}),
-    metadataBase: new URL(SITE_URL),
+    ...(SITE_URL ? { metadataBase: new URL(SITE_URL) } : {}),
     alternates: canonicalUrl ? { canonical: canonicalUrl } : undefined,
     robots: {
       index: !noIndex,

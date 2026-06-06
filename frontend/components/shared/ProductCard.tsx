@@ -43,22 +43,13 @@ export default function ProductCard({ product, className, priority = false }: Pr
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-brand-950 to-surface-muted">
-            <FlaskConical className="w-10 h-10 text-text-muted/40" />
+                     <img src="/finlogo.jpeg" alt="Finstar Logo" width={50} height={50} />
+
           </div>
         )}
 
         {/* Overlays */}
-        <div className="absolute top-3 left-3 flex gap-1.5">
-          {product.isNew && (
-            <span className="badge-amber text-[10px]">NEW</span>
-          )}
-          {product.isFeatured && (
-            <span className="badge bg-brand-600/80 text-brand-200 border border-brand-500/40 text-[10px] backdrop-blur-sm">
-              <Star className="w-2.5 h-2.5 mr-1 fill-current" />
-              Featured
-            </span>
-          )}
-        </div>
+        
 
         {!isAvailable && (
           <div className="absolute inset-0 bg-black/35 backdrop-blur-[1px]">
@@ -70,8 +61,8 @@ export default function ProductCard({ product, className, priority = false }: Pr
           </div>
         )}
 
-        <div className="absolute bottom-3 left-3 rounded bg-black/35 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white/80 backdrop-blur-sm">
-          Finstar
+        <div className="absolute bottom-0.5 left-1 rounded bg-black/35 px-1 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white/80 backdrop-blur-sm">
+          <img src="/finlogo.jpeg" alt="Finstar Logo" width={36} height={36} />
         </div>
 
         {/* Hover arrow */}
@@ -83,15 +74,15 @@ export default function ProductCard({ product, className, priority = false }: Pr
       {/* Body */}
       <div className="p-4 flex flex-col flex-1 gap-3">
         {/* Category */}
-        <div className="flex items-center gap-1.5">
+        {/* <div className="flex items-center gap-1.5">
           <Tag className="w-3 h-3 text-amber-500/70" />
           <span className="text-[11px] font-medium text-text-muted uppercase tracking-wider">
             {product.category.name}
           </span>
-        </div>
+        </div> */}
 
         {/* Name */}
-        <h3 className="font-display font-semibold text-base text-text-primary group-hover:text-amber-400 transition-colors duration-150 line-clamp-2 leading-snug">
+        <h3 className="font-display whitespace-nowrap font-semibold text-xs text-text-primary group-hover:text-amber-400 transition-colors duration-150 line-clamp-2 leading-snug">
           {product.name}
         </h3>
 
@@ -101,7 +92,7 @@ export default function ProductCard({ product, className, priority = false }: Pr
         </p>
 
         {/* Tags */}
-        {product.tags.length > 0 && (
+        {/* {product.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {product.tags.slice(0, 3).map((tag) => (
               <span key={tag.id} className="badge-muted text-[10px]">
@@ -112,7 +103,7 @@ export default function ProductCard({ product, className, priority = false }: Pr
               <span className="badge-muted text-[10px]">+{product.tags.length - 3}</span>
             )}
           </div>
-        )}
+        )} */}
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-2 border-t border-surface-border mt-auto">

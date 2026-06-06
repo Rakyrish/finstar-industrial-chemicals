@@ -11,6 +11,9 @@ import {
   adminQuotes,
   adminAnalytics,
 } from './mock-data'
+import { getBackendApiUrl } from '@/lib/config'
+
+const getAdminApiUrl = () => getBackendApiUrl()
 
 /**
  * Get current admin session from cookies (server-side only)
@@ -45,10 +48,7 @@ export async function fetchAdminDashboard(): Promise<AdminDashboardResponse> {
       return adminOverview as AdminDashboardResponse
     }
 
-    const apiUrl =
-      process.env.API_BASE_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      'http://localhost:8000/api/v1'
+    const apiUrl = getAdminApiUrl()
 
     const response = await fetch(`${apiUrl}/admin/overview/`, {
       headers: {
@@ -110,10 +110,7 @@ export async function fetchAdminList<T>(resource: string): Promise<AdminListResp
       return getMockResource(resource) as AdminListResponse<T>
     }
 
-    const apiUrl =
-      process.env.API_BASE_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      'http://localhost:8000/api/v1'
+    const apiUrl = getAdminApiUrl()
 
     const response = await fetch(`${apiUrl}/admin/${resource}/`, {
       headers: {
@@ -153,10 +150,7 @@ export async function fetchAdminDetail<T>(resource: string, id: string | number)
 
     if (!token) return null
 
-    const apiUrl =
-      process.env.API_BASE_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      'http://localhost:8000/api/v1'
+    const apiUrl = getAdminApiUrl()
 
     const response = await fetch(`${apiUrl}/admin/${resource}/${id}/`, {
       headers: {
@@ -188,10 +182,7 @@ export async function fetchAdminResource(resource: string, searchParams?: URLSea
       return getMockResource(resource)
     }
 
-    const apiUrl =
-      process.env.API_BASE_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      'http://localhost:8000/api/v1'
+    const apiUrl = getAdminApiUrl()
 
     const query = searchParams ? `?${searchParams.toString()}` : ''
     const response = await fetch(`${apiUrl}/admin/${resource}/${query}`, {

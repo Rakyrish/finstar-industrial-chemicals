@@ -47,7 +47,7 @@ export default function AdminSidebar({ onNavigate }: { onNavigate?: () => void }
               href={item.href}
               onClick={onNavigate}
               className={cn(
-                'group flex items-center justify-between rounded-2xl px-3 py-3 text-sm font-medium transition',
+                'group flex min-h-11 items-center justify-between rounded-2xl px-3 py-3 text-sm font-medium transition',
                 active ? 'bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/20' : 'text-text-secondary hover:bg-surface-muted hover:text-text-primary'
               )}
             >

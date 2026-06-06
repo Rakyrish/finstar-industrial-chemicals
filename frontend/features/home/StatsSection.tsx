@@ -91,7 +91,7 @@ export default function StatsSection() {
   return (
     <section className="py-12 md:py-16 border-b border-surface-border" aria-label="Company statistics">
       <div className="container-wide">
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
           {displayStats.map((stat, i) => (
             <motion.div
               key={stat?.label ?? `stat-skeleton-${i}`}
@@ -99,7 +99,7 @@ export default function StatsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="text-center p-6 glass-card-light rounded-2xl"
+              className="text-center p-5 sm:p-6 glass-card-light rounded-2xl"
             >
               {!stat ? (
                 <div className="space-y-3">
@@ -109,7 +109,7 @@ export default function StatsSection() {
                 </div>
               ) : (
                 <>
-                  <div className="font-display font-bold text-4xl md:text-5xl text-gradient-brand mb-2">
+                  <div className="font-display font-bold text-3xl sm:text-4xl md:text-5xl text-gradient-brand mb-2">
                     <AnimatedCount target={stat.value} suffix={stat.suffix} />
                   </div>
                   <div className="font-semibold text-sm text-text-primary mb-1">{stat.label}</div>

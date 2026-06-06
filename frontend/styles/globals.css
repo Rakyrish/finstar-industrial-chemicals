@@ -95,11 +95,11 @@
 }
 
 @media (max-width: 640px) {
-  .container-wide { padding-left: 0.75rem; padding-right: 0.75rem; }
+  .container-wide { padding-left: 0.875rem; padding-right: 0.875rem; }
   .section-pad { padding-top: 2rem; padding-bottom: 2rem; }
 
   .btn-primary, .btn-outline, .btn-ghost {
-    padding-left: 1rem; padding-right: 1rem; padding-top: 0.55rem; padding-bottom: 0.55rem;
+    padding-left: 1rem; padding-right: 1rem;
     font-size: 0.95rem;
   }
 
@@ -110,10 +110,15 @@
 
   /* Carousel specific tweaks */
   .hero-carousel { width: 100%; overflow: hidden; }
-  .hero-carousel img, .hero-carousel video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+  .hero-carousel img, .hero-carousel video { width: 100% !important; height: 100% !important; object-fit: contain !important; }
+
+  .grid-products {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
 
   /* Prevent horizontal scroll due to shadows or transforms */
-  html, body { overflow-x: hidden; }
+  html, body { overflow-x: clip; }
 }
 
 /* ============================================================
@@ -132,6 +137,8 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     font-size: 16px;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
   body {
@@ -140,7 +147,9 @@
     color: var(--color-text-primary);
     line-height: 1.6;
     min-height: 100vh;
-    overflow-x: hidden;
+    max-width: 100%;
+    overflow-x: clip;
+    overflow-wrap: break-word;
   }
 
   /* Typography scale */
@@ -149,7 +158,7 @@
     font-weight: 700;
     line-height: 1.2;
     color: var(--color-text-primary);
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
   }
 
   h1 { font-size: clamp(2rem, 5vw, 4rem); }
@@ -179,10 +188,13 @@
   button {
     cursor: pointer;
     font-family: var(--font-inter);
+    touch-action: manipulation;
   }
 
   input, textarea, select {
     font-family: var(--font-inter);
+    font-size: 16px;
+    min-height: 44px;
   }
 
   ::selection {
@@ -230,10 +242,10 @@
 
   /* Container */
   .container-wide {
-    @apply max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12;
+    @apply w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12;
   }
   .container-narrow {
-    @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
   /* Glassmorphism card */
@@ -297,6 +309,8 @@
            transition-all duration-200
            shadow-[0_0_20px_rgba(245,158,11,0.25)]
            hover:shadow-[0_0_30px_rgba(245,158,11,0.4)];
+    min-height: 44px;
+    justify-content: center;
   }
 
   [data-theme='light'] .btn-primary {
@@ -315,6 +329,8 @@
            hover:bg-surface-border hover:border-amber-500/40
            active:scale-[0.98]
            transition-all duration-200;
+    min-height: 44px;
+    justify-content: center;
   }
 
   [data-theme='light'] .btn-secondary {
@@ -331,6 +347,8 @@
            hover:text-text-primary hover:bg-surface-muted
            active:scale-[0.98]
            transition-all duration-200;
+    min-height: 44px;
+    justify-content: center;
   }
 
   [data-theme='light'] .btn-ghost {
@@ -343,6 +361,8 @@
            hover:bg-amber-500/10 hover:border-amber-400
            active:scale-[0.98]
            transition-all duration-200;
+    min-height: 44px;
+    justify-content: center;
   }
 
   [data-theme='light'] .btn-outline {
@@ -380,6 +400,7 @@
            placeholder:text-text-muted
            focus:outline-none focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/15
            transition-all duration-200;
+    min-height: 44px;
   }
 
   [data-theme='light'] .input-base {
@@ -398,6 +419,11 @@
            focus:outline-none focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/15
            disabled:cursor-not-allowed disabled:opacity-60
            transition-all duration-200;
+    min-height: 44px;
+  }
+
+  .label-base {
+    @apply block text-xs font-semibold uppercase tracking-wider text-text-muted;
   }
 
   [data-theme='light'] .input {
@@ -499,7 +525,7 @@
 
   /* Page header */
   .page-header {
-    @apply relative py-20 md:py-28 overflow-hidden
+    @apply relative py-14 sm:py-16 md:py-28 overflow-hidden
            bg-gradient-to-br from-brand-950 via-brand-900 to-surface
            transition-all duration-500;
   }
@@ -520,8 +546,18 @@
   /* Custom grid */
   .grid-products {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+    gap: clamp(1rem, 3vw, 1.5rem);
+  }
+
+  .break-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
   }
 
   /* Mesh gradient background */

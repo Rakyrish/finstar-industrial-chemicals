@@ -1,4 +1,5 @@
 import type { NavItem, FooterColumn, SocialLink } from '@/types'
+import { frontendConfig, getWhatsAppUrl } from './config'
 
 export const NAV_ITEMS: NavItem[] = [
   {
@@ -117,19 +118,27 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
 ]
 
 export const SOCIAL_LINKS: SocialLink[] = [
-  { platform: 'linkedin',  href: 'https://linkedin.com/company/finstar-industrial', label: 'LinkedIn' },
-  { platform: 'twitter',   href: 'https://twitter.com/finstarindustrial',           label: 'Twitter' },
-  { platform: 'facebook',  href: 'https://facebook.com/finstarindustrial',          label: 'Facebook' },
-  { platform: 'whatsapp',  href: `https://wa.me/${(typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_WHATSAPP_NUMBER || '254712345678').replace(/\+/g, '')}`, label: 'WhatsApp' },
+  ...(process.env.NEXT_PUBLIC_LINKEDIN_URL
+    ? [{ platform: 'linkedin' as const, href: process.env.NEXT_PUBLIC_LINKEDIN_URL, label: 'LinkedIn' }]
+    : []),
+  ...(process.env.NEXT_PUBLIC_TWITTER_URL
+    ? [{ platform: 'twitter' as const, href: process.env.NEXT_PUBLIC_TWITTER_URL, label: 'Twitter' }]
+    : []),
+  ...(process.env.NEXT_PUBLIC_FACEBOOK_URL
+    ? [{ platform: 'facebook' as const, href: process.env.NEXT_PUBLIC_FACEBOOK_URL, label: 'Facebook' }]
+    : []),
+  ...(frontendConfig.whatsappNumber
+    ? [{ platform: 'whatsapp' as const, href: getWhatsAppUrl(), label: 'WhatsApp' }]
+    : []),
 ]
 
 export const COMPANY_INFO = {
   name:        'Finstar Industrial Chemicals',
   shortName:   'Finstar',
   tagline:     'Precision Chemistry. Industrial Scale.',
-  email:       (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_EMAIL) || 'info@finstarindustrial.com',
-  phone:       (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_PHONE_NUMBER) || '+254 712 345 678',
-  address:     'Industrial Area, Nairobi, Kenya',
+  email:       frontendConfig.companyEmail,
+  phone:       frontendConfig.phoneNumber,
+  address:     process.env.NEXT_PUBLIC_COMPANY_ADDRESS || '',
   founded:     '2010',
   employees:   '50–200',
   registration: 'CPR/2010/XXXXX',

@@ -90,7 +90,7 @@ export default function SearchBar({
             <button
               type="button"
               onClick={handleClear}
-              className="absolute right-3.5 p-0.5 text-text-muted hover:text-text-primary transition-colors"
+              className="absolute right-1.5 flex h-11 w-11 items-center justify-center text-text-muted hover:text-text-primary transition-colors"
               aria-label="Clear search"
             >
               <X className="w-3.5 h-3.5" />
@@ -108,7 +108,7 @@ export default function SearchBar({
                 <Link
                   href={`/products/${product.slug}`}
                   onClick={() => { setOpen(false); onClose?.() }}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-surface-muted transition-colors group"
+                  className="flex min-h-11 items-center gap-3 px-4 py-3 hover:bg-surface-muted transition-colors group"
                 >
                   <div className="w-8 h-8 rounded-lg bg-surface-muted flex items-center justify-center shrink-0 overflow-hidden">
                     {product.primaryImage ? (
@@ -132,7 +132,7 @@ export default function SearchBar({
             <Link
               href={`/search?q=${encodeURIComponent(query)}`}
               onClick={() => { setOpen(false); onClose?.() }}
-              className="text-xs text-amber-400 hover:text-amber-300 transition-colors font-medium"
+              className="inline-flex min-h-11 items-center text-xs text-amber-400 hover:text-amber-300 transition-colors font-medium break-anywhere"
             >
               See all results for &ldquo;{query}&rdquo; →
             </Link>
