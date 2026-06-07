@@ -36,6 +36,11 @@ const nextConfig: NextConfig = {
   trailingSlash: false,
   skipTrailingSlashRedirect: true,
 
+  // SEO & security: suppress X-Powered-By header
+  poweredByHeader: false,
+  // Disable ETags to avoid cache fragmentation on CDN
+  generateEtags: false,
+
   // Image optimization
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -59,29 +64,39 @@ const nextConfig: NextConfig = {
   // Performance: compress responses
   compress: true,
 
-  // Security headers
+  // Security + SEO headers
   async headers() {
     return [
       {
+        // Security + crawl-friendliness for all routes
         source: '/(.*)',
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
-          },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
         ],
       },
       {
+        // Long-term cache for static assets (images, fonts, icons)
         source: '/(.*)\\.(jpg|jpeg|png|webp|avif|gif|svg|ico|woff|woff2)',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        // Sitemap + robots: short cache so search engines pick up updates fast
+        source: '/(sitemap.xml|robots.txt)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400' },
+        ],
+      },
+      {
+        // HTML pages: serve fresh, allow background revalidation
+        source: '/:path((?!_next|api|admin).*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=0, s-maxage=300, stale-while-revalidate=600' },
         ],
       },
     ]

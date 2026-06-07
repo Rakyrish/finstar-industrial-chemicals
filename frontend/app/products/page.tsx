@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { generatePageMetadata } from '@/lib/metadata'
 import { productService } from '@/services/productService'
 import ProductCard from '@/components/shared/ProductCard'
-import { breadcrumbSchema, toJsonLd } from '@/lib/schema'
+import { breadcrumbSchema, graphSchema, toJsonLd } from '@/lib/schema'
 import Link from 'next/link'
 import { Filter, SlidersHorizontal, Search, RefreshCw, X } from 'lucide-react'
 
@@ -18,15 +18,41 @@ interface PageProps {
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
   const resolvedParams = await searchParams
-  const categoryName = resolvedParams.category
-    ? resolvedParams.category.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-    : 'Catalogue'
+  const page = resolvedParams.page ? parseInt(resolvedParams.page) : 1
+  const isPaginated = page > 1
+
+  // Fetch category for DB SEO fields if filtering
+  let activeCategory: any = null
+  if (resolvedParams.category) {
+    const cats = await productService.categories().catch(() => [])
+    activeCategory = cats.find((c: any) => c.slug === resolvedParams.category)
+  }
+
+  const categoryName = activeCategory?.name
+    ?? (resolvedParams.category
+      ? resolvedParams.category.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+      : 'Catalogue')
+
+  const title = activeCategory?.seoTitle || `${categoryName} — Industrial Chemical Supplier Kenya & East Africa`
+  const description = activeCategory?.seoDescription
+    || `Browse Finstar's ${categoryName.toLowerCase()} products. High-purity industrial chemicals, solvents, acids, detergent, food-grade, cosmetic, mining, and water treatment chemicals. Request a bulk quote.`
 
   return generatePageMetadata({
-    title: `${categoryName} — High-Purity Industrial Chemicals`,
-    description: `Browse Finstar's high-purity industrial chemical products. Find solvents, acids, lab reagents, and specialty chemicals. Request a quote or check stock levels.`,
+    title,
+    description,
     canonical: `/products${resolvedParams.category ? `?category=${resolvedParams.category}` : ''}`,
-    keywords: ['industrial chemicals catalog', 'chemical search', 'solvents list', 'laboratory reagents list'],
+    keywords: [
+      categoryName,
+      `${categoryName} Kenya`,
+      'industrial chemicals catalogue',
+      'chemical supplier Kenya',
+      'buy chemicals East Africa',
+      'industrial solvents',
+      'detergent chemicals',
+      'water treatment chemicals',
+    ],
+    // noindex paginated pages to prevent duplicate content
+    noIndex: isPaginated,
   })
 }
 
@@ -60,7 +86,26 @@ export default async function ProductsPage({ searchParams }: PageProps) {
     breadcrumbs.push({ name: activeCategory.name, href: `/products?category=${activeCategory.slug}` })
   }
 
-  const bSchema = breadcrumbSchema(breadcrumbs)
+  const bSchema = graphSchema([
+    breadcrumbSchema(breadcrumbs),
+    // ItemList schema listing all products on this page for search engines
+    {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: activeCategory ? `${activeCategory.name} — Finstar Chemical Catalogue` : 'Industrial Chemical Catalogue — Finstar',
+      description: activeCategory?.description || 'Browse industrial chemicals, solvents, acids, and specialty chemicals from Finstar.',
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/products${categorySlug ? `?category=${categorySlug}` : ''}`,
+      numberOfItems: paginatedResult.count,
+      itemListElement: products.map((product: any, index: number) => ({
+        '@type': 'ListItem',
+        position: (page - 1) * 12 + index + 1,
+        name: product.name,
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/products/${product.slug}`,
+        image: product.primaryImage || undefined,
+        description: product.short_description || product.name,
+      })),
+    },
+  ])
 
   return (
     <div className="min-h-screen bg-mesh noise-overlay pb-20">

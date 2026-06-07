@@ -2,6 +2,98 @@ import json
 from django.db import models
 from django.utils.text import slugify
 
+# ── SEO auto-generation helpers ───────────────────────────────────────────────
+from django.conf import settings
+
+EAST_AFRICA_MARKETS = ['Kenya', 'Uganda', 'Tanzania', 'Rwanda', 'East Africa']
+SITE_NAME = getattr(settings, 'COMPANY_NAME', 'Finstar Industrial Chemicals')
+SITE_BRAND = getattr(settings, 'COMPANY_BRAND_NAME', 'Finstar')
+
+
+def _auto_seo_title(name: str, category_name: str) -> str:
+    """Generate keyword-rich 60-char SEO title."""
+    cat = category_name or 'Industrial Chemical'
+    title = f'{name} — {cat} Supplier Kenya & East Africa | {SITE_BRAND}'
+    return title[:90]
+
+
+def _auto_seo_description(name: str, short_desc: str, category_name: str) -> str:
+    """Generate 155-char meta description from product data."""
+    cat = category_name or 'industrial chemicals'
+    base = short_desc.strip()[:80] if short_desc else ''
+    if base:
+        desc = (
+            f'Buy {name} from {SITE_BRAND} — trusted {cat} supplier in Kenya, '
+            f'Uganda, Tanzania & Rwanda. {base} Request a bulk quote today.'
+        )
+    else:
+        desc = (
+            f'Source {name} ({cat}) from {SITE_BRAND}. Bulk supply to industrial '
+            f'buyers across Kenya, Uganda, Tanzania, and Rwanda. Request a quote.'
+        )
+    return desc[:220]
+
+
+def _auto_keywords(name: str, category_name: str) -> str:
+    """Generate comma-separated keyword string."""
+    cat = category_name or 'industrial chemical'
+    kws = [
+        name,
+        f'{name} supplier',
+        f'buy {name}',
+        f'{name} Kenya',
+        f'{name} Uganda',
+        f'{name} Tanzania',
+        f'{name} East Africa',
+        cat,
+        f'{cat} supplier Kenya',
+        f'{SITE_BRAND} {name}',
+        'industrial chemicals Kenya',
+        'chemical supplier East Africa',
+    ]
+    return ', '.join(kws)
+
+
+def _auto_image_alt(name: str, category_name: str) -> str:
+    cat = category_name or 'industrial chemical'
+    return f'{name} — {cat} by {SITE_BRAND}'[:125]
+
+
+def _auto_schema_markup(product) -> str:
+    """Generate minimal Product JSON-LD string for storage."""
+    base_url = getattr(settings, 'SITE_URL', '').rstrip('/') or 'https://finstarindustrialchemicals.com'
+    cat = product.category.name if product.category else 'Industrial Chemical'
+    avail = (
+        'https://schema.org/InStock'
+        if product.status == 'active'
+        else 'https://schema.org/OutOfStock'
+    )
+    schema = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        'name': product.name,
+        'description': product.short_description or product.description or product.name,
+        'image': product.cloudinary_url or '',
+        'sku': product.cas_number or str(product.pk or ''),
+        'brand': {'@type': 'Brand', 'name': SITE_NAME},
+        'manufacturer': {
+            '@type': 'Organization',
+            'name': SITE_NAME,
+            'url': base_url,
+        },
+        'category': cat,
+        'url': f'{base_url}/products/{product.slug}',
+        'offers': {
+            '@type': 'Offer',
+            'availability': avail,
+            'itemCondition': 'https://schema.org/NewCondition',
+            'priceCurrency': 'KES',
+            'seller': {'@type': 'Organization', 'name': SITE_NAME},
+            'areaServed': EAST_AFRICA_MARKETS,
+        },
+    }
+    return json.dumps(schema)
+
 
 class Category(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -128,7 +220,56 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
+
+        # ── Auto-generate SEO fields if blank ────────────────────────────────
+        cat_name = self.category.name if self.category else ''
+
+        if not self.seo_title:
+            self.seo_title = _auto_seo_title(self.name, cat_name)
+
+        if not self.seo_description:
+            self.seo_description = _auto_seo_description(
+                self.name, self.short_description or '', cat_name
+            )
+
+        if not self.seo_keywords:
+            self.seo_keywords = _auto_keywords(self.name, cat_name)
+
+        if not self.image_alt:
+            self.image_alt = _auto_image_alt(self.name, cat_name)
+
+        if not self.image_title:
+            self.image_title = f'{self.name} — {SITE_BRAND}'[:125]
+
+        if not self.og_title:
+            self.og_title = self.seo_title[:120]
+
+        if not self.og_description:
+            self.og_description = self.seo_description[:260]
+
+        if not self.twitter_description:
+            self.twitter_description = self.seo_description[:260]
+
+        if not self.whatsapp_template:
+            self.whatsapp_template = (
+                f'Hello {SITE_BRAND}, I am interested in {self.name}. '
+                f'Please send availability and quotation details.'
+            )
+
+        if not self.cta_content:
+            self.cta_content = (
+                f'{self.name} is available from {SITE_BRAND} for industrial buyers, '
+                f'manufacturers, and procurement teams across Kenya, Uganda, Tanzania, and Rwanda.'
+            )[:255]
+
         super().save(*args, **kwargs)
+
+        # Regenerate schema_markup after save (pk is now available)
+        if not self.schema_markup:
+            self.__class__.objects.filter(pk=self.pk).update(
+                schema_markup=_auto_schema_markup(self)
+            )
+
 
     # ── Helpers for JSON fields ───────────────────────────────────────────────
     def get_applications(self):

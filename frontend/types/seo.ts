@@ -13,6 +13,10 @@ export interface SeoConfig {
   publishedAt?: string
   updatedAt?: string
   author?: string
+  ogTitle?: string
+  twitterTitle?: string
+  twitterDescription?: string
+  languages?: Record<string, string>
 }
 
 export interface BreadcrumbItem {
@@ -25,13 +29,16 @@ export interface SchemaOrganization {
   '@type': 'Organization'
   name: string
   url: string
-  logo: string
+  logo: any
   description: string
   address: SchemaPostalAddress
   contactPoint: SchemaContactPoint[]
   sameAs: string[]
   foundingDate?: string
-  numberOfEmployees?: number
+  numberOfEmployees?: any
+  email?: string
+  knowsAbout?: string[]
+  areaServed?: any
 }
 
 export interface SchemaPostalAddress {
@@ -47,8 +54,9 @@ export interface SchemaContactPoint {
   '@type': 'ContactPoint'
   telephone: string
   contactType: string
-  areaServed?: string
-  availableLanguage?: string
+  areaServed?: any
+  availableLanguage?: any
+  contactOption?: string
 }
 
 export interface SchemaProduct {
@@ -92,14 +100,19 @@ export interface SchemaBreadcrumb {
 
 export interface SchemaArticle {
   '@context': 'https://schema.org'
-  '@type': 'Article'
+  '@type': string
   headline: string
   description: string
-  image?: string
+  image?: any
   author: { '@type': 'Person'; name: string }
-  publisher: { '@type': 'Organization'; name: string; logo: { '@type': 'ImageObject'; url: string } }
+  publisher: any
   datePublished: string
   dateModified: string
+  url?: string
+  inLanguage?: string
+  isPartOf?: any
+  keywords?: string
+  articleSection?: string
 }
 
 export type GeneratedMetadata = Metadata

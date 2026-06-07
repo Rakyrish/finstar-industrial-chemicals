@@ -10,6 +10,9 @@ export interface Category {
   isFeatured: boolean
   parent?: number | null
   children?: Category[]
+  seoTitle?: string
+  seoDescription?: string
+  seoKeywords?: string
 }
 
 export interface Tag {
@@ -30,6 +33,12 @@ export interface ProductSpec {
   key: string
   value: string
   unit?: string
+}
+
+export interface Review {
+  rating: number
+  comment?: string
+  author?: string
 }
 
 export type ProductStatus = 'active' | 'inactive' | 'out_of_stock' | 'discontinued' | 'draft' | 'scheduled'
@@ -82,6 +91,15 @@ export interface Product {
   metaTitle?: string
   metaDescription?: string
   canonicalUrl?: string
+  seoTitle?: string
+  seoDescription?: string
+  seoKeywords?: string
+  ogTitle?: string
+  ogDescription?: string
+  twitterTitle?: string
+  twitterDescription?: string
+  schemaMarkup?: string
+  reviews?: Review[]
 }
 
 export interface ProductListItem {

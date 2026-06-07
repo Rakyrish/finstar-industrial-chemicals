@@ -931,3 +931,197 @@ class AdminChatbotAnalyticsView(APIView):
             'count': len(conversations),
             'results': conversations,
         })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SEO Auto-Generation Endpoints
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _ping_search_engines(sitemap_url: str) -> dict:
+    """
+    Ping Google and Bing with the updated sitemap URL.
+    Returns a dict with ping results (success/failure per engine).
+    """
+    import urllib.request
+    import urllib.parse
+
+    results = {}
+    engines = {
+        'google': f'https://www.google.com/ping?sitemap={urllib.parse.quote(sitemap_url, safe="")}',
+        'bing':   f'https://www.bing.com/ping?sitemap={urllib.parse.quote(sitemap_url, safe="")}',
+    }
+    for name, url in engines.items():
+        try:
+            req = urllib.request.Request(url, method='GET')
+            req.add_header('User-Agent', 'FinstarSEOBot/1.0')
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                results[name] = {'status': resp.status, 'ok': resp.status < 300}
+        except Exception as exc:
+            results[name] = {'status': None, 'ok': False, 'error': str(exc)}
+    return results
+
+
+class AdminProductSeoRegenerateView(APIView):
+    """
+    POST /admin/products/{pk}/regenerate-seo/
+    Wipes and re-generates all SEO fields for an existing product using the
+    auto-generation helpers defined in products.models.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, pk):
+        try:
+            product = Product.objects.select_related('category').get(pk=pk)
+        except Product.DoesNotExist:
+            return Response({'detail': 'Product not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        from products.models import (
+            _auto_seo_title, _auto_seo_description, _auto_keywords,
+            _auto_image_alt, _auto_schema_markup, SITE_BRAND,
+        )
+
+        cat_name = product.category.name if product.category else ''
+
+        product.seo_title = _auto_seo_title(product.name, cat_name)
+        product.seo_description = _auto_seo_description(
+            product.name, product.short_description or '', cat_name
+        )
+        product.seo_keywords = _auto_keywords(product.name, cat_name)
+        product.image_alt = _auto_image_alt(product.name, cat_name)
+        product.image_title = f'{product.name} — {SITE_BRAND}'[:125]
+        product.og_title = product.seo_title[:120]
+        product.og_description = product.seo_description[:260]
+        product.twitter_description = product.seo_description[:260]
+        product.schema_markup = _auto_schema_markup(product)
+
+        product.save(update_fields=[
+            'seo_title', 'seo_description', 'seo_keywords',
+            'image_alt', 'image_title', 'og_title', 'og_description',
+            'twitter_description', 'schema_markup', 'updated_at',
+        ])
+
+        return Response({
+            'detail': f'SEO fields regenerated for "{product.name}".',
+            'seoTitle': product.seo_title,
+            'seoDescription': product.seo_description,
+            'seoKeywords': product.seo_keywords,
+            'imageAlt': product.image_alt,
+        }, status=status.HTTP_200_OK)
+
+
+class AdminProductBulkSeoRegenerateView(APIView):
+    """
+    POST /admin/products/bulk-regenerate-seo/
+    Batch-regenerates SEO fields for every product missing seo_title.
+    Returns count of products updated.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request):
+        from products.models import (
+            _auto_seo_title, _auto_seo_description, _auto_keywords,
+            _auto_image_alt, _auto_schema_markup, SITE_BRAND,
+        )
+
+        qs = Product.objects.select_related('category').filter(
+            models.Q(seo_title__isnull=True) | models.Q(seo_title='')
+        )
+        updated = 0
+        for product in qs:
+            cat_name = product.category.name if product.category else ''
+            product.seo_title = _auto_seo_title(product.name, cat_name)
+            product.seo_description = _auto_seo_description(
+                product.name, product.short_description or '', cat_name
+            )
+            product.seo_keywords = _auto_keywords(product.name, cat_name)
+            if not product.image_alt:
+                product.image_alt = _auto_image_alt(product.name, cat_name)
+            if not product.og_title:
+                product.og_title = product.seo_title[:120]
+            if not product.og_description:
+                product.og_description = product.seo_description[:260]
+            if not product.twitter_description:
+                product.twitter_description = product.seo_description[:260]
+            product.schema_markup = _auto_schema_markup(product)
+            product.save(update_fields=[
+                'seo_title', 'seo_description', 'seo_keywords',
+                'image_alt', 'og_title', 'og_description',
+                'twitter_description', 'schema_markup', 'updated_at',
+            ])
+            updated += 1
+
+        return Response({
+            'detail': f'SEO fields regenerated for {updated} product(s).',
+            'updated': updated,
+        }, status=status.HTTP_200_OK)
+
+
+class AdminSitemapPingView(APIView):
+    """
+    POST /admin/sitemap/ping/
+    Pings Google and Bing indexing APIs with the current sitemap URL.
+    Call this after adding new products or blog posts.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request):
+        from django.conf import settings
+        site_url = getattr(settings, 'SITE_URL', '').rstrip('/')
+        if not site_url:
+            return Response(
+                {'detail': 'SITE_URL is not configured in settings.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        sitemap_url = f'{site_url}/sitemap.xml'
+        results = _ping_search_engines(sitemap_url)
+        return Response({
+            'sitemapUrl': sitemap_url,
+            'pingResults': results,
+        }, status=status.HTTP_200_OK)
+
+
+class AdminSeoScoreView(APIView):
+    """
+    GET /admin/seo/score/
+    Returns per-product SEO completeness scores for the SEO dashboard.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        products = Product.objects.select_related('category').only(
+            'id', 'name', 'slug', 'seo_title', 'seo_description', 'seo_keywords',
+            'image_alt', 'og_title', 'og_description', 'schema_markup',
+            'cloudinary_url', 'primary_image', 'status',
+        )
+        results = []
+        for p in products:
+            checks = {
+                'seo_title': bool(p.seo_title),
+                'seo_description': bool(p.seo_description),
+                'seo_keywords': bool(p.seo_keywords),
+                'image_alt': bool(p.image_alt),
+                'og_title': bool(p.og_title),
+                'og_description': bool(p.og_description),
+                'schema_markup': bool(p.schema_markup),
+                'has_image': bool(p.cloudinary_url or p.primary_image),
+            }
+            score = round(sum(checks.values()) / len(checks) * 100)
+            results.append({
+                'id': p.id,
+                'name': p.name,
+                'slug': p.slug,
+                'status': p.status,
+                'score': score,
+                'checks': checks,
+                'needsAttention': score < 80,
+            })
+        results.sort(key=lambda x: x['score'])
+        total = len(results)
+        avg = round(sum(r['score'] for r in results) / total) if total else 0
+        return Response({
+            'averageScore': avg,
+            'totalProducts': total,
+            'needsAttention': sum(1 for r in results if r['needsAttention']),
+            'results': results,
+        }, status=status.HTTP_200_OK)
+
