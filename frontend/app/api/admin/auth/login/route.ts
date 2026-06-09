@@ -10,12 +10,19 @@ async function loginWithBackend(payload: AdminLoginPayload): Promise<AdminAuthRe
     throw new Error('Backend API URL is not configured.')
   }
 
-  const response = await fetch(`${backendBaseUrl}/auth/login/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-    cache: 'no-store',
-  })
+  const loginUrl = `${backendBaseUrl}/auth/login/`
+  let response: Response
+
+  try {
+    response = await fetch(loginUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      cache: 'no-store',
+    })
+  } catch {
+    throw new Error(`Cannot reach Django backend at ${loginUrl}. Make sure PostgreSQL and Django runserver are running.`)
+  }
 
   if (!response.ok) {
     const detail = await response.json().catch(() => null)
@@ -35,7 +42,7 @@ export async function POST(request: Request) {
     const message = error?.message ?? 'Unable to authenticate with Django backend.'
     return NextResponse.json(
       { detail: message },
-      { status: message.includes('not configured') ? 503 : 401 }
+      { status: message.includes('Cannot reach') || message.includes('not configured') ? 503 : 401 }
     )
   }
 

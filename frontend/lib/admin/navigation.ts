@@ -110,6 +110,49 @@ export const adminNavItems: AdminNavItem[] = [
     icon: 'chart-column',
     minAccess: 'staff',
   },
+  // ── Monitoring Center ──────────────────────────────────────────────────
+  {
+    label: 'Operations Center',
+    href: '/admin/monitoring',
+    icon: 'activity',
+    minAccess: 'superuser',
+  },
+  {
+    label: 'Error Center',
+    href: '/admin/errors',
+    icon: 'bug',
+    minAccess: 'superuser',
+  },
+  {
+    label: 'API Health',
+    href: '/admin/api-health',
+    icon: 'cable',
+    minAccess: 'superuser',
+  },
+  {
+    label: 'AI Monitor',
+    href: '/admin/ai-monitoring',
+    icon: 'cpu',
+    minAccess: 'superuser',
+  },
+  {
+    label: 'Security',
+    href: '/admin/security',
+    icon: 'shield-alert',
+    minAccess: 'superuser',
+  },
+  {
+    label: 'Business Intel',
+    href: '/admin/business-intelligence',
+    icon: 'trending-up',
+    minAccess: 'superuser',
+  },
+  {
+    label: 'Site Auditor',
+    href: '/admin/auditor',
+    icon: 'scan-search',
+    minAccess: 'superuser',
+  },
 ]
 
 export const adminRoleLabels: Record<string, string> = {

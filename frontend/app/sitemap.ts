@@ -1,8 +1,9 @@
 import type { MetadataRoute } from 'next'
 import { productService } from '@/services/productService'
 import { blogService } from '@/services/blogService'
+import { frontendConfig } from '@/lib/config'
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
+const BASE = frontendConfig.siteUrl
 
 // Static pages with accurate SEO priorities
 const STATIC_PAGES: MetadataRoute.Sitemap = [

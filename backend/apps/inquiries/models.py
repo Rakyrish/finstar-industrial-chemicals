@@ -40,6 +40,9 @@ class QuoteRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ['-created_at']
+
     def __str__(self):
         prod_name = self.product.name if self.product else self.custom_product_name
         return f"Quote #{self.id} — {prod_name} for {self.company}"
@@ -60,6 +63,9 @@ class ContactMessage(models.Model):
     
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='unread')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"Message from {self.full_name} ({self.company if self.company else 'Individual'})"

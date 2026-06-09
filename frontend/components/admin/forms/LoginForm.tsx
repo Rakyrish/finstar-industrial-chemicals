@@ -3,7 +3,7 @@
 import { message } from 'antd'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { ShieldCheck, Loader2 } from 'lucide-react'
 import { adminLoginSchema } from '@/lib/admin/schemas'
 import type { AdminLoginPayload } from '@/types/admin'
@@ -11,7 +11,6 @@ import { cn } from '@/utils'
 import { useAdminAuth } from '../AdminAuthProvider'
 
 export default function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const { login } = useAdminAuth()
   const {
@@ -27,11 +26,12 @@ export default function LoginForm() {
     try {
       await login(values)
       message.success('Welcome Login Successful.')
-      const nextPath = searchParams.get('next') ?? '/admin'
-      router.replace(nextPath)
-      router.refresh()
-    } catch {
-      message.error('Login failed. Invalid username/password or insufficient admin access.')
+      const requestedNextPath = searchParams.get('next')
+      const nextPath = requestedNextPath?.startsWith('/admin') ? requestedNextPath : '/admin'
+      window.location.assign(nextPath)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Login failed. Invalid username/password or insufficient admin access.'
+      message.error(errorMessage)
     }
   }
 

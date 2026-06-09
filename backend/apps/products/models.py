@@ -61,7 +61,7 @@ def _auto_image_alt(name: str, category_name: str) -> str:
 
 def _auto_schema_markup(product) -> str:
     """Generate minimal Product JSON-LD string for storage."""
-    base_url = getattr(settings, 'SITE_URL', '').rstrip('/') or 'https://finstarindustrialchemicals.com'
+    base_url = getattr(settings, 'SITE_URL', '').rstrip('/')
     cat = product.category.name if product.category else 'Industrial Chemical'
     avail = (
         'https://schema.org/InStock'
@@ -82,7 +82,7 @@ def _auto_schema_markup(product) -> str:
             'url': base_url,
         },
         'category': cat,
-        'url': f'{base_url}/products/{product.slug}',
+        'url': f'{base_url}/products/{product.slug}' if base_url else '',
         'offers': {
             '@type': 'Offer',
             'availability': avail,
@@ -174,6 +174,7 @@ class Product(models.Model):
     # ── Logistics / Volumes ───────────────────────────────────────────────────
     packaging_type = models.CharField(max_length=100, blank=True, null=True)
     pricing = models.CharField(max_length=255, blank=True, null=True)
+    cost_price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     min_order_quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1.00)
     unit_of_measure = models.CharField(max_length=50, default='KG')
 

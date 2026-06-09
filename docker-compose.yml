@@ -40,15 +40,15 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
-      API_BASE_URL: http://finstar-chemicals-backend:8000/api/v1
-      SITE_URL: ${SITE_URL:-https://finstarindustrialchemicals.com}
+      API_BASE_URL: ${API_BASE_URL}
+      SITE_URL: ${SITE_URL}
       EMAIL_BACKEND: ${EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}
       EMAIL_HOST: ${EMAIL_HOST:-}
       EMAIL_PORT: ${EMAIL_PORT:-587}
       EMAIL_USE_TLS: ${EMAIL_USE_TLS:-True}
       EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
       EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
-      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-Finstar Industrial Chemicals <sales@finstarindustrialchemicals.com>}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL}
       SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-False}
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-True}
       CSRF_COOKIE_SECURE: ${CSRF_COOKIE_SECURE:-True}
@@ -69,8 +69,8 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://finstarindustrialchemicals.com/api/v1}
-        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://finstarindustrialchemicals.com}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
         NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:-}
         NEXT_PUBLIC_WHATSAPP_NUMBER: ${NEXT_PUBLIC_WHATSAPP_NUMBER:-}
         NEXT_PUBLIC_PHONE_NUMBER: ${NEXT_PUBLIC_PHONE_NUMBER:-}
@@ -79,11 +79,11 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://finstarindustrialchemicals.com}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://finstarindustrialchemicals.com/api/v1}
-      API_BASE_URL: http://finstar-chemicals-backend:8000/api/v1
-      ADMIN_BACKEND_URL: http://finstar-chemicals-backend:8000/api/v1
-      INTERNAL_API_URL: http://finstar-chemicals-backend:8000/api/v1
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      API_BASE_URL: ${API_BASE_URL}
+      ADMIN_BACKEND_URL: ${ADMIN_BACKEND_URL}
+      INTERNAL_API_URL: ${INTERNAL_API_URL}
       NEXT_PUBLIC_WHATSAPP_NUMBER: ${NEXT_PUBLIC_WHATSAPP_NUMBER:-}
       NEXT_PUBLIC_PHONE_NUMBER: ${NEXT_PUBLIC_PHONE_NUMBER:-}
       NEXT_PUBLIC_COMPANY_EMAIL: ${NEXT_PUBLIC_COMPANY_EMAIL:-}

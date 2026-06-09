@@ -7,6 +7,9 @@ class WarehouseLocation(models.Model):
     code = models.CharField(max_length=50, unique=True)
     address = models.TextField(blank=True, null=True)
 
+    class Meta:
+        ordering = ['name']
+
     def __str__(self):
         return f"{self.name} ({self.code})"
 
@@ -29,6 +32,9 @@ class StockItem(models.Model):
     last_error_log = models.TextField(blank=True, null=True)
     
     last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['product__name']
 
     @property
     def is_low_stock(self):

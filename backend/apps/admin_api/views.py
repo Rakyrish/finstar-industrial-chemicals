@@ -30,6 +30,14 @@ def chart_point(label, value):
     return {"label": str(label), "value": int(value or 0)}
 
 
+def _format_date(value, fmt="%Y-%m-%d"):
+    return value.strftime(fmt) if value else ""
+
+
+def _format_datetime(value, fmt="%Y-%m-%d %H:%M"):
+    return value.strftime(fmt) if value else ""
+
+
 class AdminOverviewView(APIView):
     """
     Returns real database metrics, traffic trends, inventory alerts, activity logs, 
@@ -103,20 +111,26 @@ class AdminOverviewView(APIView):
 
         # ── 3. Operational Alerts (Low stock levels) ──
         alerts = []
-        # Find product stock levels
-        low_stock_products = Product.objects.filter(status='active', stock_item__isnull=False)
-        for p in low_stock_products:
-            stock = p.stock_item
-            if stock.is_low_stock:
-                alerts.append({
-                    "id": p.id,
-                    "productName": p.name,
-                    "sku": p.cas_number or f"SKU-{p.id}",
-                    "stock": float(stock.quantity_on_hand),
-                    "threshold": float(stock.safety_stock_level),
-                    "severity": "critical" if stock.quantity_on_hand <= (stock.safety_stock_level / 2) else "warning",
-                    "supplier": "Default Warehouse" if not stock.warehouse_location else stock.warehouse_location.name
-                })
+        low_stock_items = (
+            StockItem.objects
+            .select_related('product', 'warehouse_location')
+            .filter(
+                product__status='active',
+                quantity_on_hand__lte=F('safety_stock_level'),
+            )
+            .order_by('quantity_on_hand')[:5]
+        )
+        for stock in low_stock_items:
+            p = stock.product
+            alerts.append({
+                "id": p.id,
+                "productName": p.name,
+                "sku": p.cas_number or f"SKU-{p.id}",
+                "stock": float(stock.quantity_on_hand or 0),
+                "threshold": float(stock.safety_stock_level or 0),
+                "severity": "critical" if stock.quantity_on_hand <= (stock.safety_stock_level / 2) else "warning",
+                "supplier": stock.warehouse_location.name if stock.warehouse_location else "Default Warehouse",
+            })
         # Limit to top 5 urgent alerts
         alerts = alerts[:5]
 
@@ -138,7 +152,7 @@ class AdminOverviewView(APIView):
 
         # ── 5. Recent additions ──
         recent_products = []
-        newest_products = Product.objects.all().order_by('-created_at')[:5]
+        newest_products = Product.objects.select_related('category').order_by('-created_at')[:5]
         for p in newest_products:
             stock = getattr(p, 'stock_item', None)
             qty = float(stock.quantity_on_hand) if stock else 0.0
@@ -148,7 +162,7 @@ class AdminOverviewView(APIView):
                 "slug": p.slug,
                 "category": p.category.name if p.category else "Uncategorized",
                 "inventory": qty,
-                "updatedAt": p.updated_at.strftime("%Y-%m-%d"),
+                "updatedAt": _format_date(p.updated_at),
                 "status": p.status,
                 "featured": p.is_featured,
                 "packaging": p.packaging_type or p.unit_of_measure,
@@ -162,17 +176,18 @@ class AdminOverviewView(APIView):
                 "title": post.title,
                 "author": post.author.username if post.author else (post.author_name or "Finstar Admin"),
                 "status": post.status,
-                "updatedAt": post.updated_at.strftime("%Y-%m-%d")
+                "updatedAt": _format_date(post.updated_at)
             })
 
         # ── 6. Activity Log ──
         activity = []
         # Construct dynamic activity log from real inquiries and updates
-        recent_quotes = QuoteRequest.objects.order_by('-created_at')[:3]
+        recent_quotes = QuoteRequest.objects.select_related('product').order_by('-created_at')[:3]
         for q in recent_quotes:
+            requested_product = q.product.name if q.product else (q.custom_product_name or "a custom product")
             activity.append({
                 "title": "New Sourcing Request",
-                "description": f"Company {q.company} requested quote for {q.product.name if q.product else q.custom_product_name} ({q.quantity} {q.unit_of_measure})",
+                "description": f"Company {q.company or 'N/A'} requested quote for {requested_product} ({q.quantity} {q.unit_of_measure})",
                 "timestamp": q.created_at.isoformat(),
                 "severity": "info",
                 "id": q.id,
@@ -201,7 +216,7 @@ class AdminOverviewView(APIView):
                 "createdAt": q.created_at.isoformat(),
                 "email": getattr(q, 'email', ''),
                 "phone": getattr(q, 'phone', ''),
-                "notes": getattr(q, 'notes', ''),
+                "notes": getattr(q, 'additional_notes', '') or '',
             })
 
         # ── 8. Contact Inquiries ──
@@ -614,6 +629,7 @@ class AdminProductListView(APIView):
                 density=_char(d.get('density'), 100),
                 packaging_type=_char(d.get('packagingType') or d.get('packaging_type'), 100),
                 pricing=_char(d.get('pricing'), 255),
+                cost_price=_parse_decimal(d.get('costPrice') or d.get('cost_price'), Decimal('0.00')),
                 min_order_quantity=_parse_decimal(d.get('minOrderQuantity') or d.get('min_order_quantity'), Decimal('1')),
                 unit_of_measure=_blank_to_none(d.get('unitOfMeasure') or d.get('unit_of_measure')) or 'KG',
                 hazard_classification=_blank_to_none(d.get('hazardClassification') or d.get('hazard_classification')),
@@ -686,6 +702,7 @@ class AdminProductDetailView(APIView):
             'short_description': 'short_description', 'shortDescription': 'short_description',
             'purity': 'purity', 'appearance': 'appearance', 'density': 'density',
             'pricing': 'pricing', 'status': 'status',
+            'costPrice': 'cost_price', 'cost_price': 'cost_price',
             'packaging_type': 'packaging_type', 'packagingType': 'packaging_type',
             'casNumber': 'cas_number', 'cas_number': 'cas_number',
             'chemicalFormula': 'chemical_formula', 'chemical_formula': 'chemical_formula',
@@ -1124,4 +1141,3 @@ class AdminSeoScoreView(APIView):
             'needsAttention': sum(1 for r in results if r['needsAttention']),
             'results': results,
         }, status=status.HTTP_200_OK)
-

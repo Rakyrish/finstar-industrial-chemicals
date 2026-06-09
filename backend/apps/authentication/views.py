@@ -31,11 +31,43 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = LoginSerializer(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
+        d = request.data
+        username = d.get('username', 'Unknown')
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR') or '0.0.0.0'
+        user_agent = request.META.get('HTTP_USER_AGENT', '')[:500]
 
-        return Response(_issue_auth_response(user), status=status.HTTP_200_OK)
+        from monitoring.models import SecurityLog
+        try:
+            serializer = LoginSerializer(data=request.data, context={'request': request})
+            if not serializer.is_valid():
+                SecurityLog.objects.create(
+                    event_type='failed_login',
+                    ip_address=ip,
+                    details=f"Failed login attempt for username: {username}. Errors: {serializer.errors}",
+                    user_agent=user_agent
+                )
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            user = serializer.validated_data['user']
+            SecurityLog.objects.create(
+                event_type='admin_login',
+                ip_address=ip,
+                details=f"Successful admin login for user: {user.username}",
+                user_agent=user_agent
+            )
+            return Response(_issue_auth_response(user), status=status.HTTP_200_OK)
+        except Exception as exc:
+            SecurityLog.objects.create(
+                event_type='failed_login',
+                ip_address=ip,
+                details=f"Failed login attempt for username: {username}. Exception: {str(exc)}",
+                user_agent=user_agent
+            )
+            raise exc
 
 
 class RefreshView(APIView):

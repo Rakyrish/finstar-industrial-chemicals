@@ -26,6 +26,7 @@ API_BASE_URL = env('API_BASE_URL', default='')
 OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
 RESEND_API_KEY = env('RESEND_API_KEY', default='')
 SITE_URL = env('SITE_URL', default='')
+COMPANY_REFERENCE_SITE_URL = env('COMPANY_REFERENCE_SITE_URL', default='')
 COMPANY_EMAIL = env('COMPANY_EMAIL', default='')
 COMPANY_NAME = env('COMPANY_NAME', default='Finstar Industrial Chemicals')
 COMPANY_BRAND_NAME = env('COMPANY_BRAND_NAME', default='FINSTAR')
@@ -69,15 +70,18 @@ INSTALLED_APPS = [
     'suppliers.apps.SuppliersConfig',
     'blog.apps.BlogConfig',
     'admin_api.apps.AdminApiConfig',
+    'monitoring.apps.MonitoringConfig',
 ]
 
 MIDDLEWARE = [
+    'monitoring.middleware.SystemExceptionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'monitoring.middleware.ApiHealthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

@@ -3,6 +3,7 @@ import { generatePageMetadata } from '@/lib/metadata'
 import { productService } from '@/services/productService'
 import ProductCard from '@/components/shared/ProductCard'
 import { breadcrumbSchema, graphSchema, toJsonLd } from '@/lib/schema'
+import { frontendConfig } from '@/lib/config'
 import Link from 'next/link'
 import { Filter, SlidersHorizontal, Search, RefreshCw, X } from 'lucide-react'
 
@@ -94,13 +95,13 @@ export default async function ProductsPage({ searchParams }: PageProps) {
       '@type': 'ItemList',
       name: activeCategory ? `${activeCategory.name} — Finstar Chemical Catalogue` : 'Industrial Chemical Catalogue — Finstar',
       description: activeCategory?.description || 'Browse industrial chemicals, solvents, acids, and specialty chemicals from Finstar.',
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/products${categorySlug ? `?category=${categorySlug}` : ''}`,
+      url: `${frontendConfig.siteUrl}/products${categorySlug ? `?category=${categorySlug}` : ''}`,
       numberOfItems: paginatedResult.count,
       itemListElement: products.map((product: any, index: number) => ({
         '@type': 'ListItem',
         position: (page - 1) * 12 + index + 1,
         name: product.name,
-        url: `${process.env.NEXT_PUBLIC_SITE_URL}/products/${product.slug}`,
+        url: `${frontendConfig.siteUrl}/products/${product.slug}`,
         image: product.primaryImage || undefined,
         description: product.short_description || product.name,
       })),

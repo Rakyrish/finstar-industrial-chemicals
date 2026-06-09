@@ -79,6 +79,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     quotationTemplate = serializers.CharField(source='quotation_template', allow_null=True)
     ctaContent = serializers.CharField(source='cta_content', allow_null=True)
     schemaMarkup = serializers.CharField(source='schema_markup', allow_null=True)
+    costPrice = serializers.DecimalField(source='cost_price', max_digits=12, decimal_places=2, required=False)
     publishAt = serializers.DateTimeField(source='publish_at', allow_null=True)
     updatedAt = serializers.DateTimeField(source='updated_at', format='%Y-%m-%dT%H:%M:%SZ')
     createdAt = serializers.DateTimeField(source='created_at', format='%Y-%m-%dT%H:%M:%SZ')
@@ -96,7 +97,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             'short_description', 'description', 'long_description',
             'applications', 'benefits', 'features', 'industriesServed', 'faqs',
             'specifications', 'status', 'isNew', 'isFeatured',
-            'min_order_quantity', 'unit_of_measure', 'packaging_type', 'pricing',
+            'min_order_quantity', 'unit_of_measure', 'packaging_type', 'pricing', 'costPrice',
             'cas_number', 'chemical_formula', 'purity', 'appearance', 'density',
             'hazard_classification',
             'cloudinaryUrl', 'cloudinaryPublicId',

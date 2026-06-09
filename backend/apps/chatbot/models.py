@@ -3,6 +3,9 @@ from django.db import models
 
 class ChatSession(models.Model):
     session_id = models.CharField(max_length=255, unique=True)
+    rating = models.IntegerField(null=True, blank=True) # Feedback score (1-5 or thumbs up/down)
+    escalated = models.BooleanField(default=False)
+    failed_response_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

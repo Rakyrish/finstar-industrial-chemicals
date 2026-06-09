@@ -10,10 +10,10 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { frontendConfig, getBackendApiUrl } from '@/lib/config'
+import { getBackendApiUrl } from '@/lib/config'
 
 const ADMIN_API_BASE = typeof window !== 'undefined'
-  ? frontendConfig.apiUrl
+  ? '/api/v1'
   : getBackendApiUrl()
 
 interface UseAdminResourceResult<T> {

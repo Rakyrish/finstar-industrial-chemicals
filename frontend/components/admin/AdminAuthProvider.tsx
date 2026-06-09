@@ -40,12 +40,19 @@ export default function AdminAuthProvider({
   useEffect(() => {
     let active = true
 
+    if (pathname === '/admin/login' && !initialSession) {
+      setIsLoading(false)
+      return () => {
+        active = false
+      }
+    }
+
     const bootstrap = async () => {
       try {
         const profileResponse = await adminAuthService.me()
         if (!active) return
         setSession(profileResponse.user)
-      } catch {
+      } catch (meError) {
         try {
           const refreshed = await adminAuthService.refresh()
           if (!active) return
@@ -55,7 +62,7 @@ export default function AdminAuthProvider({
             refreshToken: refreshed.refresh,
             exp: Math.floor(Date.now() / 1000) + refreshed.access_expires_in,
           })
-        } catch {
+        } catch (refreshError) {
           if (!active) return
           setSession(null)
         }
@@ -69,7 +76,7 @@ export default function AdminAuthProvider({
     return () => {
       active = false
     }
-  }, [])
+  }, [initialSession, pathname])
 
   useEffect(() => {
     if (!isLoading && !session && pathname.startsWith('/admin') && pathname !== '/admin/login' && pathname !== '/admin/unauthorized') {

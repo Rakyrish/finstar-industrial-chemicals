@@ -1,5 +1,7 @@
 import os
 import json
+import time
+from decimal import Decimal
 from openai import OpenAI
 from products.models import Product
 from django.conf import settings
@@ -9,6 +11,58 @@ class OpenAIService:
     def __init__(self):
         self.api_key = getattr(settings, 'OPENAI_API_KEY', os.getenv('OPENAI_API_KEY', ''))
         self.client = OpenAI(api_key=self.api_key) if self.api_key else None
+
+    def _log_ai_usage(self, agent, start_time, response_or_exception):
+        duration = time.time() - start_time
+        prompt_tokens = 0
+        completion_tokens = 0
+        total_tokens = 0
+        success = True
+        error_message = None
+
+        from monitoring.models import AiUsageLog, SystemErrorLog
+
+        if isinstance(response_or_exception, Exception):
+            success = False
+            error_message = str(response_or_exception)
+            try:
+                SystemErrorLog.objects.create(
+                    error_type='openai',
+                    message=f"OpenAI error in agent '{agent}': {error_message}",
+                    affected_page=None,
+                    affected_api=None,
+                    affected_user=None
+                )
+            except Exception:
+                pass
+        else:
+            try:
+                usage = getattr(response_or_exception, 'usage', None)
+                if usage:
+                    prompt_tokens = getattr(usage, 'prompt_tokens', 0) or 0
+                    completion_tokens = getattr(usage, 'completion_tokens', 0) or 0
+                    total_tokens = getattr(usage, 'total_tokens', 0) or 0
+            except Exception:
+                pass
+
+        # Pricing for gpt-4o-mini / gpt-4.1-mini:
+        # Input: $0.150 / 1M tokens ($0.00000015 per token)
+        # Output: $0.600 / 1M tokens ($0.00000060 per token)
+        cost = Decimal(prompt_tokens) * Decimal('0.00000015') + Decimal(completion_tokens) * Decimal('0.00000060')
+
+        try:
+            AiUsageLog.objects.create(
+                agent=agent,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                total_tokens=total_tokens,
+                cost=cost,
+                response_time=round(Decimal(duration), 4),
+                success=success,
+                error_message=error_message
+            )
+        except Exception:
+            pass
 
     def _client(self):
         if not self.client:
@@ -147,12 +201,17 @@ class OpenAIService:
 
         context_str = '\n'.join(inventory_lines) if inventory_lines else 'No products currently listed.'
 
-        company_reference = """Company reference:
+        reference_site_url = getattr(settings, 'COMPANY_REFERENCE_SITE_URL', '').strip()
+        reference_site_line = (
+            f"- The wider company website at {reference_site_url} lists industrial chemicals for manufacturing, coatings, cleaning, water treatment, food/cosmetics/pharmaceutical applications, rubber/plastics, textile/automotive uses, solvents/thinners, and industrial oils.\n"
+            if reference_site_url else ""
+        )
+        company_reference = f"""Company reference:
 - Finstar Industrial Chemicals is the chemical supply arm associated with Finstar Industrial Systems Limited.
-- The wider company website at https://industrialchem.finstarindustrial.com/ lists industrial chemicals for manufacturing, coatings, cleaning, water treatment, food/cosmetics/pharmaceutical applications, rubber/plastics, textile/automotive uses, solvents/thinners, and industrial oils.
+{reference_site_line.rstrip()}
 - Examples from the wider company site include Acetone, Butyl Glycol, Ethyl Acetate, Citric Acid, Dextrose Monohydrate, Formalin, Hydrochloric Acid, Acetic Acid, Mono Ethylene Glycol, Caustic Soda Flakes, Calcium Hypochlorite, Xylene, Titanium Dioxide, Nonyl Phenol 9, White Oil, and related industrial chemicals.
 - Use that wider website as secondary company context only. If the active catalogue below does not list a product, say it may be available through Finstar's wider sourcing network and ask for grade, quantity, delivery country, and intended application before promising availability.
-- Main contact signal from the wider site: +254 726 417966.
+- Main contact signal: {getattr(settings, 'COMPANY_WHATSAPP_NUMBER', '') or getattr(settings, 'COMPANY_PHONE', '') or 'Use the website contact form'}.
 """
 
         system_prompt = f"""You are Finstar AI, a certified industrial chemical sales and sourcing assistant.
@@ -175,6 +234,7 @@ Rules:
 
         full_messages = [{'role': 'system', 'content': system_prompt}] + messages
 
+        start_time = time.time()
         try:
             response = self._client().chat.completions.create(
                 model=os.getenv('OPENAI_CHAT_MODEL', 'gpt-4.1-mini'),
@@ -182,11 +242,13 @@ Rules:
                 temperature=0.2,
                 max_tokens=400,
             )
+            self._log_ai_usage('chatbot', start_time, response)
             return {
                 'role': 'assistant',
                 'content': response.choices[0].message.content,
             }
         except Exception as e:
+            self._log_ai_usage('chatbot', start_time, e)
             return self._fallback_chat_response(messages, inventory_lines)
 
     # ──────────────────────────────────────────────────────────────────────────
@@ -284,6 +346,7 @@ FRONTEND DISPLAY REQUIREMENTS:
         else:
             messages.append({'role': 'user', 'content': prompt})
 
+        start_time = time.time()
         try:
             client = self._client()
             if hasattr(client, 'responses'):
@@ -305,6 +368,7 @@ FRONTEND DISPLAY REQUIREMENTS:
                         }
                     },
                 )
+                self._log_ai_usage('product_content', start_time, response)
                 return json.loads(response.output_text)
 
             response = client.chat.completions.create(
@@ -313,6 +377,7 @@ FRONTEND DISPLAY REQUIREMENTS:
                 temperature=0.3,
                 max_tokens=2500,
             )
+            self._log_ai_usage('product_content', start_time, response)
             content = response.choices[0].message.content.strip()
 
             # Strip any accidental markdown code fences
@@ -325,9 +390,11 @@ FRONTEND DISPLAY REQUIREMENTS:
 
             return json.loads(content.strip())
         except json.JSONDecodeError as e:
+            self._log_ai_usage('product_content', start_time, e)
             print(f'OpenAI JSON parse error: {e}')
             raise ValueError('OpenAI returned invalid product JSON. Please retry with a clearer product image or name.') from e
         except Exception as e:
+            self._log_ai_usage('product_content', start_time, e)
             print(f'OpenAI product generation error: {e}')
             raise e
 

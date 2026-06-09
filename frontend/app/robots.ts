@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next'
+import { frontendConfig } from '@/lib/config'
 
 export default function robots(): MetadataRoute.Robots {
-  const BASE = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
+  const BASE = frontendConfig.siteUrl
 
   return {
     rules: [

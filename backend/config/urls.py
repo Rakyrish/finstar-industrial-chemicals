@@ -26,6 +26,7 @@ urlpatterns = [
     path('api/v1/crm/', include('crm.urls')),
     path('api/v1/analytics/', include('analytics.urls')),
     path('api/v1/admin/', include('admin_api.urls')),
+    path('api/v1/monitoring/', include('monitoring.urls')),
 ]
 
 # Serve static/media assets in debug dev environment

@@ -1,5 +1,5 @@
 import type { AdminLoginPayload, AdminSession } from '@/types/admin'
-import { getAdminSessionFromToken, ADMIN_ACCESS_COOKIE, ADMIN_REFRESH_COOKIE } from './auth'
+import { getAdminSessionFromToken } from './auth'
 
 interface LoginResponse {
   session: AdminSession
@@ -19,31 +19,12 @@ interface RefreshResponse {
 }
 
 class AdminAuthService {
-  private getStoredTokens() {
-    if (typeof window === 'undefined') return { access: null, refresh: null }
-    return {
-      access: localStorage.getItem(ADMIN_ACCESS_COOKIE),
-      refresh: localStorage.getItem(ADMIN_REFRESH_COOKIE),
-    }
-  }
-
-  private setStoredTokens(access: string, refresh: string) {
-    if (typeof window === 'undefined') return
-    localStorage.setItem(ADMIN_ACCESS_COOKIE, access)
-    localStorage.setItem(ADMIN_REFRESH_COOKIE, refresh)
-  }
-
-  private clearStoredTokens() {
-    if (typeof window === 'undefined') return
-    localStorage.removeItem(ADMIN_ACCESS_COOKIE)
-    localStorage.removeItem(ADMIN_REFRESH_COOKIE)
-  }
-
   async login(payload: AdminLoginPayload): Promise<LoginResponse> {
     try {
       const res = await fetch('/api/admin/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify(payload),
       })
 
@@ -54,8 +35,8 @@ class AdminAuthService {
 
       const response = await res.json() as { accessToken: string; refreshToken: string; session: AdminSession }
 
-      if (response.accessToken) {
-        this.setStoredTokens(response.accessToken, response.refreshToken)
+      if (!response.session) {
+        throw new Error('Invalid response: missing session data')
       }
 
       return {
@@ -64,22 +45,31 @@ class AdminAuthService {
         refresh: response.refreshToken,
       }
     } catch (error) {
-      this.clearStoredTokens()
       throw error
     }
   }
 
   async me(): Promise<MeResponse> {
     try {
-      const { access } = this.getStoredTokens()
-      if (!access) throw new Error('No access token')
+      const res = await fetch('/api/admin/auth/session', {
+        method: 'GET',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+      })
 
-      const session = getAdminSessionFromToken(access)
-      if (!session) throw new Error('Invalid token')
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null)
+        throw new Error(errorData?.detail ?? 'No active admin session')
+      }
 
-      return { user: session }
+      const response = await res.json() as { authenticated?: boolean; user: AdminSession | null }
+      if (!response.user) {
+        throw new Error('No active admin session')
+      }
+
+      return { user: response.user }
     } catch (error) {
-      this.clearStoredTokens()
       throw error
     }
   }
@@ -88,6 +78,7 @@ class AdminAuthService {
     try {
       const res = await fetch('/api/admin/auth/refresh', {
         method: 'POST',
+        credentials: 'same-origin',
       })
 
       if (!res.ok) {
@@ -96,10 +87,6 @@ class AdminAuthService {
       }
 
       const response = await res.json() as any
-
-      if (response.access) {
-        this.setStoredTokens(response.access, response.refresh)
-      }
 
       const session = getAdminSessionFromToken(response.access)
       if (!session) {
@@ -113,7 +100,6 @@ class AdminAuthService {
         access_expires_in: response.access_expires_in ?? 3600,
       }
     } catch (error) {
-      this.clearStoredTokens()
       throw error
     }
   }
@@ -122,12 +108,11 @@ class AdminAuthService {
     try {
       await fetch('/api/admin/auth/logout', {
         method: 'POST',
+        credentials: 'same-origin',
       }).catch(() => {
         // Continue logout even if API call fails
       })
-    } finally {
-      this.clearStoredTokens()
-    }
+    } catch {}
   }
 }
 

@@ -17,7 +17,7 @@ interface JwtPayload {
   is_staff: boolean
   is_superuser: boolean
   groups: string[]
-  permissions: string[]
+  permissions?: string[]
 }
 
 export function getAdminSessionFromToken(token: string | undefined): AdminSession | null {
@@ -30,11 +30,12 @@ export function getAdminSessionFromToken(token: string | undefined): AdminSessio
     // Base64url decode the payload part
     const payloadPart = parts[1]
     const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/')
+    const paddedBase64 = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=')
     
     // Edge-safe base64 decoding
     const rawPayload = typeof atob === 'function'
-      ? atob(base64)
-      : Buffer.from(base64, 'base64').toString('utf-8')
+      ? atob(paddedBase64)
+      : Buffer.from(paddedBase64, 'base64').toString('utf-8')
       
     const decodedPayload = JSON.parse(rawPayload) as JwtPayload
 

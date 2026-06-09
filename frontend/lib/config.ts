@@ -2,23 +2,37 @@ function trimTrailingSlash(value: string) {
   return value.replace(/\/$/, '')
 }
 
-const API_URL = trimTrailingSlash(
+function normalizeApiUrl(value: string) {
+  const trimmed = trimTrailingSlash(value)
+  if (!trimmed) return '/api/v1'
+  if (trimmed === '/api/v1' || trimmed.endsWith('/api/v1')) return trimmed
+  if (trimmed === '/api' || trimmed.endsWith('/api')) return `${trimmed}/v1`
+  if (/^https?:\/\/[^/]+$/i.test(trimmed)) return `${trimmed}/api/v1`
+  return trimmed
+}
+
+const API_URL = normalizeApiUrl(
   process.env.NEXT_PUBLIC_API_URL ||
   process.env.NEXT_PUBLIC_BACKEND_URL ||
   '/api/v1'
 )
 
-const INTERNAL_API_URL = trimTrailingSlash(
+const INTERNAL_API_URL = normalizeApiUrl(
   process.env.API_BASE_URL ||
   process.env.INTERNAL_API_URL ||
   process.env.ADMIN_BACKEND_URL ||
   API_URL
 )
 
+const SERVER_API_URL =
+  typeof window === 'undefined' && INTERNAL_API_URL.startsWith('/')
+    ? normalizeApiUrl(process.env.DJANGO_API_URL || 'http://127.0.0.1:8000')
+    : INTERNAL_API_URL
+
 export const frontendConfig = {
   apiUrl: API_URL,
   internalApiUrl: INTERNAL_API_URL,
-  siteUrl: trimTrailingSlash(process.env.NEXT_PUBLIC_SITE_URL || ''),
+  siteUrl: trimTrailingSlash(process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || ''),
   companyEmail: process.env.NEXT_PUBLIC_COMPANY_EMAIL || process.env.NEXT_PUBLIC_EMAIL || '',
   phoneNumber: process.env.NEXT_PUBLIC_PHONE_NUMBER || '',
   whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '',
@@ -33,5 +47,5 @@ export const getWhatsAppUrl = (message?: string) => {
 
 export const getBackendApiUrl = () => {
   const isServer = typeof window === 'undefined'
-  return isServer ? INTERNAL_API_URL : API_URL
+  return isServer ? SERVER_API_URL : API_URL
 }

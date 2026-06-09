@@ -6,6 +6,7 @@ import { organizationSchema, localBusinessSchema, websiteSchema, toJsonLd } from
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import ChatbotWidget from '@/components/shared/ChatbotWidget'
+import WebVitalsReporter from '@/components/shared/WebVitalsReporter'
 import { getSiteChromeData } from '@/services/siteService'
 
 const inter = Inter({
@@ -73,6 +74,7 @@ export default async function RootLayout({
         <meta name="content-language" content="en-KE" />
       </head>
       <body className="bg-surface text-text-primary antialiased">
+        <WebVitalsReporter />
         <Header navItems={chrome.navItems} company={chrome.company} />
         <main id="main-content" tabIndex={-1}>
           {children}

@@ -23,12 +23,21 @@ if (existsSync(rootEnvPath)) {
   })
 }
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL)?.replace(/\/$/, '')
 const siteImageHostname = siteUrl ? new URL(siteUrl).hostname : undefined
 const extraImageHostnames = (process.env.NEXT_PUBLIC_IMAGE_HOSTNAMES || '')
   .split(',')
   .map((hostname) => hostname.trim())
   .filter(Boolean)
+
+function normalizeApiUrl(value: string) {
+  const trimmed = value.replace(/\/$/, '')
+  if (!trimmed) return ''
+  if (trimmed.endsWith('/api/v1')) return trimmed
+  if (trimmed.endsWith('/api')) return `${trimmed}/v1`
+  if (/^https?:\/\/[^/]+$/i.test(trimmed)) return `${trimmed}/api/v1`
+  return trimmed
+}
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -118,7 +127,7 @@ const nextConfig: NextConfig = {
         ? [
             {
               source: '/admin/',
-              destination: `${siteUrl}/admin`,
+              destination: '/admin',
               permanent: true,
               basePath: false as const,
             },
@@ -129,12 +138,12 @@ const nextConfig: NextConfig = {
 
   // Rewrites for API proxy in development. The destination must come from env.
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    const apiUrl = normalizeApiUrl(process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '')
     return process.env.NODE_ENV === 'development' && apiUrl
       ? [
           {
             source: '/api/v1/:path*',
-            destination: `${apiUrl.replace(/\/$/, '')}/:path*`,
+            destination: `${apiUrl}/:path*`,
           },
         ]
       : []

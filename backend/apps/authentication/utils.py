@@ -60,7 +60,6 @@ def decode_jwt(token: str, verify_exp: bool = True) -> dict:
 def token_payload_for_user(user, token_type: str, expires_in_seconds: int) -> dict:
     now = datetime.now(timezone.utc)
     groups = list(user.groups.values_list('name', flat=True))
-    permissions = list(user.get_all_permissions())
 
     return {
         'token_type': token_type,
@@ -75,7 +74,6 @@ def token_payload_for_user(user, token_type: str, expires_in_seconds: int) -> di
         'is_staff': user.is_staff,
         'is_superuser': user.is_superuser,
         'groups': groups,
-        'permissions': permissions,
     }
 
 
