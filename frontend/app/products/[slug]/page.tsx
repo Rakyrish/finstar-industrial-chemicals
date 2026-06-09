@@ -8,7 +8,7 @@ import { productSchema, breadcrumbSchema, faqSchema, graphSchema, toJsonLd } fro
 import ProductCard from '@/components/shared/ProductCard'
 import WhatsAppButton from '@/components/shared/WhatsAppButton'
 import { Award, AlertCircle, ArrowLeft, Send, CheckCircle2, Package, Database, ShieldCheck } from 'lucide-react'
-
+export const dynamic = 'force-dynamic';
 // ISR: revalidate every 5 minutes
 export const revalidate = 300
 
