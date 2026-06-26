@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { message } from 'antd'
-import { Check, ImagePlus, Loader2, Plus, Search, Sparkles, Upload, X } from 'lucide-react'
+import { Check, FileText, ImagePlus, Loader2, Plus, Search, Sparkles, Upload, X } from 'lucide-react'
 import type { AdminListResponse, AdminProductDraft } from '@/types/admin'
 import { adminApiRequest, useAdminResource } from '@/lib/admin/client'
 import { cn } from '@/utils'
@@ -238,6 +238,8 @@ export default function ProductForm({ productId, initialData }: { productId?: st
   const [imageError, setImageError] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isGeneratingSheet, setIsGeneratingSheet] = useState(false)
+  const [generatedSheetSlug, setGeneratedSheetSlug] = useState<string | null>(null)
   const [categorySearch, setCategorySearch] = useState('')
   const [showCategoryModal, setShowCategoryModal] = useState(false)
   const [newCategory, setNewCategory] = useState({ name: '', slug: '', description: '', seoTitle: '', seoDescription: '', seoKeywords: '' })
@@ -352,6 +354,23 @@ export default function ProductForm({ productId, initialData }: { productId?: st
     }
   }
 
+  const generateDataSheet = async () => {
+    if (!productId) {
+      message.warning('Save the product first, then generate its data sheet.')
+      return
+    }
+    setIsGeneratingSheet(true)
+    try {
+      const result = await adminApiRequest<any>('/admin/ai/generate-datasheet/', 'POST', { productId: Number(productId) })
+      setGeneratedSheetSlug(result.slug ?? null)
+      message.success(`Data sheet "${result.title}" generated and published.`)
+    } catch (error: any) {
+      message.error(error.message || 'Data sheet generation failed.')
+    } finally {
+      setIsGeneratingSheet(false)
+    }
+  }
+
   const createCategory = async () => {
     if (!newCategory.name.trim()) return
     const defaults = categorySeoDefaults(newCategory.name, form.seoKeywords)
@@ -458,6 +477,73 @@ export default function ProductForm({ productId, initialData }: { productId?: st
                   ))}
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── AI Data Sheet Generator ──────────────────────────────────────────── */}
+        <section className="card p-5">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-400">AI-powered</p>
+              <h2 className="mt-1 text-xl font-bold text-text-primary">Generate Product Data Sheet</h2>
+              <p className="mt-1 text-sm text-text-secondary">
+                Auto-generate a professional SDS-style HTML data sheet using AI. The sheet will be saved as a
+                published Technical Document linked to this product.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={generateDataSheet}
+              disabled={!productId || isGeneratingSheet}
+              className="btn-primary justify-center disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isGeneratingSheet ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              Generate Data Sheet
+            </button>
+          </div>
+
+          {!productId && (
+            <div className="rounded-xl border border-surface-border bg-surface/40 px-4 py-3 text-sm text-text-muted">
+              Save the product first to enable data sheet generation.
+            </div>
+          )}
+
+          {generatedSheetSlug && (
+            <div className="mt-3 flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+              <Check className="h-5 w-5 text-emerald-400 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-text-primary">Data sheet generated successfully.</p>
+                <p className="text-xs text-text-muted mt-0.5">It is now published and linked to this product.</p>
+              </div>
+              <a
+                href={`/technical-docs/${generatedSheetSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary shrink-0 flex items-center gap-1.5 text-xs py-2 px-3"
+              >
+                <FileText className="h-3.5 w-3.5" /> View Sheet
+              </a>
+            </div>
+          )}
+
+          <div className="mt-4 rounded-xl border border-surface-border bg-surface/40 p-4">
+            <p className="text-sm font-semibold text-text-primary">What gets generated</p>
+            <div className="mt-3 grid gap-2 text-sm text-text-secondary sm:grid-cols-2">
+              {[
+                'Product overview & chemical identity',
+                'Physical & chemical properties table',
+                'Storage & handling conditions',
+                'Safety & PPE requirements',
+                'Applications in Kenya & East Africa',
+                'Regulatory & compliance (GHS, KEBS)',
+                'Packaging & supply information',
+                'ISO 9001 quality & certification section',
+              ].map((item) => (
+                <span key={item} className="inline-flex items-center gap-2">
+                  <Check className="h-3.5 w-3.5 text-amber-400" /> {item}
+                </span>
+              ))}
             </div>
           </div>
         </section>

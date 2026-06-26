@@ -20,11 +20,16 @@ const adminResourcePaths: Record<string, string> = {
   inquiries: '/inquiries/contact/',
   quotes: '/inquiries/quotes/',
   inventory: '/inventory/stocks/',
+  'technical-docs': '/admin/technical-docs/',
+  'blog-analytics': '/admin/blog-analytics/',
 }
 
 async function forwardResource(resource: string, method: string, payload?: unknown) {
   const baseUrl = getBackendApiUrl()
-  const path = adminResourcePaths[resource]
+  let path = adminResourcePaths[resource]
+  if (resource === 'blog' && method === 'POST') {
+    path = '/admin/blog/create/'
+  }
   if (!baseUrl || !path) {
     return NextResponse.json({ detail: `No backend endpoint configured for ${resource}.` }, { status: 501 })
   }

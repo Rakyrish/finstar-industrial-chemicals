@@ -87,6 +87,18 @@ export interface Product {
   isNew: boolean
   createdAt: string
   updatedAt: string
+  // Technical Documents (linked datasheets etc.)
+  technicalDocs?: Array<{
+    id: number
+    title: string
+    slug: string
+    doc_type: string
+    doc_type_label: string
+    excerpt: string
+    pdf_file: string | null
+    is_published: boolean
+    standard_code: string
+  }>
   // SEO
   metaTitle?: string
   metaDescription?: string

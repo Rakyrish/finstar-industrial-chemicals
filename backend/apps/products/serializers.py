@@ -3,6 +3,22 @@ from rest_framework import serializers
 from .models import Category, Tag, Product
 
 
+class InlineTechnicalDocSerializer(serializers.Serializer):
+    """Minimal TechnicalDocument representation for embedding in product responses."""
+    id = serializers.IntegerField()
+    title = serializers.CharField()
+    slug = serializers.CharField()
+    doc_type = serializers.CharField()
+    doc_type_label = serializers.SerializerMethodField()
+    excerpt = serializers.CharField()
+    pdf_file = serializers.FileField(allow_null=True)
+    is_published = serializers.BooleanField()
+    standard_code = serializers.CharField()
+
+    def get_doc_type_label(self, obj):
+        return obj.get_doc_type_display()
+
+
 class CategorySerializer(serializers.ModelSerializer):
     productCount = serializers.IntegerField(source='products.count', read_only=True)
     seoTitle = serializers.SerializerMethodField()
@@ -89,6 +105,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     industriesServed = serializers.SerializerMethodField()
     faqs = serializers.SerializerMethodField()
     specifications = serializers.SerializerMethodField()
+    technicalDocs = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -106,6 +123,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             'ogDescription', 'twitterDescription',
             'schemaMarkup', 'whatsappTemplate', 'quotationTemplate', 'ctaContent',
             'publishAt', 'createdAt', 'updatedAt',
+            'technicalDocs',
         ]
 
     def get_primaryImage(self, obj): return obj.get_primary_image_url()
@@ -115,3 +133,8 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     def get_industriesServed(self, obj): return obj.get_industries_served()
     def get_faqs(self, obj): return obj.get_faqs()
     def get_specifications(self, obj): return obj.get_specifications()
+
+    def get_technicalDocs(self, obj):
+        """Return published technical docs (especially datasheets) linked to this product."""
+        docs = obj.technical_docs.filter(is_published=True).order_by('-created_at')
+        return InlineTechnicalDocSerializer(docs, many=True).data

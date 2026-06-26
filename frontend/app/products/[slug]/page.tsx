@@ -7,7 +7,7 @@ import { productService } from '@/services/productService'
 import { productSchema, breadcrumbSchema, faqSchema, graphSchema, toJsonLd } from '@/lib/schema'
 import ProductCard from '@/components/shared/ProductCard'
 import WhatsAppButton from '@/components/shared/WhatsAppButton'
-import { Award, AlertCircle, ArrowLeft, Send, CheckCircle2, Package, Database, ShieldCheck } from 'lucide-react'
+import { Award, AlertCircle, ArrowLeft, Send, CheckCircle2, Package, Database, ShieldCheck, FileText, Download, ExternalLink } from 'lucide-react'
 export const dynamic = 'force-dynamic';
 // ISR: revalidate every 5 minutes
 export const revalidate = 300
@@ -294,15 +294,39 @@ export default async function ProductDetailPage({ params }: PageProps) {
             )}
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href={`/quote?product=${product.slug}`} className="btn-primary flex-1 justify-center py-3.5 text-sm">
-                <Send className="w-4 h-4" /> Request Quote & Spec Sheet
-              </Link>
-              <WhatsAppButton
-                variant="inline"
-                message={product.whatsappTemplate || `Hello Finstar, I am interested in ${product.name}. Please send availability and quotation details.`}
-                className="flex-1 justify-center"
-              />
+            <div className="flex flex-col gap-3">
+              {/* Datasheet button — shown only when a datasheet exists */}
+              {(() => {
+                const datasheets = (product.technicalDocs ?? []).filter((d: any) => d.doc_type === 'datasheet')
+                const primarySheet = datasheets[0]
+                if (!primarySheet) return null
+                return (
+                  <Link
+                    href={primarySheet.pdf_file ?? `/technical-docs/${primarySheet.slug}`}
+                    target={primarySheet.pdf_file ? '_blank' : undefined}
+                    rel={primarySheet.pdf_file ? 'noopener noreferrer' : undefined}
+                    download={primarySheet.pdf_file ? true : undefined}
+                    className="btn-secondary flex items-center justify-center gap-2 py-3.5 text-sm border-amber-500/40 text-amber-400 hover:bg-amber-500/10"
+                  >
+                    {primarySheet.pdf_file ? (
+                      <><Download className="w-4 h-4" /> Download Data Sheet</>  
+                    ) : (
+                      <><FileText className="w-4 h-4" /> View Data Sheet</>  
+                    )}
+                  </Link>
+                )
+              })()}
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link href={`/quote?product=${product.slug}`} className="btn-primary flex-1 justify-center py-3.5 text-sm">
+                  <Send className="w-4 h-4" /> Request Quote &amp; Spec Sheet
+                </Link>
+                <WhatsAppButton
+                  variant="inline"
+                  message={product.whatsappTemplate || `Hello Finstar, I am interested in ${product.name}. Please send availability and quotation details.`}
+                  className="flex-1 justify-center"
+                />
+              </div>
             </div>
 
             {/* Hazard / Safety */}
@@ -446,7 +470,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 <div className="glass-card p-6">
                   <h3 className="font-display text-lg font-semibold text-text-primary flex items-center gap-2">
                     <ShieldCheck className="w-5 h-5 text-amber-400" aria-hidden />
-                    Safety & Handling
+                    Safety &amp; Handling
                   </h3>
                   <p className="mt-3 text-sm leading-7 text-text-secondary">
                     {displayCopy(product.hazardClassification)}
@@ -454,6 +478,49 @@ export default async function ProductDetailPage({ params }: PageProps) {
                   <p className="mt-2 text-xs text-text-muted">
                     Always consult the product Safety Data Sheet (SDS) before handling. Contact Finstar for GHS-compliant documentation.
                   </p>
+                </div>
+              )}
+
+              {/* Data Sheet Card — shown when technical docs exist */}
+              {(product.technicalDocs ?? []).length > 0 && (
+                <div className="glass-card p-6 border border-amber-500/20">
+                  <h3 className="font-display text-base font-semibold text-text-primary flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-amber-400" aria-hidden />
+                    Technical Documents
+                  </h3>
+                  <p className="mt-2 text-xs text-text-muted leading-relaxed">
+                    Official Finstar product data sheets, safety specifications, and compliance guides.
+                  </p>
+                  <div className="mt-4 space-y-3">
+                    {(product.technicalDocs as any[]).map((doc: any) => (
+                      <div key={doc.id} className="flex items-center justify-between gap-3 rounded-lg border border-surface-border bg-surface-muted/20 px-3 py-2.5">
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-text-primary truncate">{doc.title}</p>
+                          <p className="text-[10px] text-text-muted mt-0.5">{doc.doc_type_label ?? doc.doc_type}</p>
+                        </div>
+                        {doc.pdf_file ? (
+                          <a
+                            href={doc.pdf_file}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="shrink-0 inline-flex items-center gap-1 text-[10px] font-semibold text-amber-400 hover:text-amber-300 transition-colors"
+                            aria-label={`Download ${doc.title}`}
+                          >
+                            <Download className="w-3.5 h-3.5" /> PDF
+                          </a>
+                        ) : (
+                          <Link
+                            href={`/technical-docs/${doc.slug}`}
+                            className="shrink-0 inline-flex items-center gap-1 text-[10px] font-semibold text-amber-400 hover:text-amber-300 transition-colors"
+                            aria-label={`View ${doc.title}`}
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" /> View
+                          </Link>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

@@ -18,6 +18,14 @@ from .views import (
     AdminProductBulkSeoRegenerateView,
     AdminSitemapPingView,
     AdminSeoScoreView,
+    # Blog content marketing
+    AdminBlogDetailView,
+    AdminBlogCreateView,
+    AdminGenerateBlogContentView,
+    AdminGenerateDataSheetView,
+    AdminTechnicalDocListView,
+    AdminTechnicalDocDetailView,
+    AdminBlogAnalyticsView,
 )
 
 urlpatterns = [
@@ -41,9 +49,15 @@ urlpatterns = [
     path('upload-image-url/', AdminImageUrlUploadView.as_view(), name='admin-upload-image-url'),
     path('upload-image-url', AdminImageUrlUploadView.as_view(), name='admin-upload-image-url-noslash'),
 
-    # AI generation
+    # AI generation — Products
     path('ai/generate-product/', AdminGenerateProductContentView.as_view(), name='admin-ai-generate-product'),
     path('ai/generate-product', AdminGenerateProductContentView.as_view(), name='admin-ai-generate-product-noslash'),
+    # AI generation — Blog
+    path('ai/generate-blog/', AdminGenerateBlogContentView.as_view(), name='admin-ai-generate-blog'),
+    path('ai/generate-blog', AdminGenerateBlogContentView.as_view(), name='admin-ai-generate-blog-noslash'),
+    # AI generation — Data Sheet
+    path('ai/generate-datasheet/', AdminGenerateDataSheetView.as_view(), name='admin-ai-generate-datasheet'),
+    path('ai/generate-datasheet', AdminGenerateDataSheetView.as_view(), name='admin-ai-generate-datasheet-noslash'),
 
     # Chatbot
     path('chatbot/', AdminChatbotMonitoringView.as_view(), name='admin-chatbot'),
@@ -51,25 +65,38 @@ urlpatterns = [
     path('chatbot/analytics/', AdminChatbotAnalyticsView.as_view(), name='admin-chatbot-analytics'),
     path('chatbot/analytics', AdminChatbotAnalyticsView.as_view(), name='admin-chatbot-analytics-noslash'),
 
-    # Users, Blog, SEO pages
+    # Users, Blog list, SEO pages
     path('users/', AdminUserListView.as_view(), name='admin-users'),
     path('users', AdminUserListView.as_view(), name='admin-users-noslash'),
     path('blog/', AdminBlogListView.as_view(), name='admin-blog'),
     path('blog', AdminBlogListView.as_view(), name='admin-blog-noslash'),
+    # Blog CRUD — create
+    path('blog/create/', AdminBlogCreateView.as_view(), name='admin-blog-create'),
+    path('blog/create', AdminBlogCreateView.as_view(), name='admin-blog-create-noslash'),
+    # Blog CRUD — detail / edit / delete
+    path('blog/<int:pk>/', AdminBlogDetailView.as_view(), name='admin-blog-detail'),
+    path('blog/<int:pk>', AdminBlogDetailView.as_view(), name='admin-blog-detail-noslash'),
+    # Blog analytics
+    path('blog-analytics/', AdminBlogAnalyticsView.as_view(), name='admin-blog-analytics'),
+    path('blog-analytics', AdminBlogAnalyticsView.as_view(), name='admin-blog-analytics-noslash'),
+
+    # SEO
     path('seo/', AdminSeoListView.as_view(), name='admin-seo'),
     path('seo', AdminSeoListView.as_view(), name='admin-seo-noslash'),
 
     # ── SEO auto-generation & scoring ────────────────────────────────────────
-    # Per-product SEO regeneration
     path('products/<int:pk>/regenerate-seo/', AdminProductSeoRegenerateView.as_view(), name='admin-product-regenerate-seo'),
     path('products/<int:pk>/regenerate-seo', AdminProductSeoRegenerateView.as_view(), name='admin-product-regenerate-seo-noslash'),
-    # Batch: regenerate all products missing SEO fields
     path('products/bulk-regenerate-seo/', AdminProductBulkSeoRegenerateView.as_view(), name='admin-products-bulk-seo'),
     path('products/bulk-regenerate-seo', AdminProductBulkSeoRegenerateView.as_view(), name='admin-products-bulk-seo-noslash'),
-    # Ping Google + Bing with sitemap
     path('sitemap/ping/', AdminSitemapPingView.as_view(), name='admin-sitemap-ping'),
     path('sitemap/ping', AdminSitemapPingView.as_view(), name='admin-sitemap-ping-noslash'),
-    # SEO score per product
     path('seo/score/', AdminSeoScoreView.as_view(), name='admin-seo-score'),
     path('seo/score', AdminSeoScoreView.as_view(), name='admin-seo-score-noslash'),
+
+    # ── Technical Documents ───────────────────────────────────────────────────
+    path('technical-docs/', AdminTechnicalDocListView.as_view(), name='admin-technical-docs'),
+    path('technical-docs', AdminTechnicalDocListView.as_view(), name='admin-technical-docs-noslash'),
+    path('technical-docs/<int:pk>/', AdminTechnicalDocDetailView.as_view(), name='admin-technical-doc-detail'),
+    path('technical-docs/<int:pk>', AdminTechnicalDocDetailView.as_view(), name='admin-technical-doc-detail-noslash'),
 ]

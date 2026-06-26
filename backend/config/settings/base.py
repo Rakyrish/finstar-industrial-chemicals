@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'seo.apps.SeoConfig',
     'suppliers.apps.SuppliersConfig',
     'blog.apps.BlogConfig',
+    'technical_docs.apps.TechnicalDocsConfig',
     'admin_api.apps.AdminApiConfig',
     'monitoring.apps.MonitoringConfig',
 ]
@@ -179,3 +180,40 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': env('CLOUDINARY_API_SECRET', default=''),
 }
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# ── Celery / Redis ────────────────────────────────────────────────────────────
+REDIS_URL = env('REDIS_URL', default='redis://localhost:6379/0')
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_TIMEZONE = 'Africa/Nairobi'
+CELERY_ENABLE_UTC = True
+
+# Weekly blog schedule: Monday & Thursday 09:00 EAT = 06:00 UTC
+from celery.schedules import crontab  # noqa: E402
+CELERY_BEAT_SCHEDULE = {
+    'generate-weekly-blog-monday': {
+        'task': 'blog.tasks.generate_weekly_blogs',
+        'schedule': crontab(hour=6, minute=0, day_of_week='monday'),
+    },
+    'generate-weekly-blog-thursday': {
+        'task': 'blog.tasks.generate_weekly_blogs',
+        'schedule': crontab(hour=6, minute=0, day_of_week='thursday'),
+    },
+}
+
+# ── Blog Automation ───────────────────────────────────────────────────────────
+AUTO_PUBLISH_BLOGS = env.bool('AUTO_PUBLISH_BLOGS', default=False)
+BLOG_NOTIFICATION_EMAIL = env('BLOG_NOTIFICATION_EMAIL', default='')
+WEEKLY_BLOG_TOPIC_POOL = env(
+    'WEEKLY_BLOG_TOPIC_POOL',
+    default=(
+        'industrial automation,energy efficiency,chemical safety Kenya,'
+        'KEBS compliance chemicals,ISO standards chemical supply chain,'
+        'water treatment chemicals East Africa,corrosion inhibitors industrial,'
+        'industrial cleaning chemicals,GHS SDS compliance Kenya,'
+        'chemical storage best practices,predictive maintenance chemicals,'
+        'hydraulic fluid selection,industrial lubricants East Africa,'
+        'safety data sheets Kenya,chemical procurement East Africa'
+    ),
+)
+

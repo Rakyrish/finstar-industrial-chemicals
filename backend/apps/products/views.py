@@ -21,7 +21,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.filter(status='active')
+    queryset = Product.objects.filter(status='active').prefetch_related('technical_docs')
     lookup_field = 'slug'
 
     def get_serializer_class(self):
@@ -30,7 +30,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         return ProductListSerializer
 
     def get_queryset(self):
-        queryset = Product.objects.filter(status='active')
+        queryset = Product.objects.filter(status='active').prefetch_related('technical_docs')
         
         # Filter by category slug
         category_slug = self.request.query_params.get('category', None)

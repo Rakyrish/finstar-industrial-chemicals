@@ -56,11 +56,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }))
 
+    // ── Technical Docs ────────────────────────────────────────────────────────
+    const { technicalDocService } = await import('@/services/technicalDocService')
+    const techDocsRes = await technicalDocService
+      .list()
+      .catch(() => [] as any[])
+
+    const techDocPages: MetadataRoute.Sitemap = techDocsRes.map((doc) => ({
+      url: `${BASE}/technical-docs/${doc.slug}`,
+      lastModified: new Date(doc.updated_at || doc.created_at || new Date()),
+      changeFrequency: 'monthly' as const,
+      priority: 0.75,
+    }))
+
     return [
       ...STATIC_PAGES,
+      { url: `${BASE}/technical-docs`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
       ...categoryPages,
       ...productPages,
       ...blogPages,
+      ...techDocPages,
     ]
   } catch (error) {
     console.error('[sitemap] Error generating dynamic sitemap:', error)

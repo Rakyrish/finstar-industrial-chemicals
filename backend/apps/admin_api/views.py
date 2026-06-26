@@ -1141,3 +1141,466 @@ class AdminSeoScoreView(APIView):
             'needsAttention': sum(1 for r in results if r['needsAttention']),
             'results': results,
         }, status=status.HTTP_200_OK)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Blog CRUD (Admin Detail / Write)
+# ─────────────────────────────────────────────────────────────────────────────
+
+from blog.models import BlogCategory, BlogTag, BlogGenerationLog
+
+
+def _get_or_create_blog_category(name):
+    name = (name or '').strip()
+    if not name:
+        return None
+    obj, _ = BlogCategory.objects.get_or_create(name=name)
+    return obj
+
+
+def _get_or_create_blog_tag(name):
+    name = (name or '').strip()
+    if not name:
+        return None
+    obj, _ = BlogTag.objects.get_or_create(name=name[:100])
+    return obj
+
+
+class AdminBlogDetailView(APIView):
+    """
+    GET    /admin/blog/<id>/   → Full blog detail
+    PATCH  /admin/blog/<id>/   → Update blog fields
+    DELETE /admin/blog/<id>/   → Delete blog
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def _get(self, pk):
+        try:
+            return BlogPost.objects.prefetch_related('tags', 'related_products', 'related_services').get(pk=pk)
+        except BlogPost.DoesNotExist:
+            return None
+
+    def _serialize(self, post):
+        return {
+            'id': post.id,
+            'title': post.title,
+            'slug': post.slug,
+            'excerpt': post.excerpt or '',
+            'content': post.content,
+            'faqJson': post.faq_json or '[]',
+            'authorName': post.author_name or (post.author.username if post.author else 'Finstar Team'),
+            'category': post.category.name if post.category else '',
+            'tags': [t.name for t in post.tags.all()],
+            'coverImageUrl': post.cover_image_url or '',
+            'coverImagePublicId': post.cover_image_public_id or '',
+            'coverImageAlt': post.cover_image_alt or '',
+            'ogImageUrl': post.og_image_url or '',
+            'metaTitle': post.meta_title or post.seo_title or '',
+            'metaDescription': post.meta_description or post.seo_description or '',
+            'ogDescription': post.og_description or '',
+            'status': post.status,
+            'scheduledAt': post.scheduled_at.isoformat() if post.scheduled_at else None,
+            'publishedAt': post.published_at.isoformat() if post.published_at else None,
+            'isFeatured': post.is_featured,
+            'readingTime': post.reading_time,
+            'views': post.views,
+            'qualityScore': post.quality_score,
+            'updatedAt': _format_date(post.updated_at),
+        }
+
+    def get(self, request, pk):
+        post = self._get(pk)
+        if not post:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(self._serialize(post))
+
+    def patch(self, request, pk):
+        post = self._get(pk)
+        if not post:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        d = request.data
+        simple_fields = [
+            ('title', 'title'), ('slug', 'slug'), ('excerpt', 'excerpt'),
+            ('content', 'content'), ('faqJson', 'faq_json'),
+            ('authorName', 'author_name'),
+            ('coverImageUrl', 'cover_image_url'), ('coverImagePublicId', 'cover_image_public_id'),
+            ('coverImageAlt', 'cover_image_alt'), ('ogImageUrl', 'og_image_url'),
+            ('metaTitle', 'meta_title'), ('metaDescription', 'meta_description'),
+            ('ogDescription', 'og_description'), ('status', 'status'),
+            ('isFeatured', 'is_featured'), ('qualityScore', 'quality_score'),
+        ]
+        updated = []
+        for api_key, model_field in simple_fields:
+            if api_key in d:
+                setattr(post, model_field, d[api_key])
+                updated.append(model_field)
+
+        if 'scheduledAt' in d:
+            post.scheduled_at = parse_datetime(d['scheduledAt']) if d['scheduledAt'] else None
+            updated.append('scheduled_at')
+        if 'publishedAt' in d:
+            post.published_at = parse_datetime(d['publishedAt']) if d['publishedAt'] else None
+            updated.append('published_at')
+
+        if 'category' in d:
+            post.category = _get_or_create_blog_category(d['category'])
+            updated.append('category')
+
+        if updated:
+            try:
+                post.save(update_fields=list(set(updated)) + ['updated_at'])
+            except Exception as exc:
+                return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        if 'tags' in d:
+            post.tags.clear()
+            for tag_name in (d['tags'] or []):
+                t = _get_or_create_blog_tag(tag_name)
+                if t:
+                    post.tags.add(t)
+
+        return Response(self._serialize(post))
+
+    def delete(self, request, pk):
+        post = self._get(pk)
+        if not post:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        post.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AdminBlogCreateView(APIView):
+    """POST /admin/blog/create/ — Create a new blog post."""
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request):
+        d = request.data
+        title = (d.get('title') or '').strip()
+        if not title:
+            return Response({'detail': 'Title is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Generate unique slug
+        base_slug = slugify(d.get('slug') or title) or 'post'
+        slug = base_slug
+        index = 2
+        while BlogPost.objects.filter(slug=slug).exists():
+            slug = f'{base_slug}-{index}'
+            index += 1
+
+        cat = _get_or_create_blog_category(d.get('category'))
+
+        try:
+            post = BlogPost.objects.create(
+                title=title[:200],
+                slug=slug,
+                excerpt=(d.get('excerpt') or '')[:300] or None,
+                content=d.get('content', ''),
+                faq_json=d.get('faqJson', '[]'),
+                author=request.user if request.user.is_authenticated else None,
+                author_name=(d.get('authorName') or '')[:255] or None,
+                category=cat,
+                cover_image_url=d.get('coverImageUrl') or None,
+                cover_image_public_id=d.get('coverImagePublicId') or None,
+                cover_image_alt=(d.get('coverImageAlt') or '')[:200] or None,
+                og_image_url=d.get('ogImageUrl') or None,
+                meta_title=(d.get('metaTitle') or '')[:70] or None,
+                meta_description=(d.get('metaDescription') or '')[:160] or None,
+                og_description=(d.get('ogDescription') or '')[:300] or None,
+                quality_score=int(d.get('qualityScore', 0)),
+                status=d.get('status', 'draft'),
+                scheduled_at=parse_datetime(d['scheduledAt']) if d.get('scheduledAt') else None,
+                published_at=parse_datetime(d['publishedAt']) if d.get('publishedAt') else (
+                    timezone.now() if d.get('status') == 'published' else None
+                ),
+                is_featured=bool(d.get('isFeatured', False)),
+            )
+        except Exception as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        for tag_name in (d.get('tags') or []):
+            t = _get_or_create_blog_tag(tag_name)
+            if t:
+                post.tags.add(t)
+
+        return Response(
+            AdminBlogDetailView()._serialize(post),
+            status=status.HTTP_201_CREATED,
+        )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AI Blog Generator Endpoint
+# ─────────────────────────────────────────────────────────────────────────────
+
+class AdminGenerateBlogContentView(APIView):
+    """
+    POST /admin/ai/generate-blog/
+    Body: { topic, keywords, productName, standardCode, imageUrl }
+    Returns pre-filled blog fields for the admin to review & edit before saving.
+    Auto-retries if quality score < 65 (max 2 retries).
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request):
+        from services.openai_service import openai_service
+        from blog.quality_engine import quality_engine
+
+        topic      = request.data.get('topic', '')
+        keywords   = request.data.get('keywords', '')
+        product_nm = request.data.get('productName', '')
+        std_code   = request.data.get('standardCode', '')
+        image_url  = request.data.get('imageUrl', '')
+
+        if not any([topic, keywords, product_nm, std_code, image_url]):
+            return Response({'detail': 'Provide at least one of: topic, keywords, productName, standardCode, or imageUrl.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_exc = None
+        for attempt in range(3):
+            try:
+                data = openai_service.generate_blog_content(
+                    topic=topic, keywords=keywords,
+                    product_name=product_nm, standard_code=std_code,
+                    image_url=image_url,
+                )
+            except Exception as exc:
+                last_exc = exc
+                continue
+
+            faq_items = data.get('faq', [])
+            result = quality_engine.score(
+                title=data.get('seo_title', ''),
+                body_html=data.get('body_html', ''),
+                meta_title=data.get('seo_title', ''),
+                meta_description=data.get('meta_description', ''),
+                excerpt=data.get('excerpt', ''),
+                faq_items=faq_items,
+            )
+            data['qualityScore'] = result['score']
+            data['qualityBreakdown'] = result['breakdown']
+
+            if result['score'] >= 65:
+                return Response(data, status=status.HTTP_200_OK)
+
+        err = str(last_exc) if last_exc else 'Quality score below threshold after 3 attempts. Try a different topic.'
+        return Response({'detail': err}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AI Data Sheet Generator Endpoint
+# ─────────────────────────────────────────────────────────────────────────────
+
+class AdminGenerateDataSheetView(APIView):
+    """
+    POST /admin/ai/generate-datasheet/
+    Body: { productId } — generates & saves a TechnicalDocument data sheet for the product.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request):
+        from services.openai_service import openai_service
+        from technical_docs.models import TechnicalDocument
+
+        product_id = request.data.get('productId')
+        if not product_id:
+            return Response({'detail': 'productId is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            product = Product.objects.select_related('category').get(pk=product_id)
+        except Product.DoesNotExist:
+            return Response({'detail': 'Product not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            sheet = openai_service.generate_data_sheet(
+                product_name=product.name,
+                cas_number=product.cas_number or '',
+                chemical_formula=product.chemical_formula or '',
+                category=product.category.name if product.category else '',
+                description=product.short_description or '',
+            )
+        except Exception as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        doc = TechnicalDocument.objects.create(
+            title=sheet.get('title', f'{product.name} — Product Data Sheet')[:200],
+            doc_type='datasheet',
+            standard_code=sheet.get('standard_code', 'GHS/SDS')[:80],
+            meta_title=(sheet.get('meta_title') or '')[:70],
+            meta_description=(sheet.get('meta_description') or '')[:160],
+            excerpt=(sheet.get('excerpt') or '')[:300],
+            body_html=sheet.get('body_html', ''),
+            is_published=True,
+        )
+        doc.related_products.add(product)
+
+        return Response({
+            'id': doc.id,
+            'title': doc.title,
+            'slug': doc.slug,
+            'docType': doc.doc_type,
+            'standardCode': doc.standard_code,
+            'excerpt': doc.excerpt,
+            'isPublished': doc.is_published,
+            'relatedProduct': product.name,
+        }, status=status.HTTP_201_CREATED)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Technical Documents Admin CRUD
+# ─────────────────────────────────────────────────────────────────────────────
+
+class AdminTechnicalDocListView(APIView):
+    """GET /admin/technical-docs/ — list all technical documents."""
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        from technical_docs.models import TechnicalDocument
+        qs = TechnicalDocument.objects.prefetch_related('related_products').order_by('-created_at')
+        doc_type_filter = request.query_params.get('doc_type')
+        if doc_type_filter:
+            qs = qs.filter(doc_type=doc_type_filter)
+        results = []
+        for doc in qs:
+            results.append({
+                'id': doc.id,
+                'title': doc.title,
+                'slug': doc.slug,
+                'docType': doc.doc_type,
+                'docTypeLabel': doc.get_doc_type_display(),
+                'standardCode': doc.standard_code,
+                'excerpt': doc.excerpt,
+                'isPublished': doc.is_published,
+                'viewCount': doc.view_count,
+                'relatedProducts': [p.name for p in doc.related_products.all()[:3]],
+                'updatedAt': _format_date(doc.updated_at),
+            })
+        return Response({'count': len(results), 'results': results})
+
+    def post(self, request):
+        from technical_docs.models import TechnicalDocument
+        d = request.data
+        title = (d.get('title') or '').strip()
+        if not title:
+            return Response({'detail': 'Title is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            doc = TechnicalDocument.objects.create(
+                title=title[:200],
+                doc_type=d.get('docType', 'datasheet'),
+                standard_code=(d.get('standardCode') or '')[:80],
+                meta_title=(d.get('metaTitle') or '')[:70],
+                meta_description=(d.get('metaDescription') or '')[:160],
+                excerpt=(d.get('excerpt') or '')[:300],
+                body_html=d.get('bodyHtml', ''),
+                is_published=bool(d.get('isPublished', False)),
+            )
+            if d.get('relatedProductIds'):
+                for pid in d['relatedProductIds']:
+                    try:
+                        doc.related_products.add(Product.objects.get(pk=pid))
+                    except Product.DoesNotExist:
+                        pass
+        except Exception as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'id': doc.id, 'slug': doc.slug, 'title': doc.title}, status=status.HTTP_201_CREATED)
+
+
+class AdminTechnicalDocDetailView(APIView):
+    """GET / PATCH / DELETE /admin/technical-docs/<id>/"""
+    permission_classes = [permissions.IsAdminUser]
+
+    def _get(self, pk):
+        from technical_docs.models import TechnicalDocument
+        try:
+            return TechnicalDocument.objects.prefetch_related('related_products', 'related_blogs').get(pk=pk)
+        except TechnicalDocument.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        doc = self._get(pk)
+        if not doc:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({
+            'id': doc.id, 'title': doc.title, 'slug': doc.slug,
+            'docType': doc.doc_type, 'standardCode': doc.standard_code,
+            'metaTitle': doc.meta_title, 'metaDescription': doc.meta_description,
+            'excerpt': doc.excerpt, 'bodyHtml': doc.body_html,
+            'isPublished': doc.is_published, 'viewCount': doc.view_count,
+            'relatedProducts': [{'id': p.id, 'name': p.name, 'slug': p.slug} for p in doc.related_products.all()],
+            'relatedBlogs': [{'id': b.id, 'title': b.title, 'slug': b.slug} for b in doc.related_blogs.all()],
+            'updatedAt': _format_date(doc.updated_at),
+        })
+
+    def patch(self, request, pk):
+        doc = self._get(pk)
+        if not doc:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        d = request.data
+        field_map = {
+            'title': 'title', 'docType': 'doc_type', 'standardCode': 'standard_code',
+            'metaTitle': 'meta_title', 'metaDescription': 'meta_description',
+            'excerpt': 'excerpt', 'bodyHtml': 'body_html', 'isPublished': 'is_published',
+        }
+        updated = []
+        for api_key, model_field in field_map.items():
+            if api_key in d:
+                setattr(doc, model_field, d[api_key])
+                updated.append(model_field)
+        if updated:
+            doc.save(update_fields=updated + ['updated_at'])
+        return Response({'id': doc.id, 'slug': doc.slug, 'title': doc.title})
+
+    def delete(self, request, pk):
+        doc = self._get(pk)
+        if not doc:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+        doc.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Blog Analytics
+# ─────────────────────────────────────────────────────────────────────────────
+
+class AdminBlogAnalyticsView(APIView):
+    """GET /admin/blog-analytics/ — content performance metrics for the admin dashboard."""
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        total_published = BlogPost.objects.filter(status='published').count()
+        total_docs = 0
+        try:
+            from technical_docs.models import TechnicalDocument
+            total_docs = TechnicalDocument.objects.filter(is_published=True).count()
+        except Exception:
+            pass
+
+        total_views = BlogPost.objects.aggregate(t=Sum('views'))['t'] or 0
+        avg_quality = BlogPost.objects.filter(status='published').aggregate(a=Avg('quality_score'))['a'] or 0
+        ai_generated_count = BlogGenerationLog.objects.filter(status='success').count()
+
+        last_log = BlogGenerationLog.objects.order_by('-created_at').first()
+        last_run = {
+            'timestamp': last_log.created_at.isoformat() if last_log else None,
+            'status': last_log.status if last_log else None,
+            'topic': last_log.topic_used[:80] if last_log else None,
+        }
+
+        total_tokens = BlogGenerationLog.objects.aggregate(t=Sum('tokens_used'))['t'] or 0
+
+        top_posts = BlogPost.objects.filter(status='published').order_by('-views')[:10]
+        top_posts_data = [{
+            'id': p.id, 'title': p.title, 'slug': p.slug,
+            'views': p.views, 'qualityScore': p.quality_score,
+            'readingTime': p.reading_time,
+        } for p in top_posts]
+
+        return Response({
+            'totalPublishedBlogs': total_published,
+            'totalTechnicalDocs': total_docs,
+            'totalBlogViews': total_views,
+            'avgQualityScore': round(avg_quality, 1),
+            'aiGeneratedCount': ai_generated_count,
+            'totalTokensUsed': total_tokens,
+            'weeklyGenerationStatus': last_run,
+            'topPerformingBlogs': top_posts_data,
+        })
+

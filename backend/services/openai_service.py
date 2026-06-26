@@ -398,6 +398,199 @@ FRONTEND DISPLAY REQUIREMENTS:
             print(f'OpenAI product generation error: {e}')
             raise e
 
+    # ──────────────────────────────────────────────────────────────────────────
+    # Blog Article Generation
+    # ──────────────────────────────────────────────────────────────────────────
+
+    BLOG_PROMPT_TEMPLATE = """You are a senior engineering content writer producing a professional technical
+article for Finstar Industrial Chemicals — a chemical products and industrial supply company serving
+East African manufacturers, chemical processors, and energy producers.
+
+Topic: {topic}
+Target audience: Industrial procurement managers, plant engineers, and safety officers in Kenya
+and East Africa.
+
+Write a complete blog article following this structure:
+1. SEO Title (max 70 chars)
+2. Slug (URL-safe, lowercase, hyphens only)
+3. Meta Description (max 160 chars)
+4. OpenGraph Description (max 200 chars)
+5. Excerpt (max 300 chars, shown on blog cards)
+6. Full Article HTML (1800–2500 words, with proper H2/H3 structure — minimum 4 H2 and 2 H3 per H2)
+   - Include internal links: /products, /contact, /quote, /technical-docs
+   - Include at least 2 external authority links (Wikipedia, ISO.org, KEBS, IEC — open in new tab with rel="noopener noreferrer")
+   - Mention real ISO, KEBS, IEC, or GHS standards with correct codes
+7. FAQ Section — minimum 5 questions, each answer minimum 50 words
+8. Tags — array of 5–8 descriptive tags
+9. Suggested Category (single string)
+10. Featured Image Alt Text (max 125 chars, describe technical subject matter)
+11. Internal link suggestions — list of {{"anchorText": "...", "href": "/path"}}
+12. External reference URLs — list of {{"label": "...", "url": "https://..."}} (real verifiable links only)
+13. Quality Score Estimate (integer 0-100 based on completeness, SEO, and technical accuracy)
+
+Tone: Professional, authoritative, practical. Avoid fluff. Cite real standards.
+Include at least one reference to Kenyan or East African industrial context.
+Return response as valid JSON only. No markdown. No preamble.
+
+JSON shape:
+{{
+  "seo_title": "...",
+  "slug": "...",
+  "meta_description": "...",
+  "og_description": "...",
+  "excerpt": "...",
+  "body_html": "...",
+  "faq": [{{"question": "...", "answer": "..."}}],
+  "tags": ["..."],
+  "category": "...",
+  "cover_image_alt": "...",
+  "internal_links": [{{"anchorText": "...", "href": "/..."}}],
+  "external_links": [{{"label": "...", "url": "https://..."}}],
+  "quality_score_estimate": 82
+}}"""
+
+    def generate_blog_content(
+        self,
+        topic: str = '',
+        keywords: str = '',
+        product_name: str = '',
+        standard_code: str = '',
+        image_url: str = '',
+    ) -> dict:
+        """
+        Generate a full blog article for Finstar Industrial Chemicals.
+        Any combination of inputs can be provided; topic is always built from them.
+        Returns a dict with all blog fields.
+        """
+        if not topic:
+            parts = []
+            if product_name:
+                parts.append(f'industrial chemical spotlight: {product_name}')
+            if standard_code:
+                parts.append(f'compliance guide for {standard_code}')
+            if keywords:
+                parts.append(f'covering topics: {keywords}')
+            topic = ' — '.join(parts) or 'Industrial chemical safety and compliance in Kenya'
+
+        prompt = self.BLOG_PROMPT_TEMPLATE.format(topic=topic)
+        messages = [
+            {'role': 'system', 'content': 'You are a helpful API that returns only valid JSON objects. Never use markdown code blocks. Never truncate.'},
+        ]
+        if image_url:
+            messages.append({
+                'role': 'user',
+                'content': [
+                    {'type': 'text', 'text': prompt + f'\n\nAn engineering image has been provided — use it to inform technical context.\nImage URL: {image_url}'},
+                    {'type': 'image_url', 'image_url': {'url': image_url, 'detail': 'auto'}},
+                ],
+            })
+        else:
+            messages.append({'role': 'user', 'content': prompt})
+
+        start_time = time.time()
+        try:
+            response = self._client().chat.completions.create(
+                model=os.getenv('OPENAI_BLOG_MODEL', 'gpt-4o-mini'),
+                messages=messages,
+                temperature=0.7,
+                max_tokens=4000,
+                response_format={'type': 'json_object'},
+            )
+            self._log_ai_usage('blog_content', start_time, response)
+            content = response.choices[0].message.content.strip()
+            result = json.loads(content)
+            return result
+        except json.JSONDecodeError as e:
+            self._log_ai_usage('blog_content', start_time, e)
+            raise ValueError(f'OpenAI returned invalid blog JSON: {e}') from e
+        except Exception as e:
+            self._log_ai_usage('blog_content', start_time, e)
+            raise e
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # Product Data Sheet Generation
+    # ──────────────────────────────────────────────────────────────────────────
+
+    DATA_SHEET_PROMPT = """You are a senior chemical industry technical writer at Finstar Industrial Chemicals.
+
+Generate a complete Product Data Sheet (SDS-style technical document) for:
+Product: {product_name}
+CAS Number: {cas_number}
+Chemical Formula: {chemical_formula}
+Category: {category}
+Description: {description}
+
+The data sheet must be production-grade HTML suitable for professional B2B procurement.
+It must include:
+1. Product Overview (chemical identity, CAS number, molecular formula, appearance, grade)
+2. Physical & Chemical Properties (as an HTML table)
+3. Recommended Storage Conditions (temperature, container type, shelf life)
+4. Handling & Safety Precautions (PPE requirements, spill response, incompatibilities)
+5. Applications (industries and use cases in Kenya and East Africa)
+6. Regulatory & Compliance Information (GHS classification, KEBS standards, SDS availability)
+7. Packaging & Supply Information (Finstar standard pack sizes, bulk availability)
+8. Quality & Certification (ISO 9001, COA availability, batch traceability)
+9. Contact Information section linking to /contact and /quote
+
+Include references to real standards: GHS, ISO 9001, KEBS, relevant IEC if applicable.
+All external links must use target="_blank" rel="noopener noreferrer".
+Internal links (/contact, /quote, /products) use standard anchor tags.
+
+Return JSON only:
+{{
+  "title": "...",
+  "slug": "...",
+  "standard_code": "...",
+  "meta_title": "...",
+  "meta_description": "...",
+  "excerpt": "...",
+  "body_html": "... full HTML data sheet ...",
+  "doc_type": "datasheet"
+}}"""
+
+    def generate_data_sheet(
+        self,
+        product_name: str,
+        cas_number: str = '',
+        chemical_formula: str = '',
+        category: str = '',
+        description: str = '',
+    ) -> dict:
+        """
+        Auto-generate a Product Data Sheet as a TechnicalDocument for a given product.
+        Returns a dict matching TechnicalDocument fields.
+        """
+        prompt = self.DATA_SHEET_PROMPT.format(
+            product_name=product_name,
+            cas_number=cas_number or 'Not specified',
+            chemical_formula=chemical_formula or 'Not specified',
+            category=category or 'Industrial Chemical',
+            description=description or '',
+        )
+        messages = [
+            {'role': 'system', 'content': 'You are a helpful API returning only valid JSON. Never use markdown. Never truncate.'},
+            {'role': 'user', 'content': prompt},
+        ]
+        start_time = time.time()
+        try:
+            response = self._client().chat.completions.create(
+                model=os.getenv('OPENAI_BLOG_MODEL', 'gpt-4o-mini'),
+                messages=messages,
+                temperature=0.3,
+                max_tokens=3000,
+                response_format={'type': 'json_object'},
+            )
+            self._log_ai_usage('data_sheet', start_time, response)
+            content = response.choices[0].message.content.strip()
+            return json.loads(content)
+        except json.JSONDecodeError as e:
+            self._log_ai_usage('data_sheet', start_time, e)
+            raise ValueError(f'OpenAI returned invalid data sheet JSON: {e}') from e
+        except Exception as e:
+            self._log_ai_usage('data_sheet', start_time, e)
+            raise e
+
 
 # Singleton instance
 openai_service = OpenAIService()
+

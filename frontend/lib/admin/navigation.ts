@@ -87,6 +87,12 @@ export const adminNavItems: AdminNavItem[] = [
     minAccess: 'staff',
   },
   {
+    label: 'Technical Docs',
+    href: '/admin/technical-docs',
+    icon: 'file-text',
+    minAccess: 'staff',
+  },
+  {
     label: 'Chatbot',
     href: '/admin/chatbot',
     icon: 'bot',
