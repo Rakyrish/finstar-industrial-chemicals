@@ -280,7 +280,7 @@ Generate comprehensive product database content for the Finstar Chemicals websit
 Return ONLY a valid JSON object with these exact keys (no markdown, no extra text):
 
 {{
-  "product_name": "SEO product name. Format: [Correct Chemical Name] for Industrial Buyers in Kenya, Uganda, Tanzania, and Rwanda",
+  "product_name": "SEO product name. Format: [Correct Chemical Name] for Industrial Suppliers in Kenya, Uganda, Tanzania, and Rwanda",
   "seo_title": "Max 90 chars. Must include Kenya, Uganda, Tanzania & Rwanda. Format: Buy [Name] in Kenya, Uganda, Tanzania & Rwanda | Finstar",
   "seo_meta_description": "120-155 chars. Must include Finstar Chemicals, Kenya, Uganda, Tanzania, Rwanda, and a quote CTA",
   "short_description": "180-220 chars. Professional summary mentioning Finstar Chemicals plus Kenya, Uganda, Tanzania, and Rwanda",
@@ -323,6 +323,8 @@ SEO REQUIREMENTS:
 - Include outbound authority links only from credible educational sources such as Wikipedia, PubChem, WHO, OSHA, EPA, CDC, or ECHA.
 - Never invent CAS numbers, hazard classes, or certifications. Use "Not specified" when unclear.
 - Do not include density, purity, assay, concentration percentage, or purity percentage in any field.
+- Do not include IBMs as packaging of products
+- If the product image is in bags don't include packaging as drums, just name the quantity packaging as kgs or tons
 - Do not include technical_specifications entries with keys such as "Density", "Purity", "Assay", "Concentration", or "Specific Gravity".
 
 FRONTEND DISPLAY REQUIREMENTS:
@@ -562,10 +564,10 @@ Return JSON only:
         """
         prompt = self.DATA_SHEET_PROMPT.format(
             product_name=product_name,
-            cas_number=cas_number or 'Not specified',
-            chemical_formula=chemical_formula or 'Not specified',
+            cas_number=cas_number or 'Contact sales for more information',
+            chemical_formula=chemical_formula or 'Contact sales for more information',
             category=category or 'Industrial Chemical',
-            description=description or '',
+            description=description or 'Contact sales for more information',
         )
         messages = [
             {'role': 'system', 'content': 'You are a helpful API returning only valid JSON. Never use markdown. Never truncate.'},

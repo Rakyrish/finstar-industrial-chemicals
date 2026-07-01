@@ -556,7 +556,7 @@ def _get_or_create_category(name):
     return Category.objects.create(
         name=category_name,
         slug=_unique_slug(Category, category_name),
-        description=f'Browse {category_name} from Finstar Industrial Chemicals for industrial buyers in Kenya, Uganda, Tanzania, and Rwanda.',
+        description=f'Browse {category_name} from Finstar Industrial Chemicals for industrial Suppliers in Kenya, Uganda, Tanzania, and Rwanda.',
         seo_title=f'{category_name} in Kenya, Uganda, Tanzania & Rwanda | Finstar'[:90],
         seo_description=f'Find {category_name} from Finstar Industrial Chemicals for B2B procurement across Kenya, Uganda, Tanzania, and Rwanda.'[:220],
         seo_keywords=', '.join([

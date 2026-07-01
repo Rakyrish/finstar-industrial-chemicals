@@ -64,8 +64,8 @@ function searchUrl(base: string, name: string) {
 // ── Keyword builder (matches backend _auto_keywords logic) ───────────────────
 function buildProductKeywords(product: any): string[] {
   const name = product.name
-  const cat  = product.category?.name ?? 'industrial chemical'
-  const cas  = product.casNumber ? [`CAS ${product.casNumber}`] : []
+  const cat = product.category?.name ?? 'industrial chemical'
+  const cas = product.casNumber ? [`CAS ${product.casNumber}`] : []
   return [
     name,
     `${name} supplier`,
@@ -86,7 +86,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params
   try {
     const product = await productService.detail(slug)
-    const cat  = product.category?.name ?? 'Industrial Chemical'
+    const cat = product.category?.name ?? 'Industrial Chemical'
     const name = product.name
 
     // Use DB-stored SEO fields first, fall back to auto-generation
@@ -146,34 +146,34 @@ export default async function ProductDetailPage({ params }: PageProps) {
   ])
 
   // ── Content preparation ───────────────────────────────────────────────────
-  const summary       = displayCopy(product.shortDescription || product.description)
-  const longDesc      = displayCopy(product.longDescription || product.description || summary)
-  const paragraphs    = textParagraphs(longDesc)
-  const applications  = contentList(product.applications).map(displayCopy)
-  const benefits      = contentList(product.benefits).map(displayCopy)
-  const features      = contentList(product.features).map(displayCopy)
-  const industries    = contentList(product.industriesServed).map(displayCopy)
-  const specRows      = compactRows([
+  const summary = displayCopy(product.shortDescription || product.description)
+  const longDesc = displayCopy(product.longDescription || product.description || summary)
+  const paragraphs = textParagraphs(longDesc)
+  const applications = contentList(product.applications).map(displayCopy)
+  const benefits = contentList(product.benefits).map(displayCopy)
+  const features = contentList(product.features).map(displayCopy)
+  const industries = contentList(product.industriesServed).map(displayCopy)
+  const specRows = compactRows([
     ...(product.specifications ?? []).map((s: any) => ({
       label: s.key, value: s.unit ? `${s.value} ${s.unit}` : s.value,
     })),
     { label: 'Chemical Formula', value: product.chemicalFormula },
-    { label: 'Appearance',       value: product.appearance },
-    { label: 'CAS Number',       value: product.casNumber },
-    { label: 'Purity',           value: product.purity },
-    { label: 'Density',          value: product.density },
+    { label: 'Appearance', value: product.appearance },
+    { label: 'CAS Number', value: product.casNumber },
+    { label: 'Purity', value: product.purity },
+    { label: 'Density', value: product.density },
   ])
   const overviewRows = compactRows([
-    { label: 'Product Name',  value: product.name },
-    { label: 'Category',      value: product.category?.name },
-    { label: 'Packaging',     value: product.packagingType },
-    { label: 'Min. Order',    value: product.minOrderQuantity ? `${product.minOrderQuantity} ${product.unitOfMeasure ?? 'KG'}` : null },
-    { label: 'Availability',  value: product.status === 'active' ? 'In Stock — Ready for Dispatch' : product.status },
+    { label: 'Product Name', value: product.name },
+    { label: 'Category', value: product.category?.name },
+    { label: 'Packaging', value: product.packagingType },
+    // { label: 'Min. Order', value: product.minOrderQuantity ? `${product.minOrderQuantity} ${product.unitOfMeasure ?? 'KG'}` : null },
+    { label: 'Availability', value: product.status === 'active' ? 'In Stock — Ready for Dispatch' : product.status },
   ])
   const detailBlocks = [
     { title: 'Applications', items: applications },
-    { title: 'Benefits',     items: benefits },
-    { title: 'Features',     items: features },
+    { title: 'Benefits', items: benefits },
+    { title: 'Features', items: features },
   ].filter((b) => b.items.length > 0)
 
   return (
@@ -244,6 +244,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
             </div>
           </div>
 
+
           {/* Right: Details */}
           <div className="lg:col-span-7 space-y-8">
             <div className="space-y-4">
@@ -253,6 +254,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
               <h1 className="font-display font-bold text-text-primary text-2xl sm:text-3xl md:text-4xl leading-tight break-anywhere">
                 {product.name}
               </h1>
+
               {product.chemicalFormula && (
                 <span className="inline-flex w-fit rounded-md border border-surface-border bg-surface-muted px-2 py-1 text-xs text-text-muted">
                   Formula: <strong className="ml-1">{product.chemicalFormula}</strong>
@@ -267,13 +269,13 @@ export default async function ProductDetailPage({ params }: PageProps) {
             </div>
 
             {/* Packaging strip */}
-            <div className="border-y border-surface-border py-4 flex items-center gap-3">
+            {/* <div className="border-y border-surface-border py-4 flex items-center gap-3">
               <Package className="w-4 h-4 text-amber-400 shrink-0" />
               <div>
                 <span className="block text-[10px] uppercase tracking-wider text-text-muted mb-0.5">Packaging</span>
-                <span className="font-semibold text-sm text-text-primary">{product.packagingType || 'IBC / Drum / Custom'}</span>
+                <span className="font-semibold text-sm text-text-primary">{product.packagingType}</span>
               </div>
-            </div>
+            </div> */}
 
             {/* Specs Table */}
             {specRows.length > 0 && (
@@ -309,9 +311,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
                     className="btn-secondary flex items-center justify-center gap-2 py-3.5 text-sm border-amber-500/40 text-amber-400 hover:bg-amber-500/10"
                   >
                     {primarySheet.pdf_file ? (
-                      <><Download className="w-4 h-4" /> Download Data Sheet</>  
+                      <><Download className="w-4 h-4" /> Download Data Sheet</>
                     ) : (
-                      <><FileText className="w-4 h-4" /> View Data Sheet</>  
+                      <><FileText className="w-4 h-4" /> View Data Sheet</>
                     )}
                   </Link>
                 )
@@ -396,11 +398,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
                         {i === 0 && (
                           <>
                             {' '}For scientific reference, see{' '}
-                            <a href={searchUrl('https://pubchem.ncbi.nlm.nih.gov/#query=', product.name)} target="_blank" rel="nofollow noopener noreferrer" className="text-amber-400 hover:text-amber-300 hover:underline underline-offset-4">
+                            <a href={searchUrl('https://pubchem.ncbi.nlm.nih.gov/#query=', product.name)} target="_blank" rel="nofollow noopener noreferrer" className=" hover:text-amber-300 hover:underline underline-offset-4">
                               PubChem
                             </a>
                             {' '}and{' '}
-                            <a href={searchUrl('https://en.wikipedia.org/wiki/Special:Search?search=', product.name)} target="_blank" rel="nofollow noopener noreferrer" className="text-amber-400 hover:text-amber-300 hover:underline underline-offset-4">
+                            <a href={searchUrl('https://en.wikipedia.org/wiki/Special:Search?search=', product.name)} target="_blank" rel="nofollow noopener noreferrer" className=" hover:text-amber-300 hover:underline underline-offset-4">
                               Wikipedia
                             </a>.
                           </>

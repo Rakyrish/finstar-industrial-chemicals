@@ -9,7 +9,6 @@ export function middleware(request: NextRequest) {
   if (publicPaths.some((path) => pathname.startsWith(path))) {
     return NextResponse.next()
   }
-
   if (!pathname.startsWith('/admin') && !pathname.startsWith('/api/admin')) {
     return NextResponse.next()
   }
