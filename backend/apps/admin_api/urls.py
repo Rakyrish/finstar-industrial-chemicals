@@ -27,6 +27,20 @@ from .views import (
     AdminTechnicalDocDetailView,
     AdminBlogAnalyticsView,
 )
+from .watermark_views import (
+    AdminWatermarkSettingsView,
+    AdminWatermarkPreviewView,
+    AdminWatermarkScopesView,
+    AdminWatermarkBulkApplyView,
+    AdminWatermarkRestoreAllView,
+    AdminWatermarkBatchListView,
+    AdminWatermarkBatchStatusView,
+    AdminWatermarkBatchPauseView,
+    AdminWatermarkBatchResumeView,
+    AdminWatermarkBatchCancelView,
+    AdminWatermarkProductApplyView,
+    AdminWatermarkProductRestoreView,
+)
 
 urlpatterns = [
     # Dashboard & analytics
@@ -99,4 +113,18 @@ urlpatterns = [
     path('technical-docs', AdminTechnicalDocListView.as_view(), name='admin-technical-docs-noslash'),
     path('technical-docs/<int:pk>/', AdminTechnicalDocDetailView.as_view(), name='admin-technical-doc-detail'),
     path('technical-docs/<int:pk>', AdminTechnicalDocDetailView.as_view(), name='admin-technical-doc-detail-noslash'),
+
+    # ── Image protection / watermarking ───────────────────────────────────────
+    path('watermark/settings/', AdminWatermarkSettingsView.as_view(), name='admin-watermark-settings'),
+    path('watermark/preview/', AdminWatermarkPreviewView.as_view(), name='admin-watermark-preview'),
+    path('watermark/scopes/', AdminWatermarkScopesView.as_view(), name='admin-watermark-scopes'),
+    path('watermark/bulk-apply/', AdminWatermarkBulkApplyView.as_view(), name='admin-watermark-bulk-apply'),
+    path('watermark/restore-all/', AdminWatermarkRestoreAllView.as_view(), name='admin-watermark-restore-all'),
+    path('watermark/batches/', AdminWatermarkBatchListView.as_view(), name='admin-watermark-batches'),
+    path('watermark/batches/<uuid:batch_id>/', AdminWatermarkBatchStatusView.as_view(), name='admin-watermark-batch-status'),
+    path('watermark/batches/<uuid:batch_id>/pause/', AdminWatermarkBatchPauseView.as_view(), name='admin-watermark-batch-pause'),
+    path('watermark/batches/<uuid:batch_id>/resume/', AdminWatermarkBatchResumeView.as_view(), name='admin-watermark-batch-resume'),
+    path('watermark/batches/<uuid:batch_id>/cancel/', AdminWatermarkBatchCancelView.as_view(), name='admin-watermark-batch-cancel'),
+    path('watermark/products/<int:pk>/apply/', AdminWatermarkProductApplyView.as_view(), name='admin-watermark-product-apply'),
+    path('watermark/products/<int:pk>/restore/', AdminWatermarkProductRestoreView.as_view(), name='admin-watermark-product-restore'),
 ]

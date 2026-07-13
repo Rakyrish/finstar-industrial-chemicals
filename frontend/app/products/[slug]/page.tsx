@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { generatePageMetadata } from '@/lib/metadata'
 import { productService } from '@/services/productService'
 import { productSchema, breadcrumbSchema, faqSchema, graphSchema, toJsonLd } from '@/lib/schema'
 import ProductCard from '@/components/shared/ProductCard'
+import ProtectedProductImage from '@/components/shared/ProtectedProductImage'
 import WhatsAppButton from '@/components/shared/WhatsAppButton'
 import { Award, AlertCircle, ArrowLeft, Send, CheckCircle2, Package, Database, ShieldCheck, FileText, Download, ExternalLink } from 'lucide-react'
 export const dynamic = 'force-dynamic';
@@ -217,7 +217,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
           <div className="lg:col-span-5 space-y-6">
             <div className="relative aspect-square rounded-2xl overflow-hidden bg-surface-card border border-surface-border group shadow-glow-blue flex items-center justify-center">
               {product.primaryImage ? (
-                <Image
+                <ProtectedProductImage
                   src={product.primaryImage}
                   alt={product.imageAlt || `${product.name} — ${product.category?.name ?? 'Industrial Chemical'} by Finstar`}
                   title={product.imageTitle || product.name}

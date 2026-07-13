@@ -49,16 +49,20 @@ class ProductListSerializer(serializers.ModelSerializer):
     category = serializers.SerializerMethodField()
     tags = TagSerializer(many=True, read_only=True)
     primaryImage = serializers.SerializerMethodField()
+    imageAlt = serializers.SerializerMethodField()
     isNew = serializers.BooleanField(source='is_new')
     isFeatured = serializers.BooleanField(source='is_featured')
+    isWatermarked = serializers.SerializerMethodField()
+    isWatermarkApplied = serializers.BooleanField(source='is_watermark_applied', read_only=True)
     updatedAt = serializers.DateTimeField(source='updated_at', format='%Y-%m-%d')
     inventory = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = [
-            'id', 'name', 'slug', 'category', 'tags', 'primaryImage',
+            'id', 'name', 'slug', 'category', 'tags', 'primaryImage', 'imageAlt',
             'short_description', 'status', 'isNew', 'isFeatured',
+            'isWatermarked', 'isWatermarkApplied',
             'packaging_type', 'pricing', 'updatedAt', 'inventory',
         ]
 
@@ -68,7 +72,14 @@ class ProductListSerializer(serializers.ModelSerializer):
         return {'id': obj.category.id, 'name': obj.category.name, 'slug': obj.category.slug}
 
     def get_primaryImage(self, obj):
-        return obj.get_primary_image_url()
+        return obj.get_effective_image_url()
+
+    def get_imageAlt(self, obj):
+        return obj.get_effective_image_alt()
+
+    def get_isWatermarked(self, obj):
+        from watermark.models import WatermarkSettings
+        return bool(obj.is_watermark_applied and WatermarkSettings.get_solo().watermark_enabled)
 
     def get_inventory(self, obj):
         stock = getattr(obj, 'stock_item', None)
@@ -81,6 +92,10 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     primaryImage = serializers.SerializerMethodField()
     isNew = serializers.BooleanField(source='is_new')
     isFeatured = serializers.BooleanField(source='is_featured')
+    isWatermarked = serializers.SerializerMethodField()
+    isWatermarkApplied = serializers.BooleanField(source='is_watermark_applied', read_only=True)
+    watermarkAppliedAt = serializers.DateTimeField(source='watermark_applied_at', allow_null=True, read_only=True)
+    lastRestoredAt = serializers.DateTimeField(source='last_restored_at', allow_null=True, read_only=True)
     cloudinaryUrl = serializers.URLField(source='cloudinary_url', allow_null=True)
     cloudinaryPublicId = serializers.CharField(source='cloudinary_public_id', allow_null=True)
     seoTitle = serializers.CharField(source='seo_title', allow_null=True)
@@ -88,7 +103,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     seoKeywords = serializers.CharField(source='seo_keywords', allow_null=True)
     ogDescription = serializers.CharField(source='og_description', allow_null=True)
     twitterDescription = serializers.CharField(source='twitter_description', allow_null=True)
-    imageAlt = serializers.CharField(source='image_alt', allow_null=True)
+    imageAlt = serializers.SerializerMethodField()
     imageTitle = serializers.CharField(source='image_title', allow_null=True)
     imageCaption = serializers.CharField(source='image_caption', allow_null=True)
     whatsappTemplate = serializers.CharField(source='whatsapp_template', allow_null=True)
@@ -114,6 +129,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             'short_description', 'description', 'long_description',
             'applications', 'benefits', 'features', 'industriesServed', 'faqs',
             'specifications', 'status', 'isNew', 'isFeatured',
+            'isWatermarked', 'isWatermarkApplied', 'watermarkAppliedAt', 'lastRestoredAt',
             'min_order_quantity', 'unit_of_measure', 'packaging_type', 'pricing', 'costPrice',
             'cas_number', 'chemical_formula', 'purity', 'appearance', 'density',
             'hazard_classification',
@@ -126,7 +142,11 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             'technicalDocs',
         ]
 
-    def get_primaryImage(self, obj): return obj.get_primary_image_url()
+    def get_primaryImage(self, obj): return obj.get_effective_image_url()
+    def get_imageAlt(self, obj): return obj.get_effective_image_alt()
+    def get_isWatermarked(self, obj):
+        from watermark.models import WatermarkSettings
+        return bool(obj.is_watermark_applied and WatermarkSettings.get_solo().watermark_enabled)
     def get_applications(self, obj): return obj.get_applications()
     def get_benefits(self, obj): return obj.get_benefits()
     def get_features(self, obj): return obj.get_features()

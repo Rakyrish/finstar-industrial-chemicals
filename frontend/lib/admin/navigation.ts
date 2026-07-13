@@ -105,6 +105,12 @@ export const adminNavItems: AdminNavItem[] = [
     minAccess: 'staff',
   },
   {
+    label: 'Image Protection',
+    href: '/admin/watermark',
+    icon: 'shield-check',
+    minAccess: 'staff',
+  },
+  {
     label: 'Users',
     href: '/admin/users',
     icon: 'shield-user',

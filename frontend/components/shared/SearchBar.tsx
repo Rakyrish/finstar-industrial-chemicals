@@ -7,6 +7,7 @@ import { Search, X, ArrowRight, Loader2 } from 'lucide-react'
 import { productService } from '@/services/productService'
 import type { ProductListItem } from '@/types'
 import { cn, debounce } from '@/utils'
+import { useImageProtection } from '@/hooks/useImageProtection'
 
 interface SearchBarProps {
   placeholder?: string
@@ -27,6 +28,8 @@ export default function SearchBar({
   const [open,    setOpen]    = useState(false)
   const router  = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
+  const { getProtectionProps } = useImageProtection()
+  const protectionProps = getProtectionProps()
 
   useEffect(() => {
     if (autoFocus) inputRef.current?.focus()
@@ -112,7 +115,14 @@ export default function SearchBar({
                 >
                   <div className="w-8 h-8 rounded-lg bg-surface-muted flex items-center justify-center shrink-0 overflow-hidden">
                     {product.primaryImage ? (
-                      <img src={product.primaryImage} alt="" className="w-full h-full object-cover" />
+                      <img
+                        src={product.primaryImage}
+                        alt=""
+                        className={cn('w-full h-full object-cover', protectionProps.className)}
+                        onContextMenu={protectionProps.onContextMenu}
+                        onDragStart={protectionProps.onDragStart}
+                        draggable={protectionProps.draggable}
+                      />
                     ) : (
                       <Search className="w-3.5 h-3.5 text-text-muted" />
                     )}

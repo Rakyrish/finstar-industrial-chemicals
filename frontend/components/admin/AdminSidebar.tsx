@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Boxes, Newspaper, MessagesSquare, FileText, Bot, Warehouse, ChartColumn, Search, Settings, ShieldUser, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, Boxes, Newspaper, MessagesSquare, FileText, Bot, Warehouse, ChartColumn, Search, Settings, ShieldUser, ShieldCheck, ChevronRight } from 'lucide-react'
 import { adminNavItems, adminRoleLabels } from '@/lib/admin/navigation'
 import { useAdminAuth } from './AdminAuthProvider'
 import { cn } from '@/utils'
@@ -19,6 +19,7 @@ const iconMap = {
   search: Search,
   settings: Settings,
   'shield-user': ShieldUser,
+  'shield-check': ShieldCheck,
 }
 
 export default function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {

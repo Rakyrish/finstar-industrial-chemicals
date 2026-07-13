@@ -1,8 +1,11 @@
+'use client'
+
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, FlaskConical, Tag, Star } from 'lucide-react'
 import type { ProductListItem } from '@/types'
 import { cn } from '@/utils'
+import { useImageProtection } from '@/hooks/useImageProtection'
 
 interface ProductCardProps {
   product: ProductListItem
@@ -19,6 +22,8 @@ function displayCopy(value?: string | null) {
 
 export default function ProductCard({ product, className, priority = false }: ProductCardProps) {
   const isAvailable = product.status === 'active'
+  const { getProtectionProps } = useImageProtection()
+  const protectionProps = getProtectionProps()
 
   return (
     <Link
@@ -38,8 +43,14 @@ export default function ProductCard({ product, className, priority = false }: Pr
             alt={product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className={cn(
+              'object-cover group-hover:scale-105 transition-transform duration-500',
+              protectionProps.className
+            )}
             priority={priority}
+            onContextMenu={protectionProps.onContextMenu}
+            onDragStart={protectionProps.onDragStart}
+            draggable={protectionProps.draggable}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-brand-950 to-surface-muted">

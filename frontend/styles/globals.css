@@ -629,4 +629,12 @@
   /* Glow effects */
   .glow-amber { box-shadow: var(--shadow-glow-amber); }
   .glow-blue  { box-shadow: var(--shadow-glow-blue); }
+
+  /* Image protection: defeats iOS Safari's native long-press "Save Image"
+     callout, which cannot be blocked via JS preventDefault(). */
+  .protected-image-no-callout {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
 }

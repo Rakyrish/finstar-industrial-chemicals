@@ -228,6 +228,11 @@ class Product(models.Model):
         blank=True, null=True, verbose_name='Hazard Identification / PPE rules'
     )
 
+    # ── Image protection / watermark state ────────────────────────────────────
+    is_watermark_applied = models.BooleanField(default=False)
+    watermark_applied_at = models.DateTimeField(blank=True, null=True)
+    last_restored_at = models.DateTimeField(blank=True, null=True)
+
     # ── Flags & Publishing ────────────────────────────────────────────────────
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     is_featured = models.BooleanField(default=False)
@@ -339,6 +344,38 @@ class Product(models.Model):
         if self.primary_image:
             return self.primary_image.url
         return None
+
+    def get_effective_image_url(self):
+        """
+        The URL that should actually be served to visitors.
+
+        The watermark is never baked into the stored asset — it's a Cloudinary
+        on-the-fly transformation computed against `cloudinary_public_id`.
+        Both the global switch AND the per-product flag must be on for the
+        transformed URL to be served; otherwise the original is returned.
+        """
+        if self.is_watermark_applied and self.cloudinary_public_id:
+            from watermark.models import WatermarkSettings
+            from watermark.cloudinary_utils import build_watermark_url
+
+            settings_row = WatermarkSettings.get_solo()
+            if settings_row.watermark_enabled:
+                return build_watermark_url(self.cloudinary_public_id, settings_row)
+        return self.get_primary_image_url()
+
+    def get_effective_image_alt(self):
+        """
+        Strip descriptive alt/title metadata on actively-protected images when
+        SEO metadata protection is on, to reduce reverse-image-search/scraping
+        surface area. Falls back to the normal descriptive alt text otherwise.
+        """
+        if self.is_watermark_applied:
+            from watermark.models import WatermarkSettings
+
+            settings_row = WatermarkSettings.get_solo()
+            if settings_row.watermark_enabled and settings_row.seo_metadata_protection_enabled:
+                return self.name
+        return self.image_alt or ''
 
     def __str__(self):
         return self.name

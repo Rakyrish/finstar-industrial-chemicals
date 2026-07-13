@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'technical_docs.apps.TechnicalDocsConfig',
     'admin_api.apps.AdminApiConfig',
     'monitoring.apps.MonitoringConfig',
+    'watermark.apps.WatermarkConfig',
 ]
 
 MIDDLEWARE = [
@@ -198,6 +199,10 @@ CELERY_BEAT_SCHEDULE = {
     'generate-weekly-blog-thursday': {
         'task': 'blog.tasks.generate_weekly_blogs',
         'schedule': crontab(hour=6, minute=0, day_of_week='thursday'),
+    },
+    'poll-watermark-queue': {
+        'task': 'watermark.tasks.poll_watermark_queue',
+        'schedule': 10.0,  # seconds
     },
 }
 
